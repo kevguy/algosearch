@@ -1,0 +1,11 @@
+.icon {
+	display: inline-block;
+}
+
+.dark {
+	fill: #012137;
+}
+
+.light {
+	fill: white;
+}

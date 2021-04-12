@@ -1,171 +1,277 @@
-<p>
-<img src="https://i.imgur.com/dsBUUav.png" width="300" alt="AlgoSearch logo image" />
-</p>
+# AlgoSearch
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-yellowgreen.svg)](https://opensource.org/licenses/Apache-2.0)
+## Introduction
 
-# AlgoSearch ([live deployment](https://algosearch.io))
-AlgoSearch enables you to explore and search the [Algorand blockchain](https://www.algorand.com/) for transactions, addresses, blocks, assets, statistics, and more, in real-time. It's a simple, easy-to-deploy, and open-source block explorer to be used alongside an Algorand archival node.
+AlgoSearch is an open-sourced project that enables you to explore and search the Algorand blockchain for transactions, blocks, addresses, assets, statistics, and more, in real-time. It's a simple, easy-to-deploy, and open-source block explorer to be used alongside an Algorand archival node.
 
-**Dependencies**
-* [Node.js](https://nodejs.org/en/) 8+ for use with server and front-end.
-* [go-algorand](https://github.com/algorand/go-algorand) for Algorand `goal` node (must support archival indexing).
-* [Algorand Indexer](https://github.com/algorand/indexer) for reading committed blocks from the Algorand blockchain and maintains a database of transactions and accounts that are searchable and indexed.
-* [CouchDB](https://couchdb.apache.org/) as database solution.
+It contains 3 services:
 
-Work on AlgoSearch is funded by the [Algorand Foundation](https://algorand.foundation) through a grant to [Anish Agnihotri](https://github.com/anish-agnihotri). The scope of work includes the development of an open-source block explorer (AlgoSearch) and a WIP analytics platform.
+- Frontend app
+  - The website of AlgoSearch
+- RESTful API server
+  - It connects to the Algorand archival node (and indexer, optional) and serves a set of API endpoints for the frontend to consume.
+- Metrics server (optional)
+  - It connects to the RESTful API and monitors its status
 
-# The Fastest Approach
+## Usage
 
-The fastest approach to set everything up for development is using the `Sandbox` and `docker-compose`. To do that, just setup the Sandbox and do the following:
+### Prerequisities
 
-```
-# Start the services
-bash docker-run.sh
-```
+Make sure you have a CouchDB database set up and a working Algorand node, ideally an archival node.
 
-# Run locally
-
-## Linux / OSX
-The [go-algorand](https://github.com/algorand/go-algorand) node currently aims to support only Linux and OSX environments for development.
-
-## Step 1: Environment setup
-
-This section explains how to set up everything locally.
-
-### The Native Approach
-
-#### Algorand's Node
-
-First you'll need to install [Algorand's Node](https://developer.algorand.org/docs/run-a-node/setup/install/) locally. Follow the instructions through the hyperlink.
-
-Make sure node is running on the preferred network and that algod details are correct in `service/global.js`.
-
-#### Indexer
-
-Then you'll need to install the [Indexer](https://developer.algorand.org/docs/run-a-node/setup/indexer/) locally. Follow the instructions through the hyperlink.
+If you want to do tracing, you can set up Zipkin too.
 
 #### CouchDB
 
-Finally you'll need to install [CouchDB](https://docs.couchdb.org/en/stable/install/index.html) locally.
-
-You can also run CouchDB using Docker easily:
+If you want to start a CouchDB quickly in your local environment, you can run this command to start one using Docker:
 
 ```sh
-# Create a folder called db-data
-mkdir db-data
-
-docker run -e COUCHDB_USER=admin -e COUCHDB_PASSWORD=password -p 5984:5984 --name my-couchdb -v $(pwd)/db-data:/opt/couchdb/data -d couchdb
+make run-couch
 ```
 
-If you are using docker compose to start the services, you can skip this step.
+- http://localhost:5984
+  - username: `admin`
+  - password: `password`
+  - volume: `PROJECT_FOLDER/db-data`
 
-### The Sandbox Approach
+### Getting Started
 
-You can also set up **Algorand's Node** and the **Indexer** using [Algorand's Sandbox](https://github.com/algorand/sandbox). Follow the instructions through the hyperlink.
+#### Using Docker
 
-Note that you will still have to set up CouchDB if you are not using the `docker-compose.yml` offered here. 
-
-## Step 2: Configuration
-
-1. Enter your site name in `src/constants.js`.
-    - it's set to be `http://localhost:8000` as default, but if you are changing the port, remember to update `PORT` in `server.js` and `server.local.js`
-2. Enter the API endpoint of the Algorand's Node in `src/constants.js`.
-3. Copy `service/global.sample.js` to `service/global.js` and enter your node and DB details.
-    - If you are using the Sandbox approach, copy `service/global.sandbox.js` instead and update the CouchDB details if needed.
-
-## Step 3: Running AlgoSearch
-
-### The Native Approach
-
-#### Install the dependencies
-
-```
-# Run in folder root directory
-npm install
-```
-
-#### Build the code
-
-```
-# Run in folder root directory
-npm run build
-```
-
-#### Run it
-
-Make sure the configurations in your `src/global.js` is correct, then you'll have to do three things.
-
-One, execute the following to create tables in CouchDB:
+You can start the container with a [Docker image](https://hub.docker.com/r/kevguy/algosearch) which already contains all the three services (RESTful API, metrics and frontend):
 
 ```sh
-node service/sync/initSync.js
+docker run \
+  -e ALGOSEARCH_WEB_ENABLE_SYNC=true \
+  -e ALGOSEARCH_WEB_SYNC_INTERNAL=5s \
+  -e ALGOSEARCH_COUCH_DB_HOST=234.567.89.0:5984 \
+  -e ALGOSEARCH_COUCH_DB_USER=algorand \
+  -e ALGOSEARCH_COUCH_DB_PASSWORD=algorand \
+  -e ALGOSEARCH_COUCH_DB_NAME=algosearch \
+  -e ALGOSEARCH_ALGOD_PROTOCOL=http \
+  -e ALGOSEARCH_ALGOD_ADDR=234.567.89.0:4001 \
+  -e ALGOSEARCH_ALGOD_TOKEN=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa \
+  -e ALGOSEARCH_ZIPKIN_REPORTER_URI=http://234.567.89.0:9411/api/v2/spans \
+  -e NEXT_PUBLIC_API_URL=http://0.0.0.0:5000 \
+  -e METRICS_COLLECT_FROM=http://0.0.0.0:4000/debug/vars \
+  algosearch:1.1
 ```
 
-Second, execute the following to start syncing the tables:
+Please modify `NEXT_PUBLIC_API_URL` only when you are trying to connect to another backend.
+
+Please modify `METRICS_COLLECT_FROM` only when you are trying to collect metrics from another RESTful API.
+
+- Frontend: http://localhost:3000
+- RESTful API: http://localhost:5000
+- Metrics: http://localhost:3001
+
+#### Using Docker-Compose
+
+You can also use `docker-compose` to start all the services with each of them in separate Docker images.
+
+Go inside `PROJECT_FOLDER/zarf/compose/compose-config.yaml` and change the environment variables accordingly, and then make use of these commands:
 
 ```sh
-node service/sync/syncAll.js
+# Start everything using docker-compose
+make up
+
+# See the logs
+make logs
+
+# Stop the containers
+make down
 ```
 
-Note that this step takes time to sync and should stay running as long as the server is running.
+- Frontend: http://localhost:3000
+- RESTful API: http://localhost:5000
+- Metrics: http://localhost:3001
+- Zipkin: http://localhost:9411
+- CouchDB: http://localhost:5984
 
-Finally, start the server:
+To build the docker images yourself:
 
 ```sh
-nodemon server.js
+# RESTful API
+# algosearch-backend:1.1
+make algosearch-backend
+# algosearch-backend:latest
+make algosearch-backend-latest
+
+# Frontend
+# algosearch-frontend:1.1
+make algosearch-frontend
+# algosearch-frontend:latest
+make algosearch-frontend-latest
+
+# Metrics
+# algosearch-metrics:1.1
+make algosearch-metrics
+# algosearch-metrics:latest
+make algosearch-metrics-latest
 ```
 
-### Docker Approach
-
-You can skip the native approach entirely and simply start the application using Docker (remember to make sure your `src/global.js` is having the correct details):
+Additionally, here are some useful commands for Docker:
 
 ```sh
-# Build the image
-docker build -t algosearch .
+# Stop and remove all containers (not only AlgoSearch)
+make docker-down-local
 
-# Run the container
-docker run algosearch
+# See logging of all containers
+make docker-logs-local
+
+# Clean and remove all docker images
+make docker-clean
 ```
 
-If you are using Linux and your container needs to access the host machine, for instance, the CouchDB you set up on your machine, run the following the start the container:
+### Running Locally
 
-```
-docker run --network="host" algosearch
-```
+To run AlgoSearch locally, you need to have the following dependencies:
 
-#### Docker Compose Approach
+- npm/yarn, for building and starting the frontend app
+- golang, for building and starting the backend services
+- a couchdb connection, for the backend RESTful API to store and retrieve data
 
-To start the server using `docker-compose`, you only need the Node and Indexer, and use DB details in `src/global.sandbox.js`, that is, make sure
+#### Installation
 
-```
-dbhost = 'couchdb.server:5984', // Database URL
-dbuser = 'admin', // Database user
-dbpass = 'password', // Database password
-```
-
-Then start the services:
+Install the dependencies for frontend and the other services:
 
 ```sh
-# Create the folder for CouchDB
-mkdir db-data
+# Install all the dependencies for RESTful API and metric services
+make tidy
 
-# Start the services
-docker-compose up
+# Install dependencies for frontend app
+cd frontend
+yarn install
 ```
 
-If your Node and Indexer are on the host machine, your containers will have to access `localhost`, instead of using `docker-compose up`, run the startup script instead:
+#### CouchDB
+
+If you haven't set up a database on CouchDB for AlgoSearch to use, run this command with the appropriate credentials to set it up:
 
 ```sh
-bash docker-run.sh
+go run backend/app/algo-admin/main.go \
+		--couch-db-protocol=http \
+		--couch-db-user=admin \
+		--couch-db-password=password \
+		--couch-db-host=0.0.0.0:5984 \
+		--couch-db-name=algosearch \
+		migrate
 ```
 
-This script will find the IPs of `localhost` and to be accessed through `dockerhost`. In other words, in your `src/global.js`, use `dockerhost` instead of `localhost`.
+#### Backend
 
-# Documentation
-The [Wiki](https://github.com/Anish-Agnihotri/algosearch/wiki) is currently under construction.
+Both the restful API and metric services are configurable. Run the following commands to see what variables that can be configured through command line arguments or environment variables:
 
-# License
-[![License](https://img.shields.io/badge/License-Apache%202.0-yellowgreen.svg)](https://opensource.org/licenses/Apache-2.0)
+```sh
+# RESTful API
+go run ./backend/app/algosearch/main.go --help
 
-Copyright (C) 2020, Anish Agnihotri.
+# Metrics
+go run ./backend/app/sidecar/metrics/main.go --help
+```
+
+**Note that their default values are all set to be compatible with Algorand's sandbox.**
+
+##### RESTful API Service
+
+Start the API service:
+
+```sh
+go run ./backend/app/algosearch/main.go
+
+# OR this, which is the same command but with
+# better logging format
+make start-algosearch-backend
+```
+
+If you are connecting to the API to sandbox, run:
+
+```sh
+make start-sandbox-algosearch-backend
+```
+
+##### Metric Service
+
+Start the metric service:
+
+```sh
+go run ./backend/app/sidecar/metrics/main.go
+
+# OR this, which is the same command but with
+# better logging format
+make start-algosearch-metrics
+```
+
+If you are connecting the metric service to work with the sandbox, run:
+
+```sh
+make start-sandbox-algosearch-backend
+```
+
+#### Frontend
+
+Go inside the `frontend` folder:
+
+```sh
+cd frontend
+
+yarn dev
+# OR
+yarn build
+yarn start
+```
+
+## Core Team
+
+<table>
+  <tbody>
+    <tr>
+      <td align="center" width="33.3%" valign="top">
+        <img width="150" height="150" src="https://github.com/kevguy.png?s=150">
+        <br>
+        <a href="https://github.com/kevguy">Kevin Lai</a>
+        <p>Core Services</p>
+        <br>
+        <p>Golang, Linkin Park, South Park, and Red Bull</p>
+      </td>
+      <td align="center" width="33.3%" valign="top">
+        <img width="150" height="150" src="https://github.com/fionnachan.png?s=150">
+        <br>
+        <a href="https://github.com/fionnachan">Fionna Chan</a>
+        <p>Frontend & UI/UX Design</p>
+        <br>
+        <p>Making the world a better place with OSS, one line at a time</p>
+      </td>
+      <td align="center" width="33.3%" valign="top">
+        <img width="150" height="150" src="https://github.com/Uppers.png?s=150">
+        <br>
+        <a href="https://github.com/Uppers">Thomas Upfield</a>
+        <p>Documentation & Business Relations</p>
+        <br>
+        <p>Algorand Evangelist. DeFi, tokenomics, and analytics</p>
+      </td>
+     </tr>
+  </tbody>
+</table>
+
+## Special Thanks to
+
+- [@ardanlabs](https://github.com/ardanlabs) for [service](https://github.com/ardanlabs/service), which taught us everything we know about Golang and offering a well-designed sample API service as our foundation.
+
+- [@Anish-Agnihotri](https://github.com/Anish-Agnihotri) for his contribution to the original [AlgoSearch](https://github.com/Anish-Agnihotri/algosearch) written with create-react-app and a Node.js backend.
+
+## Licensing
+
+```
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+```
