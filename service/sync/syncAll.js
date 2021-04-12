@@ -101,13 +101,13 @@ async function getSyncedRound() {
 */
 async function getCurrentRound() {
 	let round;
-	
+
 	await axios({
 		method: 'get',
-		url: `${constants.algodurl}/ledger/supply`, // Request /ledger/supply endpoint
+		url: `${constants.algodurl}/v2/ledger/supply`, // Request /ledger/supply endpoint
 		headers: {'X-Algo-API-Token': constants.algodapi}
 	}).then(response => {
-		round = response.data.round; // Collect round
+		round = response.data.current_round; // Collect round
 	}).catch(error => {
 		console.log("Exception when getting current round: " + error);
 	})
@@ -123,19 +123,19 @@ async function bulkAddBlocks(blockNum, currentNum) {
 	let transactionsArray = []; // to contain any transactions in those 250 blocks
 	let addressesArray = []; // to contain any addresses and their transactions in those 250 blocks
 	let increment = 0; // for async loop functionality
-	
+
 	while (increment < 250) {
 		await axios({
 			method: 'get',
-			url: `${constants.algodurl}/block/${blockNum + increment + 1}`, // Retrieve each block in succession
-			headers: {'X-Algo-API-Token': constants.algodapi}
+			url: `${constants.algoIndexerUrl}/v2/blocks/${blockNum + increment + 1}`, // Retrieve each block in succession
+			headers: {'X-Indexer-API-Token': constants.algoIndexerToken}
 		}).then(async response => {
 			blocksArray.push(response.data); // Push block to array
 
 			let timestamp = response.data.timestamp; // Collect timestamp from block
 
-			if (Object.keys(response.data.txns).length > 0) {
-				let alltransactions = response.data.txns.transactions; // Append timestamp from block to transaction
+			if (Object.keys(response.data.transactions).length > 0) {
+				let alltransactions = response.data.transactions; // Append timestamp from block to transaction
 
 				for (let i = 0; i < alltransactions.length; i++) {
 					alltransactions[i].timestamp = timestamp; // Add timestamp to transaction (simplify front-end reporting)
@@ -144,7 +144,8 @@ async function bulkAddBlocks(blockNum, currentNum) {
 					// TODO: Add support for non-payment transactions
 					if (typeof alltransactions[i].payment !== 'undefined') {
 						let from_account_id = alltransactions[i].from; // From account
-						let to_account_id = alltransactions[i].payment.to; // To account
+						// let from_account_id = alltransactions[i].receiver; // From account
+						let to_account_id = alltransactions[i]['payment-transaction'].receiver; // To account
 
 						// If from account is already in transactions array, append to entry, else update
 						if (addressesArray.some(address => address._id === from_account_id)) {
@@ -166,7 +167,7 @@ async function bulkAddBlocks(blockNum, currentNum) {
 								addressesArray.push({_id: from_account_id, transactions: [alltransactions[i]]});
 							});
 						}
-						
+
 						// If to account is already in transactions array, append to entry, else update
 						if (addressesArray.some(address => address._id === to_account_id)) {
 							// To account exists in transactionsArray
@@ -220,26 +221,28 @@ async function bulkAddBlocks(blockNum, currentNum) {
 async function addBlock(blockNum, currentNum) {
 	await axios({
 		method: 'get',
-		url: `${constants.algodurl}/block/${blockNum}`, // Get block information from algod
-		headers: {'X-Algo-API-Token': constants.algodapi}
+		url: `${constants.algoIndexerUrl}/v2/blocks/${blockNum}`, // Get block information from algod
+		headers: {'X-Indexer-API-Token': constants.algoIndexerToken}
 	}).then(async response => {
 		blocks.insert(response.data); // Insert block data to blocks database as doc
 		let timestamp = response.data.timestamp; // Collect timestamp from block
 
-		if (Object.keys(response.data.txns).length > 0) {
-			let alltransactions = response.data.txns.transactions;
+		if (Object.keys(response.data.transactions).length > 0) {
+			let alltransactions = response.data.transactions;
 			for (let i = 0; i < alltransactions.length; i++) {
 				alltransactions[i].timestamp = timestamp; // Add timestamp to transaction (simplify front-end reporting)
 				transactions.insert(alltransactions[i]);
-				
+
 				/*
 				The following code is used to add transactions to the accounts database,
-				but is currently disabled until cleanup of the current database and 
+				but is currently disabled until cleanup of the current database and
 				launch to production servers (due to memory usage when conducting operation)
-				
+				*/
+
 				if (typeof alltransactions[i].payment !== 'undefined') {
 					let from_account_id = alltransactions[i].from; // From account
-					let to_account_id = alltransactions[i].payment.to; // To account
+					// let from_account_id = alltransactions[i].receiver; // From account
+					let to_account_id = alltransactions[i]['payment-transaction'].receiver; // To account
 
 					// Add transaction to from account
 					await addresses.get(from_account_id).then(async from_body => {
@@ -258,7 +261,7 @@ async function addBlock(blockNum, currentNum) {
 						// If account does not exist in db, create a new record
 						await addresses.insert({_id: to_account_id, transactions: [alltransactions[i]]});
 					});
-				}*/
+				}
 			}
 		}
 		console.log(`Block added: ${blockNum} of ${currentNum}`); // Log block addition

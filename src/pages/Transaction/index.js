@@ -60,29 +60,29 @@ class Transaction extends React.Component {
 							<tbody>
 								<tr>
 									<td>ID</td>
-									<td>{this.state.loading ? <Load /> : this.state.txid}</td>
+									<td>{this.state.loading ? <Load /> : this.state.transaction.transaction.id}</td>
 								</tr>
 								<tr>
 									<td>Round</td>
-									<td>{this.state.loading ? <Load /> : <NavLink to={`/block/${this.state.transaction.round}`}>{this.state.transaction.round}</NavLink>}</td>
+									<td>{this.state.loading ? <Load /> : <NavLink to={`/block/${this.state.transaction.transaction['comfirmed-round']}`}>{this.state.transaction.transaction['confirmed-round']}</NavLink>}</td>
 								</tr>
 								<tr>
 									<td>Type</td>
-									<td>{this.state.loading ? <Load /> : <span className="type noselect">{this.state.transaction.type}</span>}</td>
+									<td>{this.state.loading ? <Load /> : <span className="type noselect">{this.state.transaction.transaction['tx-type']}</span>}</td>
 								</tr>
 								<tr>
 									<td>Sender</td>
-									<td>{this.state.loading ? <Load /> : <NavLink to={`/address/${this.state.transaction.from}`}>{this.state.transaction.from}</NavLink>}</td>
+									<td>{this.state.loading ? <Load /> : <NavLink to={`/address/${this.state.transaction.transaction.sender}`}>{this.state.transaction.transaction.sender}</NavLink>}</td>
 								</tr>
 								<tr>
 									<td>Receiver</td>
-									<td>{this.state.loading ? <Load /> : <NavLink to={`/address/${this.state.transaction.payment.to}`}>{this.state.transaction.payment.to}</NavLink>}</td>
+									<td>{this.state.loading ? <Load /> : <NavLink to={`/address/${this.state.transaction.transaction['payment-transaction'].receiver}`}>{this.state.transaction.transaction['payment-transaction'].receiver}</NavLink>}</td>
 								</tr>
 								<tr>
 									<td>Amount</td>
 									<td>{this.state.loading ? <Load /> : (
 										<div className="tx-hasicon">
-											{formatValue(this.state.transaction.payment.amount / 1000000)}
+											{formatValue(this.state.transaction.transaction['payment-transaction'].amount / 1000000)}
 											<AlgoIcon />
 										</div>
 									)}</td>
@@ -91,38 +91,41 @@ class Transaction extends React.Component {
 									<td>Fee</td>
 									<td>{this.state.loading ? <Load /> : (
 										<div className="tx-hasicon">
-											{formatValue(this.state.transaction.fee / 1000000)}
+											{formatValue(this.state.transaction.transaction.fee / 1000000)}
 											<AlgoIcon />
 										</div>
 									)}</td>
 								</tr>
 								<tr>
 									<td>First round</td>
-									<td>{this.state.loading ? <Load /> : <NavLink to={`/block/${this.state.transaction["first-round"]}`}>{this.state.transaction["first-round"]}</NavLink>}</td>
+									<td>{this.state.loading ? <Load /> : <NavLink to={`/block/${this.state.transaction.transaction["first-valid"]}`}>{this.state.transaction.transaction["first-valid"]}</NavLink>}</td>
 								</tr>
 								<tr>
 									<td>Last round</td>
-									<td>{this.state.loading ? <Load /> : <NavLink to={`/block/${this.state.transaction["last-round"]}`}>{this.state.transaction["last-round"]}</NavLink>}</td>
+									<td>{this.state.loading ? <Load /> : <NavLink to={`/block/${this.state.transaction.transaction["last-valid"]}`}>{this.state.transaction.transaction["last-valid"]}</NavLink>}</td>
 								</tr>
 								<tr>
 									<td>Timestamp</td>
 									<td>{this.state.loading ? <Load /> : moment.unix(this.state.transaction.timestamp).format("LLLL")}</td>
 								</tr>
 								<tr>
-									<td>Base 64</td>
+									<td>Note</td>
 									<td>
 										{this.state.loading ? <Load /> : (
 											<div>
-												{this.state.transaction.noteb64 && this.state.transaction.noteb64 !== '' ? (
-													<div>
-														<div>
-															<span>Base 64:</span>
-															<textarea defaultValue={this.state.transaction.noteb64} readOnly></textarea>
-														</div>
-														<div>
-															<span>Converted:</span>
-															<textarea defaultValue={atob(this.state.transaction.noteb64)} readOnly></textarea>
-														</div>
+												{this.state.transaction.transaction.note && this.state.transaction.transaction.note !== '' ? (
+													// <div>
+													// 	<div>
+													// 		<span>Base 64:</span>
+													// 		<textarea defaultValue={this.state.transaction.transaction.note} readOnly></textarea>
+													// 	</div>
+													// 	<div>
+													// 		<span>Converted:</span>
+													// 		<textarea defaultValue={atob(this.state.transaction.transaction.note)} readOnly></textarea>
+													// 	</div>
+													// </div>
+                                                    <div>
+														<textarea defaultValue={this.state.transaction.transaction.note} readOnly></textarea>
 													</div>
 												) : null}
 											</div>
@@ -148,7 +151,7 @@ class Transaction extends React.Component {
 									<td>From rewards</td>
 									<td>{this.state.loading ? <Load /> : (
 										<div className="tx-hasicon">
-											{formatValue(this.state.transaction.fromrewards / 1000000)}
+											{formatValue(this.state.transaction.transaction['sender-rewards'] / 1000000)}
 											<AlgoIcon />
 										</div>
 									)}</td>
@@ -157,18 +160,18 @@ class Transaction extends React.Component {
 									<td>To rewards</td>
 									<td>{this.state.loading ? <Load /> : (
 										<div className="tx-hasicon">
-											{formatValue(this.state.transaction.payment.torewards / 1000000)}
+											{formatValue(this.state.transaction.transaction['receiver-rewards'] / 1000000)}
 											<AlgoIcon />
 										</div>
 									)}</td>
 								</tr>
 								<tr>
 									<td>Genesis ID</td>
-									<td>{this.state.loading ? <Load /> : this.state.transaction.genesisID}</td>
+									<td>{this.state.loading ? <Load /> : this.state.transaction.transaction['genesis-id']}</td>
 								</tr>
 								<tr>
 									<td>Genesis hash</td>
-									<td>{this.state.loading ? <Load /> : this.state.transaction.genesishashb64}</td>
+									<td>{this.state.loading ? <Load /> : this.state.transaction.transaction['genesis-hash']}</td>
 								</tr>
 							</tbody>
 						</table>

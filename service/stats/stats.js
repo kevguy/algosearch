@@ -57,7 +57,7 @@ module.exports = function(app) {
 	app.get('/latest', function(req, res) {
 		axios({
 			method: 'get',
-			url: `${constants.algodurl}/ledger/supply`, // Request ledger supply endpoint
+			url: `${constants.algodurl}/v2/ledger/supply`, // Request ledger supply endpoint
 			headers: {'X-Algo-API-Token': constants.algodapi}
 		}).then(lbody => {
 			// Get last 10 transactions
@@ -67,7 +67,7 @@ module.exports = function(app) {
 					blocks.push({
 						"round": body.rows[i].doc.round,
 						"proposer": body.rows[i].doc.proposer,
-						"numtxn": Object.keys(body.rows[i].doc.txns).length,
+						"numtxn": Object.keys(body.rows[i].doc.transactions).length,
 						"timestamp": body.rows[i].doc.timestamp
 					});
 				}

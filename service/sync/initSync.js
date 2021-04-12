@@ -14,12 +14,13 @@ var nano = require("nano")(`http://${constants.dbuser}:${constants.dbpass}@${con
 const initBlocksDB = () => {
 	console.log("Checking for blocks database");
 
-	nano.db.list().then(body => {
+	return nano.db.list().then(body => {
 		if (!body.includes('blocks')) {
 			console.log("blocks database does not exist, creating...");
-			nano.db.create('blocks');
+			return nano.db.create('blocks').then(insertLatestView);
 		} else {
 			console.log("blocks database exists, continuing...");
+			return insertLatestView();
 		}
 	}).catch(error => {
 		console.log("Exception when initializing blocks DB: " + error);
@@ -33,12 +34,13 @@ const initBlocksDB = () => {
 const initTransactionsDB = () => {
 	console.log("Checking for transactions database");
 
-	nano.db.list().then(body => {
+	return nano.db.list().then(body => {
 		if (!body.includes('transactions')) {
 			console.log("transactions database does not exist, creating...");
-			nano.db.create('transactions');
+			return nano.db.create('transactions').then(insertQueryView);
 		} else {
 			console.log("transactions database exists, continuing...");
+			return insertQueryView();
 		}
 	}).catch(error => {
 		console.log("Exception when initializing transactions DB: " + error);
@@ -64,6 +66,52 @@ const initAddressesDB = () => {
 	})
 }
 
+/*
+	Insert the latest view into the blocks database.
+	If it exists, continue. Else, create it.
+ */
+const insertLatestView = () => {
+	console.log("Inserting Latest View");
+
+	const db = nano.use("blocks");
+	db.view("latest", "latest").then(body => {
+		console.log("view exists, continuing...");
+	}).catch(error => {
+		db.insert({
+			"views": {
+				"latest": {
+					"map": function(doc) { emit(doc.round); },
+				},
+			},
+		}, "_design/latest").catch(error => {
+			console.log("Exception when inserting latest view: " + error);
+		});
+	});
+}
+
+/*
+	Insert the query view into the transactions database.
+	If it exists, continue. Else, create it.
+ */
+const insertQueryView = () => {
+	console.log("Inserting Query View");
+
+	const db = nano.use("transactions");
+	db.view("query", "bytimestamp").then(body => {
+		console.log("view exists, continuing...");
+	}).catch(error => {
+		db.insert({
+			"views": {
+				"bytimestamp": {
+					"map": function(doc) { emit(doc.round); },
+				},
+			},
+		}, "_design/query").catch(error => {
+			console.log("Exception when inserting query view: " + error);
+		});
+	});
+}
+
 // Executing this file will also run the functions:
 initBlocksDB();
 initTransactionsDB();
@@ -71,7 +119,9 @@ initAddressesDB();
 
 // Export functions
 module.exports = {
-	initBlocksDB: initBlocksDB,
-	initTransactionsDB: initTransactionsDB,
-	initAddressesDB: initAddressesDB
+	initBlocksDB,
+	initTransactionsDB,
+	initAddressesDB,
+	insertLatestView,
+	insertQueryView,
 };

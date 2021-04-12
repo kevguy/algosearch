@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  algosearch:
+    image: "algosearch"
+    hostname: algo-search
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    extra_hosts:
+      - "dockerhost:$DOCKERHOST"
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+#    environment:
+#      DATABASE_NAME: couchdb
+    depends_on:
+      - couch
+
+  couch:
+    image: couchdb:2.3.1
+    hostname: couchdb.server
+    ports:
+      - "5984:5984"
+    volumes:
+      - ./db-data:/opt/couchdb/data
+    extra_hosts:
+      - "dockerhost:$DOCKERHOST"
+    # https://github.com/apache/couchdb-docker/issues/54
+    # command: curl -u admin:password -X PUT 127.0.0.1:5984/_users && curl -u admin:password -X PUT 127.0.0.1:5984/test
+    environment:
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=password
