@@ -1,0 +1,85 @@
+.transaction-table {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.5;
+  font-size: var(--font-size-xs);
+  border-radius: 4px;
+}
+
+.transaction-row {
+  width: 100%;
+  padding: var(--space-s);
+  background-color: white;
+  border: 1px solid var(--grey-lighter);
+  border-radius: 6px;
+  margin-bottom: 6px;
+}
+
+.transaction-subrow {
+  display: flex;
+  align-items: center;
+}
+
+.tx-type-label-wrapper {
+  width: 5rem;
+}
+
+.tx-type-label {
+  line-height: 1;
+  font-size: var(--font-size-xxs);
+  padding: var(--space-xxxxs) var(--space-xxs);
+  background: var(--blue-lightest);
+  border: 1px solid var(--blue-lighter-2);
+}
+
+.transaction-id {
+  max-width: 20rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  @media screen and (max-width: 768px) {
+    max-width: 14rem;
+  }
+}
+
+.time {
+  flex: 1 0 4rem;
+  text-align: right;
+  white-space: nowrap;
+  margin-left: var(--space-l);
+}
+
+.relevant-accounts {
+  display: flex;
+  gap: var(--space-m);
+
+  span {
+    width: 10rem;
+  }
+
+  @media screen and (max-width: 768px) {
+    flex-wrap: wrap;
+    gap: var(--space-xxs);
+
+    span {
+      width: 9rem;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+  }
+}
+
+.transaction-info {
+  display: flex;
+  align-items: flex-end;
+  flex: 1 1 auto;
+  text-align: right;
+  gap: var(--space-s);
+
+  span {
+    flex: 1 1 auto;
+    text-align: right;
+    white-space: nowrap;
+  }
+}

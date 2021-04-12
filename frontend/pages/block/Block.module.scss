@@ -1,0 +1,126 @@
+.block-table {
+  border-radius: 8px;
+  background-color: #fff;
+  border: 1px solid var(--grey-lighter);
+  margin-bottom: var(--space-xxxl);
+  overflow: hidden;
+
+  div {
+    word-break: break-all;
+  }
+
+  table {
+    min-width: 100%;
+    table-layout: fixed;
+  }
+
+  > span {
+    display: inline-block;
+    font-weight: 500;
+    font-size: 18px;
+    margin: 15px 0px 15px 15px;
+  }
+
+  th {
+    text-align: left;
+    border-bottom: 1px solid var(--grey-lighter);
+    &:first-child {
+      padding-left: 15px;
+    }
+  }
+
+  .transactions-table {
+    border: none !important;
+  }
+
+  @media screen and (max-width: 768px) {
+    tr {
+      display: flex;
+      flex-direction: column;
+    }
+    th,
+    th:first-child {
+      padding: var(--space-s);
+    }
+  }
+}
+
+.table-wrapper h4 {
+  font-weight: 500;
+  margin: var(--space-xxs) 0;
+}
+
+.table-header {
+  margin: 0 0 var(--space-s);
+}
+
+.block-table table > thead {
+  tr {
+    background-color: #f8fafd;
+    height: 40px;
+    font-size: 13px;
+    text-transform: uppercase;
+    color: #5a728c;
+    font-weight: 700;
+  }
+  @media screen and (max-width: 768px) {
+    display: none;
+  }
+}
+
+.block-table table > tbody > tr {
+  @media screen and (max-width: 768px) {
+    line-height: 1.3;
+    padding: var(--space-s) 0;
+    border-bottom: 1px solid rgb(231, 234, 243);
+  }
+}
+
+.block-table table > tbody > tr > td {
+  padding: var(--space-s);
+  border-bottom: 1px solid rgb(231, 234, 243);
+  &:first-child {
+    padding-left: 15px;
+    font-weight: 500;
+    min-width: 220px;
+    width: 220px;
+    @media screen and (max-width: 768px) {
+      width: 100%;
+    }
+  }
+
+  &:last-child {
+    padding-right: 15px;
+  }
+  @media screen and (max-width: 768px) {
+    padding: 0 var(--space-m) !important;
+    word-break: break-all;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    border-bottom: none;
+  }
+}
+
+.block-table table > tbody > tr > td > a {
+  text-decoration: none;
+  color: #337afe;
+  transition: 100ms ease-in-out;
+}
+
+.block-table table > tbody > tr > td > a:hover {
+  color: #0150e3;
+}
+
+.block-table table > tbody > tr:last-child > td {
+  border-bottom: none;
+}
+
+.notes-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-xxxl);
+
+  @media screen and (max-width: 768px) {
+    flex-direction: column;
+  }
+}

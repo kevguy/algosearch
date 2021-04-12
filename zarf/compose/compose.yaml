@@ -1,0 +1,68 @@
+version: '3.8'
+
+networks:
+  shared-network:
+    driver: bridge
+
+services:
+
+  zipkin:
+    container_name: zipkin
+    networks:
+      - shared-network
+    image: openzipkin/zipkin
+    ports:
+      - 9411:9411
+
+  algosearch-backend:
+    container_name: algosearch-backend
+    networks:
+      - shared-network
+    image: algosearch-backend:1.1
+    ports:
+      - 5000:5000 # CRUD API
+      - 4000:4000 # DEBUG API
+    depends_on:
+      - zipkin
+      - algosearch-db
+
+  algosearch-frontend:
+    container_name: algosearch-frontend
+    networks:
+      - shared-network
+    image: algosearch-frontend:1.1
+    ports:
+      - 3000:3000
+    depends_on:
+      - algosearch-backend
+
+  algosearch-metrics:
+    container_name: algosearch-metrics
+    networks:
+      - shared-network
+    image: algosearch-metrics:1.1
+    ports:
+      - 3001:3001 # EXPVAR API
+      - 4001:4001 # DEBUG API
+    depends_on:
+      - algosearch-backend
+
+  algosearch-db:
+    image: couchdb:3.2.0
+    container_name: "algorand-sandbox-couchdb"
+    hostname: couchdb.server
+    networks:
+      - shared-network
+    ports:
+      - 5984:5984
+    # Optional
+    # volumes:
+    #   - ./db-data:/opt/couchdb/data
+    # extra_hosts:
+    #   - "dockerhost:$DOCKERHOST"
+    # https://github.com/apache/couchdb-docker/issues/55
+    #    command: curl -u admin:password -X PUT 128.0.0.1:5984/_users && curl -u admin:password -X PUT 127.0.0.1:5984/test
+    # command: curl -u algorand:algorand -X PUT http://128.0.0.1:5984/_users && curl -u algorand:algorand -X PUT http://127.0.0.1:5984/algo_global
+    environment:
+      - COUCHDB_USER=algorand
+      - COUCHDB_PASSWORD=algorand

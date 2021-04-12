@@ -1,0 +1,1538 @@
+openapi: 3.0.0
+servers:
+  - description: SwaggerHub API Auto Mocking
+    url: 'https://virtserver.swaggerhub.com/kevguy/cal-engine/1.0.0'
+  - description: Development
+    url: 'http://localhost:3000'
+  - description: UAT
+    url: 'http://89.39.110.254:3000'
+  - description: Production
+    url: 'https://borecast.com'
+info:
+  version: 1.0.0
+  title: AlgoSearch API
+  description: |
+security:
+  - bearerAuth: []
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    EvalDeltaKeyValue:
+      type: object
+      description: EvalDeltaKeyValue key-value pairs for StateDelta.
+      required:
+        - key
+        - value
+      properties:
+        key:
+          type: string
+          description: Key
+          example: R0E
+        value:
+          description: Value represents a TEAL value delta.
+          allOf:
+            - $ref: "#/components/schemas/EvalDelta"
+    EvalDelta:
+      type: object
+      required:
+        - action
+      properties:
+        action:
+          type: number
+          example: 2
+        bytes:
+          type: string
+        uint:
+          type: number
+          example: 10449075514872
+    TransactionKeyReg:
+      type: object
+      description: TransactionKeyreg fields for a keyreg transaction.
+      properties:
+        non-participation:
+          type: boolean
+          description: NonParticipation (nonpart) Mark the account as participating or non-participating.
+        selection-participation-key:
+          type: string
+          description: SelectionParticipationKey (selkey) Public key used with the Verified Random Function (VRF) result during committee selection.
+        vote-first-valid:
+          type: number
+          description: VoteFirstValid (votefst) First round this participation key is valid.
+        vote-key-diluation:
+          type: number
+          description: VoteKeyDilution (votekd) Number of subkeys in each batch of participation keys.
+        vote-last-valid:
+          type: number
+          description: VoteLastValid (votelst) Last round this participation key is valid.
+        vote-participation-key:
+          type: string
+          description: VoteParticipationKey (votekey) Participation public key used in key registration transactions.
+    AccountStateDelta:
+      type: object
+      description: AccountStateDelta application state delta.
+      required:
+        - address
+        - delta
+      properties:
+        address:
+          type: string
+          example: MACYLFKZ7U3A6VRYICAFOL65P6DEYP73RQSTNMPUGO357MFEORQMWJPOYU
+        delta:
+          description: Delta application state delta.
+          allOf:
+            - $ref: "#/components/schemas/EvalDeltaKeyValue"
+          example:
+            {
+              key: "VUE",
+              value: {
+                action: 2,
+                uint: 29838007476
+              }
+            }
+    TransactionPayment:
+      type: object
+      required:
+        - amount
+        - receiver
+      description: TransactionPayment fields for a payment transaction.
+      properties:
+        amount:
+          type: number
+          description: Amount (amt) number of MicroAlgos intended to be transferred.
+          example: 0
+        close-amount:
+          type: number
+          description: CloseAmount number of MicroAlgos that were sent to the close-remainder-to address when closing the sender account.
+        close-remainder-to:
+          type: string
+          description: CloseRemainderTo (close) when set, indicates that the sending account should be closed and all remaining funds be transferred to this address.
+        receiver:
+          type: string
+          description: Receiver (rcv) receiver's address.
+    TransactionSignature:
+      type: object
+      description: >-
+        TransactionSignature validation signature associated with some data. Only one of
+        the signatures should be provided.
+      properties:
+        logicsig:
+          description: Logicsig (lsig) Programatic transaction signature.
+          allOf:
+            - $ref: "#/components/schemas/TransactionSignatureLogicsig"
+        multisig:
+          description: Multisig (msig) structure holding multiple subsignatures.
+          allOf:
+            - $ref: "#/components/schemas/TransactionSignatureMultisig"
+        sig:
+          type: string
+          description: Sig (sig) Standard ed25519 signature.
+          example: k9mbQn6ILPU25eZv5gNKMyHB9zcwbOVRz4gtFepNLjaLtoX07kLc2iMy1ILIsiD0pxSWq7hf6dcBbKEMs6vsCw
+    TransactionSignatureLogicsig:
+      type: object
+      description: TransactionSignatureLogicsig (lsig) Programatic transaction signature.
+      properties:
+        args:
+          type: array
+          description: Args (arg) Logic arguments, base64 encoded.
+          items:
+            type: string
+        logic:
+          type: string
+          nullable: true
+          description: >-
+            Logic (l) Program signed by a signature or multi signature, or hashed to be the
+            address of ana ccount. Base64 encoded TEAL program.
+        multisig-signature:
+          description: MultisigSignature (msig) structure holding multiple subsignatures.
+          allOf:
+            - $ref: "#/components/schemas/TransactionSignatureMultisig"
+        signature:
+          description: Signature (sig) ed25519 signature.
+          type: string
+    TransactionSignatureMultisig:
+      type: object
+      description: TransactionSignatureMultisig (msig) structure holding multiple subsignatures.
+      properties:
+        subsignature:
+          description: Subsignature (subsig) holds pairs of public key and signatures.
+          allOf:
+            - $ref: "#/components/schemas/TransactionSignatureMultisigSubsignature"
+        threshold:
+          type: number
+          description: Threshold (thr)
+        version:
+          type: number
+          description: Version (v)
+    TransactionSignatureMultisigSubsignature:
+      type: object
+      description: TransactionSignatureMultisigSubsignature defines a model for TransactionSignatureMultisigSubsignature.
+      properties:
+        public-key:
+          type: string
+          description: PublicKey (pk)
+        signature:
+          type: string
+          description: Signature (s)
+    StateSchema:
+      type: object
+      required:
+        - num-byte-slice
+        - num-uint
+      description: >-
+        StateSchema represents a (apls) local-state or (apgs) global-state schema. These
+        schemas determine how much storage may be used in a local-state or global-state
+        for an application. The more space used, the larger minimum balance must be
+        maintained in the account holding the data.
+      properties:
+        num-byte-slice:
+          type: number
+          description: >-
+            NumByteSlice maximum number of TEAL byte slices that may be stored in the
+            key/value store.
+        num-uint:
+          type: number
+          description: >-
+            NumUint maximum number of TEAL uints that may be stored in the key/value store.
+    TransactionApplication:
+      type: object
+      required:
+        - application-id
+      description: TransactionApplication fields for application transactions.
+      properties:
+        accounts:
+          type: array
+          description: >-
+            Accounts (apat) List of accounts in addition to the sender that may be accessed
+            from the application's approval-program and clear-state-program.
+          items:
+            type: string
+        application-args:
+          type: array
+          description: >-
+            ApplicationArgs (apaa) transaction specific arguments accessed from the
+            application's approval-program and clear-state-program.
+          items:
+            type: string
+            example:
+              - "Uw=="
+        application-id:
+          type: number
+          description: >-
+            ApplicationId (apid) ID of the application being configured or empty if
+            creating.
+          example: 352116819
+        approval-program:
+          type: string
+          description: >-
+            ApprovalProgram (apap) Logic executed for every application transaction, except
+            when on-completion is set to "clear". It can read and write global state for the
+            application, as well as account-specific local state. Approval programs may
+            reject the transaction.
+        clear-state-program:
+          type: string
+          description: >-
+            ClearStateProgram (apsu) Logic executed for application transactions with
+            on-completion set to "clear". It can read and write global state for the
+            application, as well as account-specific local state. Clear state programs
+            cannot reject the transaction.
+        extra-program-pages:
+          type: number
+          description: >-
+            ExtraProgramPages (epp) specifies the additional app program len requested in
+            pages.
+        foreign-apps:
+          type: array
+          description: >-
+            ForeignApps (apfa) Lists the applications in addition to the application-id
+            whose global states may be accessed by this application's approval-program and
+            clear-state-program. The access is read-only.
+          items:
+            type: number
+        foreign-assets:
+          type: array
+          description: >-
+            ForeignAssets (apas) lists the assets whose parameters may be accessed by this
+            application's ApprovalProgram and ClearStateProgram. The access is read-only.
+          items:
+            type: number
+        global-state-schema:
+          type: object
+          description: >-
+            GlobalStateSchema represents a (apls) local-state or (apgs) global-state schema.
+            These schemas determine how much storage may be used in a local-state or
+            global-state for an application. The more space used, the larger minimum balance
+            must be maintained in the account holding the data.
+          allOf:
+            - $ref: "#/components/schemas/StateSchema"
+          example: {num-byte-slice: 0, num-uint: 0}
+        local-state-schema:
+          type: object
+          description: >-
+            LocalStateSchema represents a (apls) local-state or (apgs) global-state schema.
+            These schemas determine how much storage may be used in a local-state or
+            global-state for an application. The more space used, the larger minimum balance
+            must be maintained in the account holding the data.
+          allOf:
+            - $ref: "#/components/schemas/StateSchema"
+          example: { num-byte-slice: 0, num-uint: 0 }
+        on-completion:
+          type: string
+          description: >-
+            OnCompletion (apan) defines the what additional actions occur with the
+            transaction.
+            Valid types:
+            * noop
+            * optin
+            * closeout
+            * clear
+            * update
+            * update
+            * delete
+          example: noop
+    AssetParams:
+      type: object
+      required:
+        - creator
+        - decimals
+        - total
+      description: >-
+        AssetParams assetParams specifies the parameters for an asset.
+        (apar) when part of an AssetConfig transaction.
+      properties:
+        clawback:
+          type: string
+          description: >-
+            Clawback (c) Address of account used to clawback holdings of this asset. If
+            empty, clawback is not permitted.
+        creator:
+          type: string
+          description: >-
+            Creator the address that created this asset. This is the address where the
+            parameters for this asset can be found, and also the address where unwanted
+            asset units can be sent in the worst case.
+          example: ""
+        decimals:
+          type: number
+          description: >-
+            Decimals (dc) The number of digits to use after the decimal point when
+            displaying this asset. If 0, the asset is not divisible. If 1, the base unit of
+            the asset is in tenths. If 2, the base unit of the asset is in hundredths, and
+            so on. This value must be between 0 and 19 (inclusive).
+          example: 0
+        default-frozen:
+          type: boolean
+          description: DefaultFrozen (df) Whether holdings of this asset are frozen by default.
+        freeze:
+          type: string
+          description: >-
+            Freeze (f) Address of account used to freeze holdings of this asset. If empty,
+            freezing is not permitted.
+        manager:
+          type: string
+          description: >-
+            Manager (m) Address of account used to manage the keys of this asset and to
+            destroy it.
+        metadata-hash:
+          type: array
+          description: >-
+            MetadataHash (am) A commitment to some unspecified asset metadata. The format of
+            this metadata is up to the application.
+          items:
+            type: string
+        name:
+          type: string
+          description: Name (an) Name of this asset, as supplied by the creator.
+        reserve:
+          type: string
+          description: Reserve (r) Address of account holding reserve (non-minted) units of this asset.
+        total:
+          type: number
+          description: Total (t) The total number of units of this asset.
+          example: 0
+        unit-name:
+          type: string
+          description: UnitName (un) Name of a unit of this asset, as supplied by the creator.
+        url:
+          type: string
+          description: Url (au) URL where more information about the asset can be retrieved.
+    TransactionAssetConfig:
+      type: object
+      description: >-
+        TransactionAssetConfig fields for asset allocation, re-configuration, and
+        destruction.
+        A zero value for asset-id indicates asset creation.
+        A zero value for the params indicates asset destruction.
+      properties:
+        asset-id:
+          type: number
+          description: AssetId (xaid) ID of the asset being configured or empty if creating.
+        params:
+          description: >-
+            Params assetParams specifies the parameters for an asset.
+            (apar) when part of an AssetConfig transaction.
+          allOf:
+            - $ref: "#/components/schemas/AssetParams"
+    TransactionAssetFreeze:
+      type: object
+      required:
+        - address
+        - asset-id
+        - new-freeze-status
+      description: TransactionAssetFreeze fields for an asset freeze transaction.
+      properties:
+        address:
+          type: string
+          description: Address (fadd) Address of the account whose asset is being frozen or thawed.
+          example: ""
+        asset-id:
+          type: number
+          description: AssetId (faid) ID of the asset being frozen or thawed.
+          example: 0
+        new-freeze-status:
+          type: boolean
+          description: NewFreezeStatus (afrz) The new freeze status.
+          example: false
+    TransactionAssetTransfer:
+      type: object
+      required:
+        - amount
+        - asset-id
+        - receiver
+      description: TransactionAssetTransfer fields for an asset transfer transaction.
+      properties:
+        amount:
+          type: number
+          description: >-
+            Amount (aamt) Amount of asset to transfer. A zero amount transferred to self
+            allocates that asset in the account's Assets map.
+          example: 0
+        asset-id:
+          type: number
+          description: AssetId (xaid) ID of the asset being transferred.
+          example: 0
+        close-amount:
+          type: number
+          description: >-
+            CloseAmount number of assets transfered to the close-to account as part of the
+            transaction.
+        close-to:
+          type: string
+          description: >-
+            CloseTo (aclose) Indicates that the asset should be removed from the account's
+            Assets map, and specifies where the remaining asset holdings should be
+            transferred. It's always valid to transfer remaining asset holdings to the
+            creator account.
+        receiver:
+          type: string
+          description: Receiver (arcv) Recipient address of the transfer.
+          example: ""
+        sender:
+          type: string
+          description: >-
+            Sender (asnd) The effective sender during a clawback transactions. If this is
+            not a zero value, the real transaction sender must be the Clawback address from
+            the AssetParams.
+    BlockUpgradeState:
+      type: object
+      required:
+        - current-protocol
+      description: BlockUpgradeState fields relating to a protocol upgrade.
+      properties:
+        current-protocol:
+          type: string
+          description: CurrentProtocol (proto) The current protocol version.
+          example: "https://github.com/algorandfoundation/specs/tree/bc36005dbd776e6d1eaf0c560619bb183215645c"
+        next-protocol:
+          type: string
+          description: NextProtocol (nextproto) The next proposed protocol version.
+        next-protocol-approvals:
+          type: number
+          description: >-
+            NextProtocolApprovals (nextyes) Number of blocks which approved the protocol
+            upgrade.
+        next-protocol-switch-on:
+          type: number
+          description: >-
+            NextProtocolSwitchOn (nextswitch) Round on which the protocol upgrade will take
+            effect.
+        next-protocol-vote-before:
+          type: number
+          description: >-
+            NextProtocolVoteBefore (nextbefore) Deadline round for this protocol upgrade (No
+            votes will be consider after this round).
+    BlockUpgradeVote:
+      type: object
+      description: BlockUpgradeVote fields relating to voting for a protocol upgrade.
+      properties:
+        upgrade-approve:
+          type: boolean
+          description: UpgradeApprove (upgradeyes) Indicates a yes vote for the current proposal.
+        upgrade-delay:
+          type: number
+          description: UpgradeDelay (upgradedelay) Indicates the time between acceptance and execution.
+        upgrade-propose:
+          type: string
+          description: UpgradePropose (upgradeprop) Indicates a proposed upgrade.
+    BlockRewardData:
+      type: object
+      description: Rewards fields relating to rewards,
+      required:
+        - fee-sink
+        - rewards-calculation-round
+        - rewards-level
+        - rewards-pool
+        - rewards-rate
+        - rewards-residue
+      properties:
+        fee-sink:
+          type: string
+          description: FeeSink (fees) accepts transaction fees, it can only spend to the incentive pool.
+          example: Y76M3MSY6DKBRHBL7C3NNDXGS5IIMQVQVUAB6MP4XEMMGVF2QWNPL226CA
+        rewards-calculation-round:
+          type: number
+          description: RewardsCalculationRound (rwcalr) number of leftover MicroAlgos after the distribution of rewards-rate MicroAlgos for every reward unit in the next round.
+          example: 18000000
+        rewards-level:
+          type: number
+          description: RewardsLevel (earn) How many rewards, in MicroAlgos, have been distributed to each RewardUnit of MicroAlgos since genesis.
+          example: 212242
+        rewards-pool:
+          type: string
+          description: RewardsPool (rwd) accepts periodic injections from the fee-sink and continually redistributes them as rewards.
+          example: "737777777777777777777777777777777777777777777777777UFEJ2CI"
+        rewards-rate:
+          type: string
+          description: RewardsRate (rate) Number of new MicroAlgos added to the participation stake from rewards at the next round.
+          example: 43700000
+        rewards-residue:
+          type: number
+          description: RewardsResidue (frac) Number of leftover MicroAlgos after the distribution of RewardsRate/rewardUnits MicroAlgos for every reward unit in the next round.
+          example: 1505187333
+    BlockUpgradeStateData:
+      type: object
+      required:
+        - current-protocol
+      description: UpgradeState fields relating to a protocol upgrade.
+      properties:
+        current-protocol:
+          type: string
+          description: CurrentProtocol (proto) The current protocol version.
+          example: https://github.com/algorandfoundation/specs/tree/bc36005dbd776e6d1eaf0c560619bb183215645c
+        next-protocol:
+          type: string
+          description: NextProtocol (nextproto) The next proposed protocol version.
+        next-protocol-approvals:
+          type: number
+          description: NextProtocolApprovals (nextyes) Number of blocks which approved the protocol upgrade.
+        next-protocol-switch-on:
+          type: string
+          description: NextProtocolSwitchOn (nextswitch) Round on which the protocol upgrade will take effect.
+        next-protocol-vote-before:
+          type: string
+          description: NextProtocolVoteBefore (nextbefore) Deadline round for this protocol upgrade (No votes will be consider after this round).
+    BlockUpgradeVoteData:
+      type: object
+      description: UpgradeVote fields relating to voting for a protocol upgrade.
+      properties:
+        upgrade-approve:
+          type: string
+          description: UpgradeApprove (upgradeyes) Indicates a yes vote for the current proposal.
+        upgrade-delay:
+          type: string
+          description: UpgradeDelay (upgradedelay) Indicates the time between acceptance and execution.
+        upgrade-propose:
+          type: string
+          description: UpgradePropose (upgradeprop) Indicates a proposed upgrade.
+    TransactionData:
+      type: object
+      description: Rewards fields relating to rewards,
+      properties:
+        application-transaction:
+          description: ApplicationTransaction fields for application transactions.
+          allOf:
+            - $ref: "#/components/schemas/TransactionApplication"
+        application-config-transaction:
+          description: >-
+            AssetConfigTransaction fields for asset allocation, re-configuration, and
+            destruction.
+            A zero value for asset-id indicates asset creation.
+            A zero value for the params indicates asset destruction.
+          allOf:
+            - $ref: "#/components/schemas/TransactionAssetConfig"
+        asset-freeze-transaction:
+          description: AssetFreezeTransaction fields for an asset freeze transaction.
+          allOf:
+            - $ref: "#/components/schemas/TransactionAssetFreeze"
+        asset-transfer-transaction:
+          description: AssetTransferTransaction fields for an asset transfer transaction.
+          allOf:
+            - $ref: "#/components/schemas/TransactionAssetTransfer"
+        auth-addr:
+          type: string
+          description: AuthAddr (sgnr) this is included with signed transactions when the signing address does not equal the sender. The backend can use this to ensure that auth addr is equal to the accounts auth addr.
+          example: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ
+        close-rewards:
+          type: number
+          description: CloseRewards (rc) rewards applied to close-remainder-to account.
+        closing-amount:
+          type: number
+          description: ClosingAmount (ca) closing amount for transaction.
+        confirmed-round:
+          type: number
+          description: ConfirmedRound round when the transaction was confirmed.
+          example: 17559915
+        created-application-index:
+          type: number
+          description: CreatedApplicationIndex specifies an application index (ID) if an application was created with this transaction.
+        created-asset-index:
+          type: number
+          description: CreatedAssetIndex specifies an asset index (ID) if an asset was created with this transaction.
+        fee:
+          type: number
+          description: Fee (fee) Transaction fee.
+          example: 1000
+        first-valid:
+          type: number
+          description: FirstValid (fv) First valid round for this transaction.
+          example: 17559910
+        genesis-hash:
+          type: string
+          description: GenesisHash (gh) Hash of genesis block.
+          example: wGHE2Pwdvd7S12BL5FaOP20EGYesN73ktiC1qzkkit8
+        genesis-id:
+          type: string
+          description: GenesisId (gen) genesis block ID.
+          example: mainnet-v1.0
+        global-state-delta:
+          description: GlobalStateDelta (gd) Global state key/value changes for the application being executed by this transaction.
+          allOf:
+            - $ref: "#/components/schemas/EvalDeltaKeyValue"
+        group:
+          description: >-
+            Group (grp) Base64 encoded byte array of a sha512/256 digest. When present
+            indicates that this transaction is part of a transaction group and the value is
+            the sha512/256 hash of the transactions in that group.
+          type: string
+          example: iRqKnMRI6CqEM650P8JeEjMMKKK833jOjetBFDGVna0
+        id:
+          type: string
+          description: transaction ID
+          example: T6IYXFQTZ7SMVEH5N5KYH5OSRW5XQRUZ4T7FX6TBDQ5HKNIAKQNA
+        intra-round-offset:
+          type: number
+          description: IntraRoundOffset offset into the round where this transaction was confirmed.
+        keyreg-transaction:
+          description: KeyregTransaction fields for a keyreg transaction.
+          allOf:
+            - $ref: "#/components/schemas/TransactionKeyReg"
+        last-valid:
+          type: number
+          description: LastValid (lv) Last valid round for this transaction.
+          example: 17560910
+        lease:
+          type: string
+          description: >-
+            Lease (lx) Base64 encoded 32-byte array. Lease enforces mutual exclusion of
+            transactions. If this field is nonzero, then once the transaction is confirmed,
+            it acquires the lease identified by the (Sender, Lease) pair of the transaction
+            until the LastValid round passes. While this transaction possesses the lease, no
+            other transaction specifying this lease can be confirmed.
+          example: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        local-state-delta:
+          description: LocalStateDelta (ld) Local state key/value changes for the application being executed by this transaction.
+          allOf:
+            - $ref: "#/components/schemas/AccountStateDelta"
+        note:
+          type: string
+          description: Note (note) Free form data.
+        payment-transaction:
+          description: PaymentTransaction fields for a payment transaction.
+          allOf:
+            - $ref: "#/components/schemas/TransactionPayment"
+        rekey-to:
+          type: string
+          description: >-
+            RekeyTo (rekey) when included in a valid transaction, the accounts auth addr
+            will be updated with this value and future signatures must be signed with the
+            key represented by this address.
+          example: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ
+        round-time:
+          type: number
+          description: RoundTime time when the block this transaction is in was confirmed.
+          example: 1637481021
+        sender:
+          type: string
+          description: Sender (snd) Sender's address.
+          example: MACYLFKZ7U3A6VRYICAFOL65P6DEYP73RQSTNMPUGO357MFEORQMWJPOYU
+        sender-rewards:
+          type: number
+          description: >-
+            Signature validation signature associated with some data. Only one of the
+            signatures should be provided.
+        signature:
+          description: >-
+            Signature validation signature associated with some data. Only one of the
+            signatures should be provided.
+          allOf:
+            - $ref: "#/components/schemas/TransactionSignature"
+        tx-type:
+          type: string
+          description: >-
+            Type (type) Indicates what type of transaction this is. Different types have
+            different fields.
+            Valid types, and where their fields are stored:
+            * (pay) payment-transaction
+            * (keyreg) keyreg-transaction
+            * (acfg) asset-config-transaction
+            * (axfer) asset-transfer-transaction
+            * (afrz) asset-freeze-transaction
+            * (appl) application-transaction
+          example: appl
+    BlockData:
+      type: object
+      required:
+        - genesis-hash
+        - genesis-id
+        - previous-block-hash
+        - round
+        - seed
+        - timestamp
+        - transactions-root
+      properties:
+        genesis-hash:
+          type: string
+          description: Genesis Hash (gh) hash to which this block belongs.
+          example: wGHE2Pwdvd7S12BL5FaOP20EGYesN73ktiC1qzkkit8=
+        genesis-id:
+          type: string
+          description: Genesis ID (gen) ID to which this block belongs.
+          example: mainnet-v1.0
+        previous-block-hash:
+          type: string
+          description: PreviousBlockHash (prev) Previous block hash.
+          example: "0oYrEQ4T+jOyxt9PYEQxEUxp43WoyATVVmNb6oNj4PI="
+        rewards:
+          allOf:
+            - $ref: "#/components/schemas/BlockRewardData"
+        round:
+          type: number
+          description: Round (rnd) Current round on which this block was appended to the chain.
+          example: Rewards fields relating to rewards,
+        seed:
+          type: string
+          description: Seed (seed) Sortition seed.
+          example: "Sj2taoRT+OlDTodNjXdodPK78WXSl4dfkNWxUzoqxDQ="
+        timestamp:
+          type: number
+          description: Timestamp (ts) Block creation timestamp in seconds since eposh.
+          example: 1637481021
+        transactions:
+          description: Transactions (txns) list of transactions corresponding to a given round.
+          type: array
+          items:
+            allOf:
+              - $ref: "#/components/schemas/TransactionData"
+        transactions-root:
+          description: >-
+            TransactionsRoot (txn) TransactionsRoot authenticates the set of transactions
+            appearing in the block. More specifically, it's the root of a merkle tree whose
+            aves are the block's Txids, in lexicographic order. For the empty block, it's
+             Note that the TxnRoot does not authenticate the signatures on the
+            ansactions, only the transactions themselves. Two blocks with the same
+            ansactions but in a different order and with different signatures will have
+            e same TxnRoot.
+          type: string
+          example: "jIBcMlQTfzzzMgMJofPPZS4qhV1Q3Z0ya5rELCACcCA"
+        txn-counter:
+          description: >-
+            TxnCounter (tc) TxnCounter counts the number of transactions committed in the
+            ledger, from the time at which support for this feature was introduced.
+            Specifically, TxnCounter is the number of the next transaction that will be
+            committed after this block. It is 0 when no transactions have ever been
+            committed (since TxnCounter started being supported).
+          example: 434008110
+        upgrade-state:
+          description: UpgradeState fields relating to a protocol upgrade.
+          allOf:
+            - $ref: "#/components/schemas/BlockUpgradeStateData"
+        upgrade-vote:
+          description: UpgradeVote fields relating to voting for a protocol upgrade.
+          allOf:
+            - $ref: "#/components/schemas/BlockUpgradeVoteData"
+        proposer:
+          type: string
+          description: Proposer
+          example: W2TVRKTHYB7HDVUGI6E6AVAXDGFT3RJT3XZGB2TVOT53TAISPBO2F5R3HE
+        block-hash:
+          type: string
+          description: Block hash
+          example: GNTA9izDj+OBtvedLqJb730/U/qW3q8DdrNkGEZtldo=
+    ApplicationStateSchema:
+      type: object
+      description: specifies maximums on the number of each type that may be
+      properties:
+        num-bytes-slice:
+          type: number
+          description: number of byte slices
+        num-uint:
+          description: number of uints
+          type: number
+    ApplicationLocalState:
+      type: object
+      description: stores local state associated with an application.
+      required:
+        - id
+        - schema
+      properties:
+        closed-out-at-round:
+          type: number
+          description: round when account closed out of the application.
+        deleted:
+          type: boolean
+          description: whether or not the application local state is currently deleted from its account.
+        id:
+          type: number
+          description: the application which this local state is for.
+        key-value:
+          type: object
+          description: storage
+          properties:
+            key:
+              type: string
+              description: key
+            value:
+              type: object
+              description: the TEAL value
+              properties:
+                bytes:
+                  type: string
+                  description: the bytes value
+                type:
+                  type: string
+                  description: value type
+                uint:
+                  type: number
+                  description: uint value
+        opted-in-at-round:
+          type: number
+          description: round when the account opted into the application.
+        schema:
+          allOf:
+            - $ref: "#/components/schemas/ApplicationStateSchema"
+          description: schema
+    AccountData:
+      type: object
+      properties:
+        address:
+          type: string
+          description: the account public key
+        amount:
+          type: number
+          description: >-
+            specifies the amount of MicroAlgos in the account, without the pending rewards.
+        app-local-state:
+          allOf:
+            - $ref: "#/components/schemas/ApplicationLocalState"
+          nullable: true
+          description: >-
+            (appl) applications local data stored in this account.
+        apps-total-extra-pages:
+          type: number
+          description: the sum of all extra application program pages for this account.
+    InternalServerErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          default: Internal Server Error
+    HealthCheckOkResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          default: ok
+        build:
+          type: string
+          default: a123456
+    HealthCheckInternalServerErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          default: db not ready
+
+paths:
+  /debug/readiness:
+    get:
+      security: []
+      summary: Health Check
+      description: This method is used to check if server working normally.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/HealthCheckOkResponse'
+              examples:
+                EverythingOK:
+                  description: Everything is working normally
+                  value: { "status": "ok", "build": "123456" }
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/HealthCheckInternalServerErrorResponse'
+              examples:
+                DbCheckFail:
+                  description: Server fails to connect to database.
+                  value: { "error": "db not ready" }
+                DbCacheCheckFail:
+                  description: Server fails to connect to database cache.
+                  value: { "error": "db cache not ready" }
+  /v1/algod/current-round:
+    get:
+      security: []
+      summary: Get Current Round from Algod API
+      description: Retrieves the current round data from Algod API
+      tags:
+        - Algod
+        - Round
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BlockData'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/InternalServerErrorResponse'
+  /v1/algod/rounds/{num}:
+    get:
+      security: []
+      summary: Get Round from Algod API by Round Number
+      description: Retrieves the block data from Algod API by Round Number
+      tags:
+        - Algod
+        - Round
+      parameters:
+        - in: path
+          name: num
+          schema:
+            type: number
+          required: true
+          description: The Round Number
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BlockData'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/InternalServerErrorResponse'
+  /v1/algod/ledger/supply:
+    get:
+      security: []
+      summary: Get the current supply reported by the ledger through Algod API
+      description: Get the current supply reported by the ledger through Algod API.
+      tags:
+        - Algod
+        - Ledger
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  current_round:
+                    type: number
+                    description: current round
+                  online-money:
+                    type: number
+                    description: online money
+                  total-money:
+                    type: number
+                    description: total money
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/InternalServerErrorResponse'
+  /v1/current-round:
+    get:
+      security: [ ]
+      summary: Get Latest Synced Round from API
+      description: Retrieves the lasy synced round from API
+      tags:
+        - Round
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BlockData'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/InternalServerErrorResponse'
+  /v1/rounds:
+    parameters:
+      - in: query
+        required: true
+        name: latest_blk
+        schema:
+          type: number
+          example: 300
+        description: the latest block number user wants to start with
+      - in: query
+        required: true
+        name: limit
+        schema:
+          type: number
+          example: 50
+        description: number of items per page
+      - in: query
+        required: true
+        name: page
+        schema:
+          type: number
+          example: 10
+        description: number of pages
+      - in: query
+        required: true
+        name: order
+        schema:
+          type: string
+          example: asc
+        description: sort order (asc/desc)
+    get:
+      security: []
+      summary: Get Rounds from API with Pagination
+      description: Retrieves blocks data from API with pagination
+      tags:
+        - Round
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  num_of_pages:
+                    type: number
+                    description: Number of pages
+                  num_of_blks:
+                    type: number
+                    description: Number of blocks
+                  items:
+                    type: array
+                    items:
+                      allOf:
+                        - $ref: "#/components/schemas/BlockData"
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/InternalServerErrorResponse'
+  /v1/rounds/{num}:
+    get:
+      security: []
+      summary: Get Round from API by Round Number
+      description: Retrieves the block data from API by Round Number
+      tags:
+        - Round
+      parameters:
+        - in: path
+          name: num
+          schema:
+            type: number
+          required: true
+          description: The Round Number
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BlockData'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/InternalServerErrorResponse'
+  /v1/transactions:
+    parameters:
+      - in: query
+        required: true
+        name: latest_txn
+        schema:
+          type: number
+          example: 300
+        description: the latest Transaction ID user wants to start with
+      - in: query
+        required: true
+        name: limit
+        schema:
+          type: number
+          example: 50
+        description: number of items per page
+      - in: query
+        required: true
+        name: page
+        schema:
+          type: number
+          example: 10
+        description: number of pages
+      - in: query
+        required: true
+        name: order
+        schema:
+          type: string
+          example: asc
+        description: sort order (asc/desc)
+    get:
+      security: []
+      summary: Get Transactions from API with Pagination
+      description: Retrieves transactions data from API with pagination
+      tags:
+        - Transaction
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  num_of_pages:
+                    type: number
+                    description: Number of pages
+                  num_of_txns:
+                    type: number
+                    description: Number of transactions
+                  items:
+                    type: array
+                    items:
+                      allOf:
+                        - $ref: "#/components/schemas/TransactionData"
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/InternalServerErrorResponse'
+  /v1/transactions/{id}:
+    get:
+      security: []
+      summary: Get Transaction from API by Transaction ID
+      description: Retrieves the transaction data from API by Transaction ID
+      tags:
+        - Transaction
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: The Transaction ID
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/TransactionData'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/InternalServerErrorResponse'
+  /v1/current-txn:
+    get:
+      security: [ ]
+      summary: Get Latest Synced Transaction from API
+      description: Retrieves the last synced transaction from API
+      tags:
+        - Transaction
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/TransactionData'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/InternalServerErrorResponse'
+  /v1/earliest-txn:
+    get:
+      security: [ ]
+      summary: Get Earliest Synced Transaction from API
+      description: Retrieves the earliest synced transaction from API
+      tags:
+        - Transaction
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/TransactionData'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/InternalServerErrorResponse'
+  /v1/transactions/acct/{id}/count:
+    get:
+      security: []
+      summary: Get Transaction Count from API by Account ID
+      description: Retrieves the number of Transactions from API by Account ID
+      tags:
+        - Transaction
+        - Account
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: The Account ID
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: number
+                description: the number of transactions
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/InternalServerErrorResponse'
+  /v1/transactions/acct/{id}:
+    parameters:
+      - in: query
+        required: true
+        name: limit
+        schema:
+          type: number
+          example: 50
+        description: number of items per page
+      - in: query
+        required: true
+        name: page
+        schema:
+          type: number
+          example: 10
+        description: number of pages
+      - in: query
+        required: true
+        name: order
+        schema:
+          type: string
+          example: asc
+        description: sort order (asc/desc)
+    get:
+      security: []
+      summary: Get Transactions from API by Account ID
+      description: Retrieves the transaction data from API by Account ID
+      tags:
+        - Transaction
+        - Account
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: The Account ID
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  num_of_pages:
+                    type: number
+                    description: Number Of Pages
+                  num_of_txns:
+                    type: number
+                    description: Number Of Transactions
+                  items:
+                    description: The Transactions
+                    type: array
+                    items:
+                      allOf:
+                        - $ref: '#/components/schemas/TransactionData'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/InternalServerErrorResponse'
+  /v1/accounts:
+    parameters:
+      - in: query
+        required: true
+        name: latest_acct
+        schema:
+          type: number
+          example: 300
+        description: the latest Account Addre user wants to start with
+      - in: query
+        required: true
+        name: limit
+        schema:
+          type: number
+          example: 50
+        description: number of items per page
+      - in: query
+        required: true
+        name: page
+        schema:
+          type: number
+          example: 10
+        description: number of pages
+      - in: query
+        required: true
+        name: order
+        schema:
+          type: string
+          example: asc
+        description: sort order (asc/desc)
+    get:
+      security: []
+      summary: Get Accounts from API with Pagination
+      description: Retrieves account data from API with pagination
+      tags:
+        - Account
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  num_of_pages:
+                    type: number
+                    description: Number of pages
+                  num_of_txns:
+                    type: number
+                    description: Number of transactions
+                  items:
+                    type: array
+                    items:
+                      allOf:
+                        - $ref: "#/components/schemas/AccountData"
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/InternalServerErrorResponse'
+  /v1/accounts/{addr}:
+    get:
+      security: []
+      summary: Get Account from API by Account Address
+      description: Retrieves the account data from API by Account Address
+      tags:
+        - Account
+      parameters:
+        - in: path
+          name: addr
+          schema:
+            type: string
+          required: true
+          description: The Account Address
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/AccountData'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/InternalServerErrorResponse'
+  /v1/accounts/latest:
+    get:
+      security: [ ]
+      summary: Get Latest Synced Account from API
+      description: Retrieves the last synced account from API
+      tags:
+        - Account
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/AccountData'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/InternalServerErrorResponse'
+  /v1/accounts/earliest:
+    get:
+      security: [ ]
+      summary: Get Earliest Synced Account from API
+      description: Retrieves the earliest synced account from API
+      tags:
+        - Transaction
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/AccountData'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/InternalServerErrorResponse'
+  /v1/accounts/count:
+    get:
+      security: []
+      summary: Get Account Count from API
+      description: Retrieves the number of Accounts from API
+      tags:
+        - Account
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: number
+                description: the number of accounts
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/InternalServerErrorResponse'
+  /v1/search:
+    parameters:
+      - in: query
+        required: true
+        name: key
+        schema:
+          type: string
+          example: 226TEYMZSVDPKVXTYT7HGSTBKT2R5J6K4IWXSMMYFTKPMD66JZSBGVKJKY
+    get:
+      security: []
+      summary: Get Search Results by Key
+      description: >-
+        Retrieves search results by supplying a key, and in return the user will
+        receive if this search key belongs to a block, account, asset, application or a transaction.
+      tags:
+        - Search
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  block_hash_found:
+                    type: boolean
+                    example: false
+                    description: if block hash is found
+                  block_round_found:
+                    type: boolean
+                    example: false
+                    description: if block round number is found
+                  txn_found:
+                    type: boolean
+                    example: false
+                    description: if transaction id is found
+                  acct_found:
+                    type: boolean
+                    example: false
+                    description: if account address is found
+                  asset_found:
+                    type: boolean
+                    example: false
+                    description: if asset id is found
+                  application_found:
+                    type: boolean
+                    example: false
+                    description: if application id is found
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/InternalServerErrorResponse'

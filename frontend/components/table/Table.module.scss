@@ -1,0 +1,73 @@
+.mui-table {
+  th,
+  td {
+    font-family: var(--font-family);
+    padding: var(--space-s);
+  }
+}
+
+.table-loader-wrapper {
+  display: flex;
+  width: 100%;
+  padding: var(--space-xxxxl);
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-s);
+  padding: var(--space-m) var(--space-s);
+
+  button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    line-height: 1;
+    color: var(--blue-dark);
+    background: var(--blue-lighter-3);
+    padding: var(--space-xxs) var(--space-xxs);
+    border: 2px solid var(--blue-lighter);
+    border-radius: 50%;
+    cursor: pointer;
+
+    &:hover {
+      background: var(--blue-lighter);
+    }
+
+    &:disabled {
+      color: var(--grey);
+      background: var(--grey-lightest);
+      border: 2px solid var(--grey-light);
+      cursor: default;
+    }
+
+    svg {
+      width: 1.2rem;
+      height: 1.2rem;
+    }
+  }
+}
+
+.page-input {
+  width: 5rem;
+  font-family: var(--font-family);
+  font-weight: 500;
+  font-size: var(--font-size-s);
+  color: var(--blue);
+  text-align: center;
+  padding: var(--space-xxs);
+  border: 2px solid var(--blue-light);
+  border-radius: 0.25rem;
+
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  /* Firefox */
+  &[type="number"] {
+    -moz-appearance: textfield;
+  }
+}

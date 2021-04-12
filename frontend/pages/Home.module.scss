@@ -1,0 +1,28 @@
+.home-split {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  text-align: center;
+
+  @media screen and (max-width: 768px) {
+    flex-direction: column;
+  }
+}
+
+.block-table {
+  display: inline-block;
+  flex: 0 0 calc(50% - var(--space-xs));
+  padding-top: 20px;
+  vertical-align: top;
+  text-align: left;
+
+  @media screen and (max-width: 768px) {
+    flex: 1 1 auto;
+  }
+}
+
+.block-table > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
