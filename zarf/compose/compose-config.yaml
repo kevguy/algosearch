@@ -1,0 +1,27 @@
+version: '3.8'
+
+#services:
+#
+#  db:
+#    environment:
+#      - POSTGRES_PASSWORD=postgres
+
+services:
+  algosearch-backend:
+    environment:
+      ALGOSEARCH_COUCH_DB_PROTOCOL: "http"
+      ALGOSEARCH_COUCH_DB_USER: "kevin"
+      ALGOSEARCH_COUCH_DB_PASSWORD: "makechesterproud!"
+      ALGOSEARCH_COUCH_DB_HOST: "89.39.110.254:5984"
+      ALGOSEARCH_ALGOD_PROTOCOL: "http"
+      ALGOSEARCH_ALGOD_ADDR: "89.39.110.254:4001"
+      ALGOSEARCH_ALGOD_TOKEN: "a2d2ac864300588718c6c05ff241a14fad99d30a19806356f3b9c8008559c4c1"
+      ALGOSEARCH_ZIPKIN_REPORTER_URI: "http://zipkin:9411/api/v2/spans"
+
+  algosearch-frontend:
+    environment:
+      NEXT_PUBLIC_API_URL: "algosearch-backend:5000"
+
+  algosearch-metrics:
+    environment:
+      METRICS_COLLECT_FROM: "http://algosearch-backend:4000/debug/vars"

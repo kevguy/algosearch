@@ -1,0 +1,57 @@
+.layout {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100vh;
+}
+
+.content {
+  flex: 1 0 auto;
+  position: relative;
+  width: 100%;
+  background-color: #fdfdfd;
+  padding: var(--space-xxxl) var(--space-m) var(--space-xxxxl);
+
+  @media screen and (max-width: 768px) {
+    padding: var(--space-m);
+  }
+}
+
+.subfooter {
+  width: 100%;
+  background-color: var(--bg-blue-light);
+  border-top: 1px solid #e7eaf3;
+}
+
+.scrolltop {
+  position: fixed;
+  width: 40px !important;
+  height: 40px !important;
+  bottom: 15px;
+  right: 15px;
+  border-radius: 4px;
+  background-color: #337afe;
+  opacity: 0.5;
+  z-index: 9999;
+  display: inline-block;
+  transition: 200ms ease-in-out;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+  transform: rotate(-90deg);
+}
+
+.scrolltop:hover {
+  opacity: 1;
+}
+
+.scrolltop:focus {
+  outline: none;
+}
+
+.hiddenscroll {
+  opacity: 0;
+  visibility: hidden;
+}

@@ -1,0 +1,192 @@
+package transaction
+
+import (
+	"context"
+	"fmt"
+	"github.com/go-kivik/kivik/v4"
+	"github.com/kevguy/algosearch/backend/business/data/schema"
+	"github.com/kevguy/algosearch/backend/foundation/web"
+	"github.com/pkg/errors"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+)
+
+func (s Store) GetAcctTransactionCount(ctx context.Context, acctID string) (int64, error) {
+
+	ctx, span := otel.GetTracerProvider().
+		Tracer("").
+		Start(ctx, "transaction.GetAcctTransactionCount")
+	span.SetAttributes(attribute.String("acctID", acctID))
+	defer span.End()
+
+	s.log.Infow("transaction.GetAcctTransactionCount",
+		"traceid", web.GetTraceID(ctx),
+		"acctID", acctID)
+
+	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
+	if err != nil || !exist {
+		return 0, errors.Wrap(err, schema.GlobalDbName+ " database check fails")
+	}
+	db := s.couchClient.DB(schema.GlobalDbName)
+
+	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" + schema.TransactionViewByAccountCount, kivik.Options{
+		"start_key": fmt.Sprintf("\"[%s, 1]\"", acctID),
+		"end_key": fmt.Sprintf("\"[%s, 2]\"", acctID),
+	})
+	if err != nil {
+		return 0, errors.Wrap(err, "Fetch data error")
+	}
+
+	type Payload struct {
+		Key *string `json:"key"`
+		Value int64 `json:"value"`
+	}
+
+	var payload Payload
+	for rows.Next() {
+		if err := rows.ScanDoc(&payload); err != nil {
+			return 0, errors.Wrap(err, "Can't find anything")
+		}
+	}
+
+	return payload.Value, nil
+}
+
+func (s Store) GetAcctTransactionCountBtnKeys(ctx context.Context, acctID, startKey, endKey string) (int64, error) {
+
+	ctx, span := otel.GetTracerProvider().
+		Tracer("").
+		Start(ctx, "transaction.GetAcctTransactionCount")
+	span.SetAttributes(attribute.String("acctID", acctID))
+	defer span.End()
+
+	s.log.Infow("transaction.GetAcctTransactionCount",
+		"traceid", web.GetTraceID(ctx),
+		"acctID", acctID)
+
+	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
+	if err != nil || !exist {
+		return 0, errors.Wrap(err, schema.GlobalDbName+ " database check fails")
+	}
+	db := s.couchClient.DB(schema.GlobalDbName)
+
+	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" + schema.TransactionViewByAccountCount, kivik.Options{
+		"start_key": fmt.Sprintf("\"[%s, 1, %s]\"", acctID, startKey),
+		"end_key": fmt.Sprintf("\"[%s, 1, %s]\"", acctID, endKey),
+	})
+	if err != nil {
+		return 0, errors.Wrap(err, "Fetch data error")
+	}
+
+	type Payload struct {
+		Key *string `json:"key"`
+		Value int64 `json:"value"`
+	}
+
+	var payload Payload
+	for rows.Next() {
+		if err := rows.ScanDoc(&payload); err != nil {
+			return 0, errors.Wrap(err, "Can't find anything")
+		}
+	}
+
+	return payload.Value, nil
+}
+
+func (s Store) GetAcctTransactionsPagination(ctx context.Context, acctId, latestTransactionId, order string, pageNo, limit int64) ([]Transaction, int64, int64, error) {
+	ctx, span := otel.GetTracerProvider().
+		Tracer("").
+		Start(ctx, "transaction.GetAcctTransactionsPagination")
+	span.SetAttributes(attribute.String("latestTransactionId", latestTransactionId))
+	span.SetAttributes(attribute.String("acctId", acctId))
+	span.SetAttributes(attribute.Int64("pageNo", pageNo))
+	span.SetAttributes(attribute.Int64("limit", limit))
+	defer span.End()
+
+	s.log.Infow("transaction.GetTransactionsPagination",
+		"traceid", web.GetTraceID(ctx),
+		"latestTranasctionId", latestTransactionId,
+		"acctId", acctId,
+		"pageNo", pageNo,
+		"limit", limit)
+
+	// Get the earliest transaction id
+	earliestTxnId, err := s.GetEarliestAcctTransactionId(ctx, acctId)
+	if err != nil {
+		return nil, 0, 0, errors.Wrap(err, ": Get earliest synced account transaction id")
+	}
+
+	numOfTransactions, err := s.GetAcctTransactionCountBtnKeys(ctx, acctId, earliestTxnId, latestTransactionId)
+	if err != nil {
+		return nil, 0, 0, errors.Wrap(err, ": Get account transaction count between keys")
+	}
+
+	// We can skip database check cuz GetEarliestTransactionId already did it
+	db := s.couchClient.DB(schema.GlobalDbName)
+
+	var numOfPages int64 = numOfTransactions / limit
+	if numOfTransactions % limit > 0 {
+		numOfPages += 1
+	}
+
+	if pageNo < 1 || pageNo > numOfPages {
+		return nil, 0, 0, errors.Wrapf(err, "page number is less than 1 or exceeds page limit: %d", numOfPages)
+	}
+
+	options := kivik.Options{
+		"include_docs": true,
+		"limit": limit,
+	}
+
+	if order == "desc" {
+		// Descending order
+		options["descending"] = true
+
+		// Start with latest block number
+		options["start_key"] = fmt.Sprintf("\"[%s, 1, %s]\"", acctId, latestTransactionId)
+
+		// Use page number to calculate number of items to skip
+		skip := (pageNo - 1) * limit
+		options["skip"] = (pageNo - 1) * limit
+
+		// Find the key to start reading and get the `page limit` number of records
+		if (numOfTransactions - skip) > limit {
+			options["limit"] = limit
+		} else {
+			options["limit"] = numOfTransactions - skip
+		}
+	} else {
+		// Ascending order
+		options["descending"] = false
+
+		// Calculate the number of records to skip
+		skip := (pageNo - 1) * limit
+		options["skip"] = skip
+
+		if (numOfTransactions - skip) > limit {
+			options["limit"] =  numOfTransactions - skip
+		} else {
+			options["limit"] = limit
+		}
+	}
+
+	rows, err := db.Query(ctx, schema.TransactionDDoc, "_view/" +schema.TransactionViewByAccount, options)
+	if err != nil {
+		return nil, 0, 0, errors.Wrap(err, "Fetch data error")
+	}
+
+	var fetchedTransactions = []Transaction{}
+	for rows.Next() {
+		var transaction = Transaction{}
+		if err := rows.ScanDoc(&transaction); err != nil {
+			return nil, 0, 0, errors.Wrap(err, "unwrapping block")
+		}
+		fetchedTransactions = append(fetchedTransactions, transaction)
+	}
+
+	if rows.Err() != nil {
+		return nil, 0, 0, errors.Wrap(err, "rows error, Can't find anything")
+	}
+
+	return fetchedTransactions, numOfPages, numOfTransactions, nil
+}

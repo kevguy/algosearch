@@ -1,0 +1,31 @@
+.home-header {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  background: var(--bg-gradient);
+  padding: var(--space-xxxl) var(--space-m) 3.2rem;
+}
+
+.content {
+  display: inline-block;
+  width: 100%;
+  text-align: center;
+
+  span {
+    display: inline-flex;
+    color: var(--blue-darker);
+    margin: var(--space-xs) 0 0;
+  }
+
+  h1 {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+  }
+  svg {
+    width: 3.2rem;
+    height: 3.2rem;
+    margin-right: var(--space-xs);
+    margin-bottom: 0.1rem;
+  }
+}

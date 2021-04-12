@@ -1,0 +1,9 @@
+frontend/.next/
+frontend/node_modules/
+.circleci/
+.dockerignore
+.gitgnore
+CONTRIBUTORS
+LICENSE
+makefile
+README.md
