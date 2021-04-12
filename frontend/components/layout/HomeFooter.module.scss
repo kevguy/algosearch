@@ -1,0 +1,37 @@
+.homefooter {
+  display: grid;
+  grid-template-columns: repeat(3, 33%);
+  max-width: 1200px;
+  padding: var(--space-xxxl) var(--space-xxl);
+  margin: auto;
+
+  ul {
+    margin: 0px;
+    list-style-type: none;
+    padding: 0px;
+  }
+
+  li {
+    margin-top: 20px;
+  }
+
+  a {
+    text-decoration: none;
+    font-weight: 500;
+    border-bottom: 1px dashed rgb(151, 164, 175);
+
+    &:hover {
+      border-bottom-color: var(--blue-light);
+    }
+  }
+}
+
+@media screen and (max-width: 700px) {
+  .homefooter {
+    display: flex;
+    flex-direction: column;
+  }
+  .homefooter > div:not(:nth-of-type(1)) {
+    margin-top: 40px;
+  }
+}

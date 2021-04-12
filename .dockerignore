@@ -1,3 +1,11 @@
-node_modules
-build
-db-data
+db-data/
+.circleci/
+zarf/compose/
+zarf/docker/
+zarf/k8s/
+.dockerignore
+.gitgnore
+CONTRIBUTORS
+LICENSE
+makefile
+README.md

@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  algosearch-backend:
+    environment:
+      ALGOSEARCH_WEB_ENABLE_SYNC: "true"
+      ALGOSEARCH_WEB_SYNC_INTERNAL: "2s"
+      ALGOSEARCH_ZIPKIN_REPORTER_URI: "http://zipkin:9411/api/v2/spans"
+      ALGOSEARCH_COUCH_DB_INIT: "false"
+      ALGOSEARCH_COUCH_DB_MIGRATE: "false"
+      # Edit these accordingly
+      ALGOSEARCH_COUCH_DB_PROTOCOL: "http"
+      ALGOSEARCH_COUCH_DB_HOST: "234.567.89.0:5984"
+      ALGOSEARCH_COUCH_DB_USER: "algorand"
+      ALGOSEARCH_COUCH_DB_PASSWORD: "algorand"
+      ALGOSEARCH_ALGOD_PROTOCOL: "http"
+      ALGOSEARCH_ALGOD_ADDR: "234.567.89.0:4001"
+      ALGOSEARCH_ALGOD_TOKEN: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      # Optional
+      #ALGOSEARCH_INDEXER_ADDR: "http://indexer:8980"
+      #ALGOSEARCH_INDEXER_TOKEN: ""
+
+  algosearch-frontend:
+    environment:
+      NEXT_PUBLIC_API_URL: "algosearch-backend:5000"
+
+  algosearch-metrics:
+    environment:
+      METRICS_COLLECT_FROM: "http://algosearch-backend:4000/debug/vars"

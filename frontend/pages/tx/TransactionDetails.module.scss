@@ -1,0 +1,102 @@
+.valign-top-identifier {
+  vertical-align: top;
+}
+
+.notes-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-xxxl);
+
+  @media screen and (max-width: 768px) {
+    flex-direction: column;
+  }
+}
+
+.tabs {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-s);
+  margin-bottom: var(--space-m);
+
+  @media screen and (max-width: 768px) {
+    margin: var(--space-xs) 0;
+  }
+
+  button {
+    font-family: var(--font-family);
+    background: var(--grey-lighter);
+    padding: var(--space-xxs) var(--space-s);
+    border: none;
+    cursor: pointer;
+
+    @media screen and (max-width: 768px) {
+      font-size: var(--font-size-s);
+      padding: var(--space-xxxs) var(--space-xs);
+    }
+
+    &:hover {
+      background: var(--blue-lighter);
+    }
+
+    &[tabindex="0"] {
+      color: white;
+      background: var(--blue);
+    }
+  }
+
+  pre {
+    max-width: calc(100% - var(--space-m) * 2);
+    overflow: auto;
+  }
+}
+
+.notes,
+.notes-row {
+  font-weight: 300;
+  font-family: monospace;
+}
+
+.notes {
+  pre {
+    width: calc(100% - var(--space-m) * 2);
+    margin: 0;
+    overflow: auto;
+  }
+}
+
+.multiline-details {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+
+  p {
+    margin: 0;
+  }
+
+  a,
+  p,
+  span {
+    display: inline-flex;
+  }
+
+  a + a,
+  p + p,
+  span + span {
+    margin-top: var(--space-xxs);
+  }
+}
+
+.normal-text {
+  font-weight: 300 !important;
+}
+
+@media screen and (max-width: 768px) {
+  .inner-txs-table {
+    h4 {
+      margin-bottom: 0;
+    }
+    tbody td {
+      margin-bottom: var(--space-xxxs);
+    }
+  }
+}
