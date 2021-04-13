@@ -3,7 +3,7 @@ const path = require("path");
 const compression = require("compression");
 const cors = require("cors"); // Setup cors for cross-origin requests for all routes
 
-const app = express(); // Setup express 
+const app = express(); // Setup express
 const port = 8000; // Setup port 8000 for Express server
 
 app.use(cors()); // Enable cors
@@ -32,6 +32,9 @@ require('./service/query/detection')(app);
 
 // --> /stats
 require('./service/stats/stats')(app);
+
+// --> /health
+require('./servvice/health/health')(app);
 
 // --> Catch all for serving other requests
 app.get("*", function(req, res) {
