@@ -24,6 +24,6 @@ require('./service/query/addresses')(app);
 require('./service/stats/stats')(app);
 
 // --> /health
-require('./servvice/health/health')(app);
+require('./service/health/health')(app);
 
 app.listen(port); // Initialize server

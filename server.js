@@ -34,7 +34,7 @@ require('./service/query/detection')(app);
 require('./service/stats/stats')(app);
 
 // --> /health
-require('./servvice/health/health')(app);
+require('./service/health/health')(app);
 
 // --> Catch all for serving other requests
 app.get("*", function(req, res) {
