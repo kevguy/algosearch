@@ -17,7 +17,7 @@ module.exports = function(app) {
 				res.send('error');
 				console.log("Exception: false address formatting");
 			}
-		}).catch(() => {
+		}).catch((e) => {
 			axios({
 				method: 'get',
 				url: `${constants.algoIndexerUrl}/v2/blocks/${string}`,
@@ -35,7 +35,7 @@ module.exports = function(app) {
 					url: `${constants.algoIndexerUrl}/v2/transactions/${string}`,
 					headers: {'X-Indexer-API-Token': constants.algoIndexerToken}
 				}).then(transresp => {
-					if (transresp.data.tx === string) {
+					if (transresp.data.transaction && transresp.data.transaction.id === string) {
 						res.send('transaction');
 					} else {
 						res.send('error');
