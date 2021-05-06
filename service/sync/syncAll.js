@@ -3,7 +3,7 @@
 	____________
 	Syncs current round with blocks and transactions database.
 */
-
+const algosdk = require('algosdk');
 var constants = require('../global'); // Require global constants
 const axios = require('axios'); // Require axios for requests
 const nano = require("nano")(`http://${constants.dbuser}:${constants.dbpass}@${constants.dbhost}`); // Connect nano to db
@@ -11,6 +11,12 @@ const nano = require("nano")(`http://${constants.dbuser}:${constants.dbpass}@${c
 let blocks = nano.db.use('blocks'); // Connect to blocks db
 let transactions = nano.db.use('transactions'); // Connect to transactions db
 let addresses = nano.db.use('addresses'); // Connect to addresses db
+
+const algoUrl = new URL(constants.algodurl);
+const client = new algosdk.Algodv2(
+	constants.algodapi,
+	algoUrl,
+	algoUrl.port ? algoUrl.port : 8080);
 
 /*
 	Update blocks in database based on
@@ -130,7 +136,11 @@ async function bulkAddBlocks(blockNum, currentNum) {
 			url: `${constants.algoIndexerUrl}/v2/blocks/${blockNum + increment + 1}`, // Retrieve each block in succession
 			headers: {'X-Indexer-API-Token': constants.algoIndexerToken}
 		}).then(async response => {
-			blocksArray.push(response.data); // Push block to array
+			const proposer = await getProposer(client, blockNum + increment + 1);
+			blocksArray.push({
+				...response.data,
+				proposer,
+			}); // Push block to array
 
 			let timestamp = response.data.timestamp; // Collect timestamp from block
 
@@ -224,7 +234,11 @@ async function addBlock(blockNum, currentNum) {
 		url: `${constants.algoIndexerUrl}/v2/blocks/${blockNum}`, // Get block information from algod
 		headers: {'X-Indexer-API-Token': constants.algoIndexerToken}
 	}).then(async response => {
-		blocks.insert(response.data); // Insert block data to blocks database as doc
+	    const proposer = await getProposer(client, blockNum);
+		blocks.insert({
+			...response.data,
+			proposer,
+		}); // Insert block data to blocks database as doc
 		let timestamp = response.data.timestamp; // Collect timestamp from block
 
 		if (Object.keys(response.data.transactions).length > 0) {
@@ -268,6 +282,16 @@ async function addBlock(blockNum, currentNum) {
 	}).catch(error => {
 		console.log("Exception when adding block to blocks database: " + error);
 	})
+}
+
+async function getProposer(client, blockNum) {
+	try {
+		const blk = await client.block(blockNum).do();
+		const proposer = algosdk.encodeAddress(blk["cert"]["prop"]["oprop"]);
+		return proposer;
+	} catch (e) {
+		console.log("Error getting proposer: " + e);
+	}
 }
 
 // Run script
