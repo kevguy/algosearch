@@ -27,7 +27,7 @@ class Home extends React.Component {
 			method: 'get',
 			url: `${siteName}/latest`
 		}).then(response => {
-			const synced = Math.ceil(response.data.blocks[0].round/100)*100 === Math.ceil(response.data.ledger.round/100)*100 ? true : false;
+			const synced = Math.ceil(response.data.blocks[0].round/100)*100 === Math.ceil(response.data.ledger['current_round']/100)*100 ? true : false;
 			this.setState({blocks: response.data.blocks, transactions: response.data.transactions, ledger: response.data.ledger, synced: synced, loading: false});
 		}).catch(error => {
 			console.log("Error when retrieving latest statistics: " + error);
