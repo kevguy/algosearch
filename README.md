@@ -15,13 +15,19 @@ AlgoSearch enables you to explore and search the [Algorand blockchain](https://w
 
 Work on AlgoSearch is funded by the [Algorand Foundation](https://algorand.foundation) through a grant to [Anish Agnihotri](https://github.com/anish-agnihotri). The scope of work includes the development of an open-source block explorer (AlgoSearch) and a WIP analytics platform.
 
+# The Fastest Approach
+
+The fastest approach to set everything up for development is using the `Sandbox` and `docker-compose`. To do that, just setup the Sandbox and do the following:
+
+```
+# Start the services
+bash docker-run.sh
+```
+
 # Run locally
 
 ## Linux / OSX
 The [go-algorand](https://github.com/algorand/go-algorand) node currently aims to support only Linux and OSX environments for development.
-
-## Disclaimer
-Simpler installation instructions, a hands-on guide, and a one-click deploy Docker image will be published upon final completion of AlgoSearch.
 
 ## Step 1: Environment setup
 
@@ -155,18 +161,6 @@ bash docker-run.sh
 ```
 
 This script will find the IPs of `localhost` and to be accessed through `dockerhost`. In other words, in your `src/global.js`, use `dockerhost` instead of `localhost`.
-
-# The Fastest Approach
-
-The fastest approach to set everything up for development is using the Sandbox and docker-compose. To do that, just setup the Sandbox and do the following:
-
-```
-# Create the folder for CouchDB
-mkdir db-data
-
-# Start the services
-bash docker-run.sh
-```
 
 # Documentation
 The [Wiki](https://github.com/Anish-Agnihotri/algosearch/wiki) is currently under construction.
