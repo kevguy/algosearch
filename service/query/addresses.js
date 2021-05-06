@@ -32,7 +32,9 @@ module.exports = function(app) {
 				let rounds = [];
 
 				for (let i = 0; i < resp.data.transactions.length; i++) {
-					rounds.push(resp.data.transactions[i]['confirmed-round']);
+					if (resp.data.transactions[i]['confirmed-round']) {
+						rounds.push(resp.data.transactions[i]['confirmed-round']);
+					}
 				}
 
 				let uniqueRounds = [...new Set(rounds)];
