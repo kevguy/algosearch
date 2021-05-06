@@ -81,7 +81,7 @@ class Block extends React.Component {
 								</tr>
 								<tr>
 									<td>Block hash</td>
-									<td>{this.state.loading ? <Load/> : this.state.data['genesis-hash']}</td>
+									<td>{this.state.loading ? <Load/> : this.state.data.hashId}</td>
 								</tr>
 								<tr>
 									<td>Previous block hash</td>

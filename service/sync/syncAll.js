@@ -138,10 +138,11 @@ async function bulkAddBlocks(blockNum, currentNum) {
 				headers: {'X-Indexer-API-Token': constants.algoIndexerToken}
 			});
 
-			const proposer = await getProposer(client, blockNum + increment + 1);
+			const { proposer, hashId }= await getProposerAndHashId(client, blockNum + increment + 1);
 			blocksArray.push({
 				...response.data,
 				proposer,
+				hashId,
 			}); // Push block to array
 
 			let timestamp = response.data.timestamp; // Collect timestamp from block
@@ -238,10 +239,11 @@ async function addBlock(blockNum, currentNum) {
 			headers: {'X-Indexer-API-Token': constants.algoIndexerToken}
 		});
 
-		const proposer = await getProposer(client, blockNum);
+		const { proposer, hashId } = await getProposerAndHashId(client, blockNum);
 		blocks.insert({
 			...response.data,
 			proposer,
+			hashId,
 		}); // Insert block data to blocks database as doc
 		let timestamp = response.data.timestamp; // Collect timestamp from block
 
@@ -285,15 +287,16 @@ async function addBlock(blockNum, currentNum) {
 		console.log(`Block added: ${blockNum} of ${currentNum}`); // Log block addition
 
 	} catch (e) {
-		console.log("Exception when adding block to blocks database: " + error);
+		console.log("Exception when adding block to blocks database: " + e);
 	}
 }
 
-async function getProposer(client, blockNum) {
+async function getProposerAndHashId(client, blockNum) {
 	try {
 		const blk = await client.block(blockNum).do();
 		const proposer = algosdk.encodeAddress(blk["cert"]["prop"]["oprop"]);
-		return proposer;
+		const hashId = algosdk.encodeAddress(blk["cert"]["prop"]["dig"]);
+		return { proposer, hashId };
 	} catch (e) {
 		console.log("Error getting proposer: " + e);
 	}
