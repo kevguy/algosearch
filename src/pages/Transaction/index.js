@@ -114,18 +114,15 @@ class Transaction extends React.Component {
 										{this.state.loading ? <Load /> : (
 											<div>
 												{this.state.transaction.transaction.note && this.state.transaction.transaction.note !== '' ? (
-													// <div>
-													// 	<div>
-													// 		<span>Base 64:</span>
-													// 		<textarea defaultValue={this.state.transaction.transaction.note} readOnly></textarea>
-													// 	</div>
-													// 	<div>
-													// 		<span>Converted:</span>
-													// 		<textarea defaultValue={atob(this.state.transaction.transaction.note)} readOnly></textarea>
-													// 	</div>
-													// </div>
-                                                    <div>
-														<textarea defaultValue={this.state.transaction.transaction.note} readOnly></textarea>
+													<div>
+														<div>
+															<span>Base 64:</span>
+															<textarea defaultValue={this.state.transaction.transaction.note} readOnly></textarea>
+														</div>
+														<div>
+															<span>Converted:</span>
+															<textarea defaultValue={atob(this.state.transaction.transaction.note)} readOnly></textarea>
+														</div>
 													</div>
 												) : null}
 											</div>
