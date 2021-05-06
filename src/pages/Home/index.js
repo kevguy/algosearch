@@ -27,8 +27,19 @@ class Home extends React.Component {
 			method: 'get',
 			url: `${siteName}/latest`
 		}).then(response => {
-			const synced = Math.ceil(response.data.blocks[0].round/100)*100 === Math.ceil(response.data.ledger['current_round']/100)*100 ? true : false;
-			this.setState({blocks: response.data.blocks, transactions: response.data.transactions, ledger: response.data.ledger, synced: synced, loading: false});
+		    if (response.data && response.data.blocks && response.data.blocks.length > 0) {
+				const synced = Math.ceil(response.data.blocks[0].round / 100) * 100
+					=== Math.ceil(response.data.ledger['current_round'] / 100) * 100;
+				const genesisId = response.data.blocks[0]['genesis-id'];
+				this.setState({
+					blocks: response.data.blocks,
+					transactions: response.data.transactions,
+					ledger: response.data.ledger,
+					synced: synced,
+					loading: false,
+					genesisId,
+				});
+			}
 		}).catch(error => {
 			console.log("Error when retrieving latest statistics: " + error);
 		})
@@ -71,7 +82,7 @@ class Home extends React.Component {
 		const transaction_columns_id = {id: "home-latest-transaction-sizing"};
 
 		return (
-			<Layout synced={this.state.synced} homepage>
+			<Layout synced={this.state.synced} genesisId={this.state.genesisId} homepage>
 				<HomeSearch />
 				<div className="cardcontainer address-cards home-cards">
 					<Statscard

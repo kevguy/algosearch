@@ -131,11 +131,13 @@ async function bulkAddBlocks(blockNum, currentNum) {
 	let increment = 0; // for async loop functionality
 
 	while (increment < 250) {
-		await axios({
-			method: 'get',
-			url: `${constants.algoIndexerUrl}/v2/blocks/${blockNum + increment + 1}`, // Retrieve each block in succession
-			headers: {'X-Indexer-API-Token': constants.algoIndexerToken}
-		}).then(async response => {
+		try {
+			const response = await axios({
+				method: 'get',
+				url: `${constants.algoIndexerUrl}/v2/blocks/${blockNum + increment + 1}`, // Retrieve each block in succession
+				headers: {'X-Indexer-API-Token': constants.algoIndexerToken}
+			});
+
 			const proposer = await getProposer(client, blockNum + increment + 1);
 			blocksArray.push({
 				...response.data,
@@ -201,9 +203,9 @@ async function bulkAddBlocks(blockNum, currentNum) {
 					}
 				}
 			}
-		}).catch(error => {
+		} catch (error) {
 			console.log("Exception when bulk adding blocks: " + error);
-		});
+		}
 
 		increment++; // Increment for async loop functionality
 	}
@@ -229,12 +231,14 @@ async function bulkAddBlocks(blockNum, currentNum) {
 	Add block data to CouchDB (non-bulk, singular)
 */
 async function addBlock(blockNum, currentNum) {
-	await axios({
-		method: 'get',
-		url: `${constants.algoIndexerUrl}/v2/blocks/${blockNum}`, // Get block information from algod
-		headers: {'X-Indexer-API-Token': constants.algoIndexerToken}
-	}).then(async response => {
-	    const proposer = await getProposer(client, blockNum);
+	try {
+		const response = await axios({
+			method: 'get',
+			url: `${constants.algoIndexerUrl}/v2/blocks/${blockNum}`, // Get block information from algod
+			headers: {'X-Indexer-API-Token': constants.algoIndexerToken}
+		});
+
+		const proposer = await getProposer(client, blockNum);
 		blocks.insert({
 			...response.data,
 			proposer,
@@ -279,9 +283,10 @@ async function addBlock(blockNum, currentNum) {
 			}
 		}
 		console.log(`Block added: ${blockNum} of ${currentNum}`); // Log block addition
-	}).catch(error => {
+
+	} catch (e) {
 		console.log("Exception when adding block to blocks database: " + error);
-	})
+	}
 }
 
 async function getProposer(client, blockNum) {

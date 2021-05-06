@@ -61,7 +61,7 @@ class Layout extends React.Component {
 					<AddressHeader data={this.props.data} />
 				) : null}
 				{this.props.homepage ? (
-					<HomeHeader synced={this.props.synced} />
+					<HomeHeader synced={this.props.synced} genesisId={this.props.genesisId} />
 				) : null}
 				<div className={`content ${this.props.homepage ? "content-shortened" : ""}`}>
 					<div className="sizer">

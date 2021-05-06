@@ -68,7 +68,8 @@ module.exports = function(app) {
 						"round": body.rows[i].doc.round,
 						"proposer": body.rows[i].doc.proposer,
 						"numtxn": Object.keys(body.rows[i].doc.transactions).length,
-						"timestamp": body.rows[i].doc.timestamp
+						"timestamp": body.rows[i].doc.timestamp,
+						"genesis-id": body.rows[i].doc['genesis-id'],
 					});
 				}
 

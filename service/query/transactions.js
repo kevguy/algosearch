@@ -89,8 +89,12 @@ module.exports = function(app) {
 							"type": body.rows[i].doc['tx-type'],
 							"tx": body.rows[i].doc.id,
 							"from": body.rows[i].doc.sender,
-							"to": body.rows[i].doc['payment-transaction'].receiver,
-							"amount": parseInt(body.rows[i].doc['payment-transaction'].amount)/1000000,
+							"to": body.rows[i].doc['payment-transaction']
+								? body.rows[i].doc['payment-transaction'].receiver
+								: undefined,
+							"amount": body.rows[i].doc['payment-transaction']
+								? parseInt(body.rows[i].doc['payment-transaction'].amount)/1000000
+								: undefined,
 							"fee": parseInt(body.rows[i].doc.fee)/1000000,
 						});
 					}

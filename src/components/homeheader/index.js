@@ -20,7 +20,7 @@ export default class HomeHeader extends React.Component {
 						<span>Open-source block explorer for the Algorand mainnet. Currently
 							<div className="home-status">
 								<div className={`status-light ${this.props.synced ? "status-online" : "status-offline"}`} /> {this.props.synced ? "in sync" : "out of sync"}
-							</div> with the network {algodurl}.
+							</div> with the network <a href={algodurl}>{this.props.genesisId}</a>
 						</span>
 					</div>
 					<div>
