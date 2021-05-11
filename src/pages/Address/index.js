@@ -41,6 +41,7 @@ class Address extends React.Component {
 	}
 
 	render() {
+		console.log(this.state.data);
 		const columns = [
 			{Header: '#', accessor: 'confirmed-round', Cell: props => <span className="rownumber">{props.index + 1}</span>},
 			{Header: 'Round', accessor: 'confirmed-round', Cell: props => <NavLink to={`/block/${props.value}`}>{props.value}</NavLink>},
@@ -62,7 +63,12 @@ class Address extends React.Component {
 				<div className="cardcontainer address-cards">
 					<Statscard
 						stat="Round last seen"
-						value={this.state.loading ? <Load /> : formatValue(this.state.data.confirmed_transactions[0]['confirmed-round'])}
+						value={this.state.loading
+							? <Load />
+							: (this.state.data.confirmed_transactions.length > 0
+								? formatValue(this.state.data.confirmed_transactions[0]['confirmed-round'])
+								: '-'
+							)}
 					/>
 					<Statscard
 						stat="Rewards"

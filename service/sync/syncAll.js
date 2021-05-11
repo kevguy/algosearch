@@ -42,8 +42,8 @@ async function updateBlocks() {
 			do {
 			// Ignore no-loop-func rule for syncing in do/while
 			// eslint-disable-next-line no-loop-func
-			await bulkAddBlocks(syncedBlockNumber, currentRound).then(async () => {
-				syncedBlockNumber += await 250; // Add 250 blocks, and increment the synced number
+			await bulkAddBlocks(syncedBlockNumber, currentRound).then(() => {
+				syncedBlockNumber += 250; // Add 250 blocks, and increment the synced number
 			}).catch(error => {
 				console.log("Error when incrementing syncedBlockNumber during bulk block addition: " + error);
 			});
@@ -138,11 +138,11 @@ async function bulkAddBlocks(blockNum, currentNum) {
 				headers: {'X-Indexer-API-Token': constants.algoIndexerToken}
 			});
 
-			const { proposer, hashId }= await getProposerAndHashId(client, blockNum + increment + 1);
+			const { proposer, blockHash }= await getProposerAndBlockHash(client, blockNum + increment + 1);
 			blocksArray.push({
 				...response.data,
 				proposer,
-				hashId,
+				blockHash,
 			}); // Push block to array
 
 			let timestamp = response.data.timestamp; // Collect timestamp from block
@@ -239,11 +239,11 @@ async function addBlock(blockNum, currentNum) {
 			headers: {'X-Indexer-API-Token': constants.algoIndexerToken}
 		});
 
-		const { proposer, hashId } = await getProposerAndHashId(client, blockNum);
+		const { proposer, blockHash } = await getProposerAndBlockHash(client, blockNum);
 		blocks.insert({
 			...response.data,
 			proposer,
-			hashId,
+			blockHash,
 		}); // Insert block data to blocks database as doc
 		let timestamp = response.data.timestamp; // Collect timestamp from block
 
@@ -291,12 +291,12 @@ async function addBlock(blockNum, currentNum) {
 	}
 }
 
-async function getProposerAndHashId(client, blockNum) {
+async function getProposerAndBlockHash(client, blockNum) {
 	try {
 		const blk = await client.block(blockNum).do();
 		const proposer = algosdk.encodeAddress(blk["cert"]["prop"]["oprop"]);
-		const hashId = algosdk.encodeAddress(blk["cert"]["prop"]["dig"]);
-		return { proposer, hashId };
+		const blockHash = Buffer.from(blk["cert"]["prop"]["dig"]).toString("base64");
+		return { proposer, blockHash };
 	} catch (e) {
 		console.log("Error getting proposer: " + e);
 	}

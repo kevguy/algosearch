@@ -31,11 +31,11 @@ module.exports = function(app, client) {
 		}).then(async (response) => {
 			const blk = await client.block(round).do();
 			const proposer = algosdk.encodeAddress(blk["cert"]["prop"]["oprop"]);
-			const hashId = algosdk.encodeAddress(blk["cert"]["prop"]["dig"]);
+			const blockHash = Buffer.from(blk["cert"]["prop"]["dig"]).toString("base64");
 			res.send({
 				...response.data,
 				proposer,
-                hashId,
+                blockHash,
 			});
 		}).catch(error => {
 			res.status(501);
@@ -71,13 +71,13 @@ module.exports = function(app, client) {
 			for (let i = body.rows.length - 1; i >= 0; i--) {
 				const blk = await client.block(body.rows[i].doc.round).do();
 				const proposer = algosdk.encodeAddress(blk["cert"]["prop"]["oprop"]);
-				const hashId = algosdk.encodeAddress(blk["cert"]["prop"]["dig"]);
+				const blockHash = Buffer.from(blk["cert"]["prop"]["dig"]).toString("base64");
 				if (showFull) {
 					// If showFull = 1, send all data
 					blocks.push({
 						...body.rows[i],
 						proposer,
-						hashId,
+						blockHash,
 					});
 				} else {
 					// If showFull = 0, send truncated data
