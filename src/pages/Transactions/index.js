@@ -93,7 +93,11 @@ class Transactions extends React.Component {
 				<div className="cardcontainer">
 					<Statscard
 						stat="Transaction last seen"
-						value={this.state.loading ? <Load /> : formatValue(this.state.transactions[0].round)}
+						value={this.state.loading
+							? <Load />
+							: (this.state.transactions.length > 0
+								? formatValue(this.state.transactions[0].round)
+								: '')}
 					/>
 					<Statscard
 						stat="Transactions sent (24H)"

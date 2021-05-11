@@ -40,10 +40,10 @@ async function updateBlocks() {
 	// If block handles error when conducting first loop when condition is not met (currentRound - 250 < syncedBlockNumber)
 	if (currentRound - 250 > syncedBlockNumber) {
 			do {
-			// Ignore no-loop-func rule for syncing in do/while
-			// eslint-disable-next-line no-loop-func
-			await bulkAddBlocks(syncedBlockNumber, currentRound).then(() => {
-				syncedBlockNumber += 250; // Add 250 blocks, and increment the synced number
+				// Ignore no-loop-func rule for syncing in do/while
+				// eslint-disable-next-line no-loop-func
+				await bulkAddBlocks(syncedBlockNumber, currentRound).then(() => {
+					syncedBlockNumber += 250; // Add 250 blocks, and increment the synced number
 			}).catch(error => {
 				console.log("Error when incrementing syncedBlockNumber during bulk block addition: " + error);
 			});
@@ -59,30 +59,39 @@ async function updateBlocks() {
 	Run every 50ms (post-execution time) to keep database in sync with any new data
 */
 async function keepBlocksUpdated(lastRound) {
+	console.log('keepBlocksUpdated');
 	if (typeof lastRound === 'undefined') {
 		lastRound = 0;
 	}
 	// Wait for synced round
-	await getSyncedRound().then(async syncedRound => {
-		// Wait for current round
-		await getCurrentRound().then(async currentRound => {
-			// If synced round < current round
-			if (syncedRound < currentRound && lastRound !== currentRound) {
-				// Add the new block
-				await addBlock(syncedRound + 1, currentRound).then(async () => {
-					// Take a quick break for a second and recall
-					await setTimeout(function() {
-						keepBlocksUpdated(syncedRound + 1);
-					}, 500);
-				});
-			} else {
-				// If synced round === current round, recall in 100ms
-				await setTimeout(function() {
-					keepBlocksUpdated(syncedRound);
-				}, 100);
-			}
-		})
-	})
+	const syncedRound = await getSyncedRound();
+
+	// Wait for current round
+	const currentRound = await getCurrentRound();
+
+	// If synced round < current round
+	if (syncedRound < currentRound && lastRound !== currentRound) {
+		console.log(`Falling behind: syncedRound - ${syncedRound}, currentRound - ${currentRound}`)
+		// Add the new block
+		const success = await addBlock(syncedRound + 1, currentRound)
+		if (success) {
+			// Take a quick break for a second and recall
+			setTimeout(function() {
+				keepBlocksUpdated(syncedRound + 1);
+			}, 500);
+		} else {
+			// Take a quick break for a second and recall
+			setTimeout(function() {
+				keepBlocksUpdated(syncedRound + 1);
+			}, 5000);
+		}
+	} else {
+		console.log(`Synced Round === Current Round: syncedRound - ${syncedRound}, currentRound - ${currentRound}`)
+		// If synced round === current round, recall in 100ms
+		setTimeout(function() {
+			keepBlocksUpdated(syncedRound);
+		}, 100);
+	}
 }
 
 /*
@@ -95,7 +104,7 @@ async function getSyncedRound() {
 	await nano.db.use('blocks').view('latest', 'latest', {include_docs: true, descending: true, limit: 1}).then((body) => {
 		round = body.rows[0].doc.round; // Get the round number from the latest block
 	}).catch(error => {
-		console.log('Exception when retrieving synced block number: ' + error);
+		console.log('[getSyncedRound]: Exception when retrieving synced block number: ' + error);
 		round = 0;
 	})
 
@@ -115,7 +124,7 @@ async function getCurrentRound() {
 	}).then(response => {
 		round = response.data.current_round; // Collect round
 	}).catch(error => {
-		console.log("Exception when getting current round: " + error);
+		console.log("[getCurrentRound]: Exception when getting current round: " + error);
 	})
 
 	return round;
@@ -205,7 +214,7 @@ async function bulkAddBlocks(blockNum, currentNum) {
 				}
 			}
 		} catch (error) {
-			console.log("Exception when bulk adding blocks: " + error);
+			console.log("[bulkAddBlocks]: Exception when bulk adding blocks: " + error);
 		}
 
 		increment++; // Increment for async loop functionality
@@ -232,19 +241,41 @@ async function bulkAddBlocks(blockNum, currentNum) {
 	Add block data to CouchDB (non-bulk, singular)
 */
 async function addBlock(blockNum, currentNum) {
+
+	let response;
 	try {
-		const response = await axios({
+		response = await axios({
 			method: 'get',
 			url: `${constants.algoIndexerUrl}/v2/blocks/${blockNum}`, // Get block information from algod
 			headers: {'X-Indexer-API-Token': constants.algoIndexerToken}
 		});
+		// console.log(response);
+	} catch (e) {
+		console.log(`[addBlock]: Exception when getting block ${blockNum} info from indexer api: ` + e);
+		return false;
+	}
 
+	// try {
+	// 	console.log('fuck');
+	// 	const hihi = await client.block(blockNum).do();
+	// 	console.log(hihi);
+	// } catch (e) {
+	// 	console.log('hihi: ', e);
+	// }
+
+	try {
 		const { proposer, blockHash } = await getProposerAndBlockHash(client, blockNum);
 		blocks.insert({
 			...response.data,
 			proposer,
 			blockHash,
 		}); // Insert block data to blocks database as doc
+	} catch (e) {
+		console.log(`[addBlock]: Exception when getting fetching proposer and block hash and inserting block to database: ` + e);
+		return false;
+	}
+
+	try {
 		let timestamp = response.data.timestamp; // Collect timestamp from block
 
 		if (Object.keys(response.data.transactions).length > 0) {
@@ -287,8 +318,10 @@ async function addBlock(blockNum, currentNum) {
 		console.log(`Block added: ${blockNum} of ${currentNum}`); // Log block addition
 
 	} catch (e) {
-		console.log("Exception when adding block to blocks database: " + e);
+		console.log("[addBlock]: Exception when adding block to blocks database: " + e);
+		return false;
 	}
+	return true;
 }
 
 async function getProposerAndBlockHash(client, blockNum) {
@@ -298,7 +331,7 @@ async function getProposerAndBlockHash(client, blockNum) {
 		const blockHash = Buffer.from(blk["cert"]["prop"]["dig"]).toString("base64");
 		return { proposer, blockHash };
 	} catch (e) {
-		console.log("Error getting proposer: " + e);
+		console.log("[getProposerAndBlockHash]: Error getting proposer: " + e);
 	}
 }
 

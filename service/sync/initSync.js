@@ -54,7 +54,7 @@ const initTransactionsDB = () => {
 const initAddressesDB = () => {
 	console.log("Checking for addresses database");
 
-	nano.db.list().then(body => {
+	return nano.db.list().then(body => {
 		if (!body.includes('addresses')) {
 			console.log("addresses database does not exist, creating...");
 			nano.db.create('addresses');
@@ -112,10 +112,14 @@ const insertQueryView = () => {
 	});
 }
 
-// Executing this file will also run the functions:
-initBlocksDB();
-initTransactionsDB();
-initAddressesDB();
+async function init() {
+	// Executing this file will also run the functions:
+	await initBlocksDB();
+	await initTransactionsDB();
+	await initAddressesDB();
+}
+
+init();
 
 // Export functions
 module.exports = {
