@@ -5,3 +5,5 @@ export function formatValue(number) {
 }
 
 export const siteName = "http://localhost:8000";
+
+export const algodurl = "http://127.0.0.1:4001";

@@ -27,8 +27,19 @@ class Home extends React.Component {
 			method: 'get',
 			url: `${siteName}/latest`
 		}).then(response => {
-			const synced = Math.ceil(response.data.blocks[0].round/100)*100 === Math.ceil(response.data.ledger.round/100)*100 ? true : false;
-			this.setState({blocks: response.data.blocks, transactions: response.data.transactions, ledger: response.data.ledger, synced: synced, loading: false});
+		    if (response.data && response.data.blocks && response.data.blocks.length > 0) {
+				const synced = Math.ceil(response.data.blocks[0].round / 100) * 100
+					=== Math.ceil(response.data.ledger['current_round'] / 100) * 100;
+				const genesisId = response.data.blocks[0]['genesis-id'];
+				this.setState({
+					blocks: response.data.blocks,
+					transactions: response.data.transactions,
+					ledger: response.data.ledger,
+					synced: synced,
+					loading: false,
+					genesisId,
+				});
+			}
 		}).catch(error => {
 			console.log("Error when retrieving latest statistics: " + error);
 		})
@@ -54,35 +65,35 @@ class Home extends React.Component {
 
 	render() {
 		const block_columns = [
-			{Header: 'Round', accessor: 'round', Cell: props => <NavLink to={`/block/${props.value}`}>{props.value}</NavLink>}, 
+			{Header: 'Round', accessor: 'round', Cell: props => <NavLink to={`/block/${props.value}`}>{props.value}</NavLink>},
 			{Header: 'Proposer', accessor: 'proposer',  Cell: props => <NavLink to={`/address/${props.value}`}>{props.value}</NavLink>},
-			{Header: '# TX', accessor: 'numtxn', Cell: props => <span className="nocolor">{props.value}</span>}, 
+			{Header: '# TX', accessor: 'numtxn', Cell: props => <span className="nocolor">{props.value}</span>},
 			{Header: 'Time', accessor: 'timestamp', Cell: props => <span className="nocolor">{moment.unix(props.value).fromNow()}</span>}
 		];
 		const block_columns_id = {id: "home-latest-block-sizing"};
 
 		const transaction_columns = [
-			{Header: 'TX ID', accessor: 'tx', Cell: props => <NavLink to={`/tx/${props.value}`}>{props.value}</NavLink>}, 
-			{Header: 'From', accessor: 'from',  Cell: props => <NavLink to={`/address/${props.value}`}>{props.value}</NavLink>},
-			{Header: 'To', accessor: 'payment.to',  Cell: props => <NavLink to={`/address/${props.value}`}>{props.value}</NavLink>}, 
-			{Header: 'Amount', accessor: 'payment.amount', Cell: props => <span>{<span className="nocolor">{formatValue(props.value / 1000000)}</span>} <AlgoIcon /></span>},
+			{Header: 'TX ID', accessor: 'id', Cell: props => <NavLink to={`/tx/${props.value}`}>{props.value}</NavLink>},
+			{Header: 'From', accessor: 'sender',  Cell: props => <NavLink to={`/address/${props.value}`}>{props.value}</NavLink>},
+			{Header: 'To', accessor: 'payment-transaction.receiver',  Cell: props => <NavLink to={`/address/${props.value}`}>{props.value}</NavLink>},
+			{Header: 'Amount', accessor: 'payment-transaction.amount', Cell: props => <span>{<span className="nocolor">{formatValue(props.value / 1000000)}</span>} <AlgoIcon /></span>},
 			{Header: 'Time', accessor: 'timestamp', Cell: props => <span className="nocolor">{moment.unix(props.value).fromNow()}</span>}
 		];
 		const transaction_columns_id = {id: "home-latest-transaction-sizing"};
 
 		return (
-			<Layout synced={this.state.synced} homepage>
+			<Layout synced={this.state.synced} genesisId={this.state.genesisId} homepage>
 				<HomeSearch />
 				<div className="cardcontainer address-cards home-cards">
 					<Statscard
 						stat="Latest Round"
-						value={this.state.loading ? <Load /> : formatValue(this.state.ledger.round)}
+						value={this.state.loading ? <Load /> : formatValue(this.state.ledger.current_round)}
 					/>
 					<Statscard
 						stat="Online Stake"
 						value={this.state.loading ? <Load /> : (
 							<div>
-								{formatValue(this.state.ledger.onlineMoney / 1000000)}
+								{formatValue(this.state.ledger['online-money'] / 1000000)}
 								<AlgoIcon />
 							</div>
 						)}
@@ -91,7 +102,7 @@ class Home extends React.Component {
 						stat="Circulating supply"
 						value={this.state.loading ? <Load /> : (
 							<div>
-								{formatValue(this.state.ledger.totalMoney / 1000000)}
+								{formatValue(this.state.ledger['total-money'] / 1000000)}
 								<AlgoIcon />
 							</div>
 						)}

@@ -6,6 +6,7 @@
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",
+    "algosdk": "^1.9.1",
     "axios": "^0.19.2",
     "compression": "^1.7.4",
     "cors": "^2.8.5",
@@ -28,7 +29,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "run-sync": "node service/sync/initSync.js && node service/sync/syncAll.js"
   },
   "eslintConfig": {
     "extends": "react-app"

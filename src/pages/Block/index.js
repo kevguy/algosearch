@@ -28,7 +28,7 @@ class Block extends React.Component {
 			type: 'get',
 			url: `${siteName}/blockservice/${blockNum}`
 		}).then(response => {
-			this.setState({data: response.data, transactions: response.data.txns.transactions, loading: false});
+			this.setState({data: response.data, transactions: response.data.transactions, loading: false});
 		}).catch(error => {
 			console.log(`Exception when retrieving block #${blockNum}: ${error}`)
 		})
@@ -43,12 +43,12 @@ class Block extends React.Component {
 
 	render() {
 		const columns = [
-			{Header: 'Round', accessor: 'round', Cell: props => <NavLink to={`/block/${props.value}`}>{props.value}</NavLink>}, 
-			{Header: 'TX ID', accessor: 'tx', Cell: props => <NavLink to={`/tx/${props.value}`}>{props.value}</NavLink>}, 
-			{Header: 'Type', accessor: 'type', Cell: props => <span className="type noselect">{props.value}</span>},
-			{Header: 'From', accessor: 'from', Cell: props => <NavLink to={`/address/${props.value}`}>{props.value}</NavLink>}, 
-			{Header: 'To', accessor: 'payment.to', Cell: props => <NavLink to={`/address/${props.value}`}>{props.value}</NavLink>},
-			{Header: 'Amount', accessor: 'payment.amount', Cell: props => <span>{formatValue(props.value/1000000)} <AlgoIcon /></span>},
+			{Header: 'Round', accessor: 'confirmed-round', Cell: props => <NavLink to={`/block/${props.value}`}>{props.value}</NavLink>},
+			{Header: 'TX ID', accessor: 'id', Cell: props => <NavLink to={`/tx/${props.value}`}>{props.value}</NavLink>},
+			{Header: 'Type', accessor: 'tx-type', Cell: props => <span className="type noselect">{props.value}</span>},
+			{Header: 'From', accessor: 'sender', Cell: props => <NavLink to={`/address/${props.value}`}>{props.value}</NavLink>},
+			{Header: 'To', accessor: 'payment-transaction.receiver', Cell: props => <NavLink to={`/address/${props.value}`}>{props.value}</NavLink>},
+			{Header: 'Amount', accessor: 'payment-transaction.amount', Cell: props => <span>{formatValue(props.value/1000000)} <AlgoIcon /></span>},
 			{Header: 'Fee', accessor: 'fee', Cell: props => <span>{formatValue(props.value/1000000)} <AlgoIcon /></span>}
 		];
 
@@ -81,11 +81,11 @@ class Block extends React.Component {
 								</tr>
 								<tr>
 									<td>Block hash</td>
-									<td>{this.state.loading ? <Load/> : this.state.data.hash}</td>
+									<td>{this.state.loading ? <Load/> : this.state.data.blockHash}</td>
 								</tr>
 								<tr>
 									<td>Previous block hash</td>
-									<td>{this.state.loading ? <Load/> : (<NavLink to={`/block/${parseInt(this.state.blocknum) - 1}`}>{this.state.data.previousBlockHash}</NavLink>)}</td>
+									<td>{this.state.loading ? <Load/> : (<NavLink to={`/block/${parseInt(this.state.blocknum) - 1}`}>{this.state.data['previous-block-hash']}</NavLink>)}</td>
 								</tr>
 								<tr>
 									<td>Seed</td>
@@ -119,7 +119,7 @@ class Block extends React.Component {
 					<span>Governance Overview</span>
 					<div>
 						<table cellSpacing="0">
-							<thead>	
+							<thead>
 								<tr>
 									<th>Identifier</th>
 									<th>Value</th>
@@ -128,31 +128,35 @@ class Block extends React.Component {
 							<tbody>
 								<tr>
 									<td>Current protocol</td>
-									<td>{this.state.loading ? <Load/> : (<a href={this.state.data.currentProtocol} target="_blank" rel="noopener noreferrer">{this.state.data.currentProtocol}</a>)}</td>
+									<td>
+										{this.state.loading ? <Load/> : (<a href={this.state.data['upgrade-state']['current-protocol']} target="_blank" rel="noopener noreferrer">{this.state.data['upgrade-state']['current-protocol']}</a>)}
+									</td>
 								</tr>
 								<tr>
 									<td>Next protocol</td>
-									<td>{this.state.loading ? <Load/> : (<a href={this.state.data.nextProtocol} target="_blank" rel="noopener noreferrer">{this.state.data.nextProtocol}</a>)}</td>
+									<td>
+										{this.state.loading ? <Load/> : (<a href={this.state.data['upgrade-state']['next-protocol']} target="_blank" rel="noopener noreferrer">{this.state.data['upgrade-state']['next-protocol']}</a>)}
+									</td>
 								</tr>
 								<tr>
 									<td>Next protocol approvals</td>
-									<td>{this.state.loading ? <Load/> : this.state.data.nextProtocolApprovals}</td>
+									<td>{this.state.loading ? <Load/> : this.state.data['upgrade-state']['next-protocol-approvals']}</td>
 								</tr>
 								<tr>
 									<td>Next protocol vote before</td>
-									<td>{this.state.loading ? <Load/> : this.state.data.nextProtocolVoteBefore}</td>
+									<td>{this.state.loading ? <Load/> : this.state.data['upgrade-state']['next-protocol-vote-before']}</td>
 								</tr>
 								<tr>
 									<td>Next protocol switch on</td>
-									<td>{this.state.loading ? <Load/> : this.state.data.nextProtocolSwitchOn}</td>
+									<td>{this.state.loading ? <Load/> : this.state.data['upgrade-state']['next-protocol-switch-on']}</td>
 								</tr>
 								<tr>
 									<td>Upgrade proposal</td>
-									<td>{this.state.loading ? <Load/> : this.state.data.upgradePropose}</td>
+									<td>{this.state.loading ? <Load/> : this.state.data['upgrade-vote']['upgrade-propose']}</td>
 								</tr>
 								<tr>
 									<td>Upgrade approved</td>
-									<td>{this.state.loading ? <Load/> : this.state.data.upgradeApprove}</td>
+									<td>{this.state.loading ? <Load/> : this.state.data['upgrade-vote']['upgrade-approve']}</td>
 								</tr>
 							</tbody>
 						</table>

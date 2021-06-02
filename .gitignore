@@ -27,3 +27,5 @@ yarn-error.log*
 
 # node global constants
 /service/global.js
+
+/db-data

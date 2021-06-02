@@ -1,0 +1,6 @@
+apps:
+  - script: ./server.js
+    name: 'algosearch'
+  - script: npm
+    args: run run-sync
+    name: 'algosearch-sync'

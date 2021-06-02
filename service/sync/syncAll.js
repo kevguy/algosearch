@@ -3,7 +3,7 @@
 	____________
 	Syncs current round with blocks and transactions database.
 */
-
+const algosdk = require('algosdk');
 var constants = require('../global'); // Require global constants
 const axios = require('axios'); // Require axios for requests
 const nano = require("nano")(`http://${constants.dbuser}:${constants.dbpass}@${constants.dbhost}`); // Connect nano to db
@@ -11,6 +11,12 @@ const nano = require("nano")(`http://${constants.dbuser}:${constants.dbpass}@${c
 let blocks = nano.db.use('blocks'); // Connect to blocks db
 let transactions = nano.db.use('transactions'); // Connect to transactions db
 let addresses = nano.db.use('addresses'); // Connect to addresses db
+
+const algoUrl = new URL(constants.algodurl);
+const client = new algosdk.Algodv2(
+	constants.algodapi,
+	algoUrl,
+	algoUrl.port ? algoUrl.port : 8080);
 
 /*
 	Update blocks in database based on
@@ -34,10 +40,10 @@ async function updateBlocks() {
 	// If block handles error when conducting first loop when condition is not met (currentRound - 250 < syncedBlockNumber)
 	if (currentRound - 250 > syncedBlockNumber) {
 			do {
-			// Ignore no-loop-func rule for syncing in do/while
-			// eslint-disable-next-line no-loop-func
-			await bulkAddBlocks(syncedBlockNumber, currentRound).then(async () => {
-				syncedBlockNumber += await 250; // Add 250 blocks, and increment the synced number
+				// Ignore no-loop-func rule for syncing in do/while
+				// eslint-disable-next-line no-loop-func
+				await bulkAddBlocks(syncedBlockNumber, currentRound).then(() => {
+					syncedBlockNumber += 250; // Add 250 blocks, and increment the synced number
 			}).catch(error => {
 				console.log("Error when incrementing syncedBlockNumber during bulk block addition: " + error);
 			});
@@ -53,30 +59,39 @@ async function updateBlocks() {
 	Run every 50ms (post-execution time) to keep database in sync with any new data
 */
 async function keepBlocksUpdated(lastRound) {
+	console.log('keepBlocksUpdated');
 	if (typeof lastRound === 'undefined') {
 		lastRound = 0;
 	}
 	// Wait for synced round
-	await getSyncedRound().then(async syncedRound => {
-		// Wait for current round
-		await getCurrentRound().then(async currentRound => {
-			// If synced round < current round
-			if (syncedRound < currentRound && lastRound !== currentRound) {
-				// Add the new block
-				await addBlock(syncedRound + 1, currentRound).then(async () => {
-					// Take a quick break for a second and recall
-					await setTimeout(function() {
-						keepBlocksUpdated(syncedRound + 1);
-					}, 500);
-				});
-			} else {
-				// If synced round === current round, recall in 100ms
-				await setTimeout(function() {
-					keepBlocksUpdated(syncedRound);
-				}, 100);
-			}
-		})
-	})
+	const syncedRound = await getSyncedRound();
+
+	// Wait for current round
+	const currentRound = await getCurrentRound();
+
+	// If synced round < current round
+	if (syncedRound < currentRound && lastRound !== currentRound) {
+		console.log(`Falling behind: syncedRound - ${syncedRound}, currentRound - ${currentRound}`)
+		// Add the new block
+		const success = await addBlock(syncedRound + 1, currentRound)
+		if (success) {
+			// Take a quick break for a second and recall
+			setTimeout(function() {
+				keepBlocksUpdated(syncedRound + 1);
+			}, 500);
+		} else {
+			// Take a quick break for a second and recall
+			setTimeout(function() {
+				keepBlocksUpdated(syncedRound + 1);
+			}, 5000);
+		}
+	} else {
+		console.log(`Synced Round === Current Round: syncedRound - ${syncedRound}, currentRound - ${currentRound}`)
+		// If synced round === current round, recall in 100ms
+		setTimeout(function() {
+			keepBlocksUpdated(syncedRound);
+		}, 100);
+	}
 }
 
 /*
@@ -89,7 +104,7 @@ async function getSyncedRound() {
 	await nano.db.use('blocks').view('latest', 'latest', {include_docs: true, descending: true, limit: 1}).then((body) => {
 		round = body.rows[0].doc.round; // Get the round number from the latest block
 	}).catch(error => {
-		console.log('Exception when retrieving synced block number: ' + error);
+		console.log('[getSyncedRound]: Exception when retrieving synced block number: ' + error);
 		round = 0;
 	})
 
@@ -101,15 +116,15 @@ async function getSyncedRound() {
 */
 async function getCurrentRound() {
 	let round;
-	
+
 	await axios({
 		method: 'get',
-		url: `${constants.algodurl}/ledger/supply`, // Request /ledger/supply endpoint
+		url: `${constants.algodurl}/v2/ledger/supply`, // Request /ledger/supply endpoint
 		headers: {'X-Algo-API-Token': constants.algodapi}
 	}).then(response => {
-		round = response.data.round; // Collect round
+		round = response.data.current_round; // Collect round
 	}).catch(error => {
-		console.log("Exception when getting current round: " + error);
+		console.log("[getCurrentRound]: Exception when getting current round: " + error);
 	})
 
 	return round;
@@ -123,19 +138,26 @@ async function bulkAddBlocks(blockNum, currentNum) {
 	let transactionsArray = []; // to contain any transactions in those 250 blocks
 	let addressesArray = []; // to contain any addresses and their transactions in those 250 blocks
 	let increment = 0; // for async loop functionality
-	
+
 	while (increment < 250) {
-		await axios({
-			method: 'get',
-			url: `${constants.algodurl}/block/${blockNum + increment + 1}`, // Retrieve each block in succession
-			headers: {'X-Algo-API-Token': constants.algodapi}
-		}).then(async response => {
-			blocksArray.push(response.data); // Push block to array
+		try {
+			const response = await axios({
+				method: 'get',
+				url: `${constants.algoIndexerUrl}/v2/blocks/${blockNum + increment + 1}`, // Retrieve each block in succession
+				headers: {'X-Indexer-API-Token': constants.algoIndexerToken}
+			});
+
+			const { proposer, blockHash }= await getProposerAndBlockHash(client, blockNum + increment + 1);
+			blocksArray.push({
+				...response.data,
+				proposer,
+				blockHash,
+			}); // Push block to array
 
 			let timestamp = response.data.timestamp; // Collect timestamp from block
 
-			if (Object.keys(response.data.txns).length > 0) {
-				let alltransactions = response.data.txns.transactions; // Append timestamp from block to transaction
+			if (Object.keys(response.data.transactions).length > 0) {
+				let alltransactions = response.data.transactions; // Append timestamp from block to transaction
 
 				for (let i = 0; i < alltransactions.length; i++) {
 					alltransactions[i].timestamp = timestamp; // Add timestamp to transaction (simplify front-end reporting)
@@ -144,7 +166,8 @@ async function bulkAddBlocks(blockNum, currentNum) {
 					// TODO: Add support for non-payment transactions
 					if (typeof alltransactions[i].payment !== 'undefined') {
 						let from_account_id = alltransactions[i].from; // From account
-						let to_account_id = alltransactions[i].payment.to; // To account
+						// let from_account_id = alltransactions[i].receiver; // From account
+						let to_account_id = alltransactions[i]['payment-transaction'].receiver; // To account
 
 						// If from account is already in transactions array, append to entry, else update
 						if (addressesArray.some(address => address._id === from_account_id)) {
@@ -166,7 +189,7 @@ async function bulkAddBlocks(blockNum, currentNum) {
 								addressesArray.push({_id: from_account_id, transactions: [alltransactions[i]]});
 							});
 						}
-						
+
 						// If to account is already in transactions array, append to entry, else update
 						if (addressesArray.some(address => address._id === to_account_id)) {
 							// To account exists in transactionsArray
@@ -190,9 +213,9 @@ async function bulkAddBlocks(blockNum, currentNum) {
 					}
 				}
 			}
-		}).catch(error => {
-			console.log("Exception when bulk adding blocks: " + error);
-		});
+		} catch (error) {
+			console.log("[bulkAddBlocks]: Exception when bulk adding blocks: " + error);
+		}
 
 		increment++; // Increment for async loop functionality
 	}
@@ -218,28 +241,59 @@ async function bulkAddBlocks(blockNum, currentNum) {
 	Add block data to CouchDB (non-bulk, singular)
 */
 async function addBlock(blockNum, currentNum) {
-	await axios({
-		method: 'get',
-		url: `${constants.algodurl}/block/${blockNum}`, // Get block information from algod
-		headers: {'X-Algo-API-Token': constants.algodapi}
-	}).then(async response => {
-		blocks.insert(response.data); // Insert block data to blocks database as doc
+
+	let response;
+	try {
+		response = await axios({
+			method: 'get',
+			url: `${constants.algoIndexerUrl}/v2/blocks/${blockNum}`, // Get block information from algod
+			headers: {'X-Indexer-API-Token': constants.algoIndexerToken}
+		});
+		// console.log(response);
+	} catch (e) {
+		console.log(`[addBlock]: Exception when getting block ${blockNum} info from indexer api: ` + e);
+		return false;
+	}
+
+	// try {
+	// 	console.log('fuck');
+	// 	const hihi = await client.block(blockNum).do();
+	// 	console.log(hihi);
+	// } catch (e) {
+	// 	console.log('hihi: ', e);
+	// }
+
+	try {
+		const { proposer, blockHash } = await getProposerAndBlockHash(client, blockNum);
+		blocks.insert({
+			...response.data,
+			proposer,
+			blockHash,
+		}); // Insert block data to blocks database as doc
+	} catch (e) {
+		console.log(`[addBlock]: Exception when getting fetching proposer and block hash and inserting block to database: ` + e);
+		return false;
+	}
+
+	try {
 		let timestamp = response.data.timestamp; // Collect timestamp from block
 
-		if (Object.keys(response.data.txns).length > 0) {
-			let alltransactions = response.data.txns.transactions;
+		if (Object.keys(response.data.transactions).length > 0) {
+			let alltransactions = response.data.transactions;
 			for (let i = 0; i < alltransactions.length; i++) {
 				alltransactions[i].timestamp = timestamp; // Add timestamp to transaction (simplify front-end reporting)
 				transactions.insert(alltransactions[i]);
-				
+
 				/*
 				The following code is used to add transactions to the accounts database,
-				but is currently disabled until cleanup of the current database and 
+				but is currently disabled until cleanup of the current database and
 				launch to production servers (due to memory usage when conducting operation)
-				
+				*/
+
 				if (typeof alltransactions[i].payment !== 'undefined') {
 					let from_account_id = alltransactions[i].from; // From account
-					let to_account_id = alltransactions[i].payment.to; // To account
+					// let from_account_id = alltransactions[i].receiver; // From account
+					let to_account_id = alltransactions[i]['payment-transaction'].receiver; // To account
 
 					// Add transaction to from account
 					await addresses.get(from_account_id).then(async from_body => {
@@ -258,13 +312,27 @@ async function addBlock(blockNum, currentNum) {
 						// If account does not exist in db, create a new record
 						await addresses.insert({_id: to_account_id, transactions: [alltransactions[i]]});
 					});
-				}*/
+				}
 			}
 		}
 		console.log(`Block added: ${blockNum} of ${currentNum}`); // Log block addition
-	}).catch(error => {
-		console.log("Exception when adding block to blocks database: " + error);
-	})
+
+	} catch (e) {
+		console.log("[addBlock]: Exception when adding block to blocks database: " + e);
+		return false;
+	}
+	return true;
+}
+
+async function getProposerAndBlockHash(client, blockNum) {
+	try {
+		const blk = await client.block(blockNum).do();
+		const proposer = algosdk.encodeAddress(blk["cert"]["prop"]["oprop"]);
+		const blockHash = Buffer.from(blk["cert"]["prop"]["dig"]).toString("base64");
+		return { proposer, blockHash };
+	} catch (e) {
+		console.log("[getProposerAndBlockHash]: Error getting proposer: " + e);
+	}
 }
 
 // Run script

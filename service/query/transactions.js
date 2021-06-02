@@ -19,15 +19,15 @@ module.exports = function(app) {
 
 		axios({
 			method: 'get',
-			url: `${constants.algodurl}/transaction/${txid}`, // Request transaction details endpoint
-			headers: {'X-Algo-API-Token': constants.algodapi}
+			url: `${constants.algoIndexerUrl}/v2/transactions/${txid}`, // Request transaction details endpoint
+			headers: {'X-Indexer-API-Token': constants.algoIndexerToken}
 		}).then(response => {
 			let result = response.data; // Store response in result
 
 			axios({
 				method: 'get',
-				url: `${constants.algodurl}/block/${result.round}`,
-				headers: {'X-Algo-API-Token': constants.algodapi}
+				url: `${constants.algoIndexerUrl}/v2/blocks/${result['current-round']}`,
+				headers: {'X-Indexer-API-Token': constants.algoIndexerToken}
 			}).then(resp => {
 				result.timestamp = resp.data.timestamp; // Add timestamp to result JSON
 				res.send(result);
@@ -47,8 +47,8 @@ module.exports = function(app) {
 
 		axios({
 			method: 'get',
-			url: `${constants.algodurl}/account/${address}/transactions?max=100000000`, // Set arbitrary unlimited max (0 doesn't work)
-			headers: {'X-Algo-API-Token': constants.algodapi}
+			url: `${constants.algoIndexerUrl}/v2/accounts/${address}/transactions?limit=100000000`, // Set arbitrary unlimited max (0 doesn't work)
+			headers: {'X-Indexer-API-Token': constants.algoIndexerToken}
 		}).then(response => {
 			res.send(response.data.transactions); // Return transaction data as response
 		}).catch(error => {
@@ -85,12 +85,16 @@ module.exports = function(app) {
 					} else {
 						// If showFull = 0, return truncated data (for tables and low bandwidth usage)
 						transaction.push({
-							"round": body.rows[i].doc.round,
-							"type": body.rows[i].doc.type,
-							"tx": body.rows[i].doc.tx,
-							"from": body.rows[i].doc.from,
-							"to": body.rows[i].doc.payment.to,
-							"amount": parseInt(body.rows[i].doc.payment.amount)/1000000,
+							"round": body.rows[i].doc['confirmed-round'],
+							"type": body.rows[i].doc['tx-type'],
+							"tx": body.rows[i].doc.id,
+							"from": body.rows[i].doc.sender,
+							"to": body.rows[i].doc['payment-transaction']
+								? body.rows[i].doc['payment-transaction'].receiver
+								: undefined,
+							"amount": body.rows[i].doc['payment-transaction']
+								? parseInt(body.rows[i].doc['payment-transaction'].amount)/1000000
+								: undefined,
 							"fee": parseInt(body.rows[i].doc.fee)/1000000,
 						});
 					}

@@ -85,9 +85,9 @@ class Blocks extends React.Component {
 	render() {
 		// Table columns
 		const columns = [
-			{Header: 'Round', accessor: 'round', Cell: props => <NavLink to={`/block/${props.value}`}>{props.value}</NavLink>}, 
-			{Header: 'Transactions', accessor: 'transactions'}, 
-			{Header: 'Proposed by', accessor: 'proposer', Cell: props => <NavLink to={`/address/${props.value}`}>{props.value}</NavLink>}, 
+			{Header: 'Round', accessor: 'round', Cell: props => <NavLink to={`/block/${props.value}`}>{props.value}</NavLink>},
+			{Header: 'Transactions', accessor: 'transactions'},
+			{Header: 'Proposed by', accessor: 'proposer', Cell: props => <NavLink to={`/address/${props.value}`}>{props.value}</NavLink>},
 			{Header: 'Time', accessor: 'timestamp', Cell: props => <span>{moment.unix(props.value).fromNow()}</span>}
 		];
 

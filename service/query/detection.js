@@ -8,7 +8,7 @@ module.exports = function(app) {
 
 		axios({
 			method: 'get',
-			url: `${constants.algodurl}/account/${string}`,
+			url: `${constants.algodurl}/v2/accounts/${string}`,
 			headers: {'X-Algo-API-Token': constants.algodapi}
 		}).then(addrresp => {
 			if (addrresp.data.address === string) {
@@ -17,11 +17,11 @@ module.exports = function(app) {
 				res.send('error');
 				console.log("Exception: false address formatting");
 			}
-		}).catch(() => {
+		}).catch((e) => {
 			axios({
 				method: 'get',
-				url: `${constants.algodurl}/block/${string}`,
-				headers: {'X-Algo-API-Token': constants.algodapi}
+				url: `${constants.algoIndexerUrl}/v2/blocks/${string}`,
+				headers: {'X-Indexer-API-Token': constants.algoIndexerToken}
 			}).then(blockresp => {
 				if (blockresp.data.round.toString() === string) {
 					res.send('block');
@@ -32,10 +32,10 @@ module.exports = function(app) {
 			}).catch(() => {
 				axios({
 					method: 'get',
-					url: `${constants.algodurl}/transaction/${string}`,
-					headers: {'X-Algo-API-Token': constants.algodapi}
+					url: `${constants.algoIndexerUrl}/v2/transactions/${string}`,
+					headers: {'X-Indexer-API-Token': constants.algoIndexerToken}
 				}).then(transresp => {
-					if (transresp.data.tx === string) {
+					if (transresp.data.transaction && transresp.data.transaction.id === string) {
 						res.send('transaction');
 					} else {
 						res.send('error');
