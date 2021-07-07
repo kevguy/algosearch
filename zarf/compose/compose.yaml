@@ -1,0 +1,38 @@
+version: '3.8'
+
+networks:
+  shared-network:
+    driver: bridge
+
+services:
+
+  zipkin:
+    container_name: zipkin
+    networks:
+      - shared-network
+#    image: openzipkin/zipkin:2.21
+    image: openzipkin/zipkin
+    ports:
+      - 9411:9411
+
+  algosearch-backend:
+    container_name: algosearch-backend
+    networks:
+      - shared-network
+    image: algosearch-backend-amd64:1.0
+    ports:
+      - 3000:3000 # CRUD API
+      - 4000:4000 # DEBUG API
+    depends_on:
+      - zipkin
+
+  metrics:
+    container_name: metrics
+    networks:
+      - shared-network
+    image: metrics-amd64:1.0
+    ports:
+      - 3001:3001 # EXPVAR API
+      - 4001:4001 # DEBUG API
+    depends_on:
+      - algosearch-backend

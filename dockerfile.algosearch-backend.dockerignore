@@ -1,0 +1,10 @@
+.circleci/
+backend/zarf/compose/
+backend/zarf/docker/
+backend/zarf/k8s/
+.dockerignore
+.gitgnore
+CONTRIBUTORS
+LICENSE
+makefile
+README.md
