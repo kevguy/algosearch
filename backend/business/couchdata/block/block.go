@@ -46,7 +46,8 @@ func (s Store) AddBlock(ctx context.Context, block NewBlock) (string, string, er
 	//	"_id": strconv.FormatUint(block.Round, 10),
 	//	"key": strconv.FormatUint(block.Round, 10),
 	//})
-	rev, err := db.Put(ctx, strconv.FormatUint(block.Round, 10), block)
+	//rev, err := db.Put(ctx, strconv.FormatUint(block.Round, 10), block)
+	rev, err := db.Put(ctx, block.BlockHash, block)
 	if err != nil {
 		return "", "", errors.Wrap(err, BLOCKS+ " database can't insert block number " + string(block.Round))
 	}
@@ -67,6 +68,7 @@ func (s Store) GetBlock(ctx context.Context, blockNum uint64) (Block, error) {
 	}
 	db := s.couchClient.DB(BLOCKS)
 
+	//row := db.Get(ctx, strconv.FormatUint(blockNum, 10))
 	row := db.Get(ctx, strconv.FormatUint(blockNum, 10))
 	if row == nil {
 		return Block{}, errors.Wrap(err, BLOCKS+ " get data empty")
@@ -129,9 +131,12 @@ func (s Store) GetLastSyncedRoundNumber(ctx context.Context) (uint64, error) {
 		"descending": true,
 		"limit": 1,
 	})
+	if err != nil {
+		return 0, errors.Wrap(err, "Fetch data error")
+	}
 
 	if rows.Err() != nil {
-		return 0, errors.Wrap(err, "Can't find anything")
+		return 0, errors.Wrap(err, "rows error, Can't find anything")
 	}
 
 	rows.Next()
