@@ -58,7 +58,7 @@ func (s Store) GetBlock(ctx context.Context, blockHash string) (Block, error) {
 
 	ctx, span := otel.GetTracerProvider().
 		Tracer("").
-		Start(ctx, "block.AddBlock")
+		Start(ctx, "block.GetBlock")
 	defer span.End()
 
 	exist, err := s.couchClient.DBExists(ctx, BLOCKS)
@@ -124,7 +124,7 @@ func (s Store) AddBlocks(ctx context.Context, blocks []Block) (bool, error) {
 
 	ctx, span := otel.GetTracerProvider().
 		Tracer("").
-		Start(ctx, "block.AddBlock")
+		Start(ctx, "block.AddBlocks")
 	defer span.End()
 
 	exist, err := s.couchClient.DBExists(ctx, BLOCKS)
@@ -145,6 +145,8 @@ func (s Store) AddBlocks(ctx context.Context, blocks []Block) (bool, error) {
 
 	return true, nil
 }
+
+
 
 // GetLastSyncedRoundNumber retrieves the last round number that is synced to CouchDB.
 func (s Store) GetLastSyncedRoundNumber(ctx context.Context) (uint64, error) {
@@ -200,4 +202,49 @@ func (s Store) GetLastSyncedRoundNumber(ctx context.Context) (uint64, error) {
 	//if rows.Err() != nil {
 	//	panic(rows.Err())
 	//}
+}
+
+func (s Store) GetLatestBlocksByOffset(ctx context.Context, lastBlockNum int64, limit int64) ([]Block, error) {
+
+	ctx, span := otel.GetTracerProvider().
+		Tracer("").
+		Start(ctx, "block.GetLatestBlocksByOffset")
+	//span.SetAttributes(attribute.String("query", q))
+	defer span.End()
+
+	exist, err := s.couchClient.DBExists(ctx, BLOCKS)
+	if err != nil || !exist {
+		return nil, errors.Wrap(err, BLOCKS+ " database check fails")
+	}
+	db := s.couchClient.DB(BLOCKS)
+
+	rows, err := db.Query(ctx, "_design/latest", "_view/latest", kivik.Options{
+		"include_docs": true,
+		"descending": true,
+		"limit": limit,
+		"skip": lastBlockNum - limit,
+	})
+	if err != nil {
+		return nil, errors.Wrap(err, "Fetch data error")
+	}
+
+	var fetchedBlocks = []Block{}
+	for rows.Next() {
+		var block = Block{}
+		if err := rows.ScanDoc(&block); err != nil {
+			return nil, errors.Wrap(err, "unwrapping block")
+		}
+		fetchedBlocks = append(fetchedBlocks, block)
+	}
+
+	if rows.Err() != nil {
+		return nil, errors.Wrap(err, "rows error, Can't find anything")
+	}
+
+	// Reverse the orders
+	for i, j := 0, len(fetchedBlocks)-1; i < j; i, j = i+1, j-1 {
+		fetchedBlocks[i], fetchedBlocks[j] = fetchedBlocks[j], fetchedBlocks[i]
+	}
+
+	return fetchedBlocks, nil
 }
