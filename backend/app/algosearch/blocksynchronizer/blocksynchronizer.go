@@ -2,6 +2,7 @@ package blocksynchronizer
 
 import (
 	"context"
+	"fmt"
 	"github.com/algorand/go-algorand-sdk/client/v2/algod"
 	app "github.com/kevguy/algosearch/backend/business/algorand"
 	"github.com/kevguy/algosearch/backend/business/couchdata/block"
@@ -80,6 +81,8 @@ func (p *BlockSynchronizer) update() {
 
 	if (currentRoundNum - lastSyncedBlockNum) > 1 {
 		rawBlock, err := app.GetRoundInRawBytes(context.Background(), p.algodClient, lastSyncedBlockNum + 1)
+		fmt.Printf("raw block: %v\n", rawBlock)
+		fmt.Printf("last synced num: %d\n", lastSyncedBlockNum + 1)
 
 		newBlock, err := app.ConvertBlockRawBytes(context.Background(), rawBlock)
 		if err != nil {

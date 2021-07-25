@@ -35,7 +35,7 @@ it-rain:
 	go run backend/app/algosearch/main.go
 
 migrate-couch:
-	go run app/algo-admin/main.go migrate
+	go run backend/app/algo-admin/main.go migrate
 
 start-local-couchdb:
 	# Create a folder called db-data

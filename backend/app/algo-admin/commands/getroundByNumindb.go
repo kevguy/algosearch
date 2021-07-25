@@ -10,8 +10,8 @@ import (
 	"time"
 )
 
-// GetRoundInDbCmd retrieves information about the block for the latest round and prints it out.
-func GetRoundInDbCmd(traceID string, log *zap.SugaredLogger, couchCfg couchdb.Config, blockHash string) error {
+// GetRoundNumInDbCmd retrieves information about the block for the latest round and prints it out.
+func GetRoundNumInDbCmd(traceID string, log *zap.SugaredLogger, couchCfg couchdb.Config, blockNum uint64) error {
 
 	db, err := couchdb.Open(couchCfg)
 	if err != nil {
@@ -24,12 +24,13 @@ func GetRoundInDbCmd(traceID string, log *zap.SugaredLogger, couchCfg couchdb.Co
 
 	blockStore := block.NewStore(log, db)
 
-	block, err := blockStore.GetBlock(ctx, blockHash)
+	block, err := blockStore.GetBlockByNum(ctx, blockNum)
 	if err != nil {
 		return errors.Wrap(err, "get block")
 	}
 
 	fmt.Printf("Block Data: %v\n", block)
+	fmt.Println(block.BlockHash)
 
 
 	return nil

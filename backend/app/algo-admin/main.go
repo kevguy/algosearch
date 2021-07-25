@@ -135,12 +135,21 @@ func run(log *zap.SugaredLogger) error {
 		}
 
 	case "get-round-from-db":
+		blockHashStr := cfg.Args.Num(1)
+		if err != nil {
+			return errors.Wrap(err, "num arg format wrong")
+		}
+		if err := commands.GetRoundInDbCmd(traceID, log, couchConfig, blockHashStr); err != nil {
+			return errors.Wrap(err, "add round from db")
+		}
+
+	case "get-round-from-db-by-num":
 		numStr := cfg.Args.Num(1)
 		num, err := strconv.Atoi(numStr)
 		if err != nil {
 			return errors.Wrap(err, "num arg format wrong")
 		}
-		if err := commands.GetRoundInDbCmd(traceID, log, couchConfig, uint64(num)); err != nil {
+		if err := commands.GetRoundNumInDbCmd(traceID, log, couchConfig, uint64(num)); err != nil {
 			return errors.Wrap(err, "add round from db")
 		}
 

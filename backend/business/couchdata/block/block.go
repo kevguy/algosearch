@@ -8,7 +8,6 @@ import (
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/otel"
 	"go.uber.org/zap"
-	"strconv"
 )
 
 const (
@@ -43,19 +42,19 @@ func (s Store) AddBlock(ctx context.Context, block NewBlock) (string, string, er
 	db := s.couchClient.DB(BLOCKS)
 
 	//docID, rev, err := db.CreateDoc(ctx, block, map[string]interface{}{
-	//	"_id": strconv.FormatUint(block.Round, 10),
+	//	"_id": block.BlockHash,
 	//	"key": strconv.FormatUint(block.Round, 10),
 	//})
-	//rev, err := db.Put(ctx, strconv.FormatUint(block.Round, 10), block)
 	rev, err := db.Put(ctx, block.BlockHash, block)
 	if err != nil {
 		return "", "", errors.Wrap(err, BLOCKS+ " database can't insert block number " + string(block.Round))
 	}
-	return strconv.FormatUint(block.Round, 10), rev, nil
+	//return strconv.FormatUint(block.Round, 10), rev, nil
+	return block.BlockHash, rev, nil
 }
 
 // AddBlock adds a block to CouchDB.
-func (s Store) GetBlock(ctx context.Context, blockNum uint64) (Block, error) {
+func (s Store) GetBlock(ctx context.Context, blockHash string) (Block, error) {
 
 	ctx, span := otel.GetTracerProvider().
 		Tracer("").
@@ -69,7 +68,7 @@ func (s Store) GetBlock(ctx context.Context, blockNum uint64) (Block, error) {
 	db := s.couchClient.DB(BLOCKS)
 
 	//row := db.Get(ctx, strconv.FormatUint(blockNum, 10))
-	row := db.Get(ctx, strconv.FormatUint(blockNum, 10))
+	row := db.Get(ctx, blockHash)
 	if row == nil {
 		return Block{}, errors.Wrap(err, BLOCKS+ " get data empty")
 	}
@@ -82,6 +81,43 @@ func (s Store) GetBlock(ctx context.Context, blockNum uint64) (Block, error) {
 	}
 
 	return block, nil
+}
+
+// AddBlock adds a block to CouchDB.
+func (s Store) GetBlockByNum(ctx context.Context, blockNum uint64) (Block, error) {
+
+	ctx, span := otel.GetTracerProvider().
+		Tracer("").
+		Start(ctx, "block.AddBlockByNum")
+	defer span.End()
+
+	exist, err := s.couchClient.DBExists(ctx, BLOCKS)
+	if err != nil || !exist {
+		return Block{}, errors.Wrap(err, BLOCKS+ " database check fails")
+	}
+	db := s.couchClient.DB(BLOCKS)
+
+	rows, err := db.Query(ctx, "_design/latest", "_view/latest", kivik.Options{
+		"include_docs": true,
+		"key": blockNum,
+		"limit": 1,
+	})
+	if err != nil {
+		return Block{}, errors.Wrap(err, "Fetch data error")
+	}
+
+	if rows.Err() != nil {
+		return Block{}, errors.Wrap(err, "rows error, Can't find anything")
+	}
+
+	rows.Next()
+	var doc Block
+	if err := rows.ScanDoc(&doc); err != nil {
+		// No docs can be found
+		return Block{}, errors.Wrap(err, "Can't find anything")
+	}
+
+	return doc, nil
 }
 
 func (s Store) AddBlocks(ctx context.Context, blocks []Block) (bool, error) {
@@ -146,7 +182,7 @@ func (s Store) GetLastSyncedRoundNumber(ctx context.Context) (uint64, error) {
 		return 0, errors.Wrap(err, "Can't find anything")
 	}
 
-	return uint64(doc.Round), nil
+	return doc.Round, nil
 	//rows, err := db.Query(context.TODO(), "_design/foo", "_view/bar", kivik.Options{
 	//	"startkey": `"foo"`,                           // Quotes are necessary so the
 	//	"endkey":   `"foo` + kivik.EndKeySuffix + `"`, // key is a valid JSON object
