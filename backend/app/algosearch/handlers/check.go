@@ -3,6 +3,10 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"github.com/algorand/go-algorand-sdk/client/v2/algod"
+	"github.com/go-kivik/kivik/v4"
+	"github.com/kevguy/algosearch/backend/foundation/algorand"
+	"github.com/kevguy/algosearch/backend/foundation/couchdb"
 	"go.uber.org/zap"
 	"net/http"
 	"os"
@@ -10,19 +14,33 @@ import (
 )
 
 type checkGroup struct {
-	build string
-	log   *zap.SugaredLogger
+	build		string
+	log			*zap.SugaredLogger
+	couchClient	*kivik.Client
+	algodClient	*algod.Client
 }
 
 // readiness checks if the database is ready and if not will return a 500 status.
 // Do not respond by just returning an error because further up in the call
 // stack it will interpret that as a non-trusted error.
 func (cg checkGroup) readiness(w http.ResponseWriter, r *http.Request) {
-	_, cancel := context.WithTimeout(r.Context(), time.Second)
+	ctx, cancel := context.WithTimeout(r.Context(), time.Second)
 	defer cancel()
 
 	status := "ok"
 	statusCode := http.StatusOK
+
+	// Check CouchDB connection
+	if err := couchdb.StatusCheck(ctx, cg.couchClient); err != nil {
+		status = "db not ready"
+		statusCode = http.StatusInternalServerError
+	}
+
+	// Check Algod connection
+	if err := algorand.StatusCheck(ctx, cg.algodClient); err != nil {
+		status = "algod client not ready"
+		statusCode = http.StatusInternalServerError
+	}
 
 	data := struct {
 		Status string `json:"status"`
