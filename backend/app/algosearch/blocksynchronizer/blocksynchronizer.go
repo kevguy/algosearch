@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/algorand/go-algorand-sdk/client/v2/algod"
-	app "github.com/kevguy/algosearch/backend/business/algorand"
+	app "github.com/kevguy/algosearch/backend/business/algod"
 	"github.com/kevguy/algosearch/backend/business/couchdata/block"
 	"github.com/kevguy/algosearch/backend/foundation/couchdb"
 	"github.com/pkg/errors"

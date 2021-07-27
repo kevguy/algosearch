@@ -5,7 +5,7 @@ package main
 import (
 	"fmt"
 	"github.com/kevguy/algosearch/backend/app/algo-admin/commands"
-	"github.com/kevguy/algosearch/backend/foundation/algorand"
+	"github.com/kevguy/algosearch/backend/foundation/algod"
 	"github.com/kevguy/algosearch/backend/foundation/couchdb"
 	"github.com/kevguy/algosearch/backend/foundation/logger"
 	"os"
@@ -94,7 +94,7 @@ func run(log *zap.SugaredLogger) error {
 		Host:     cfg.CouchDB.Host,
 	}
 
-	algorandConfig := algorand.Config{
+	algorandConfig := algod.Config{
 		AlgodAddr: cfg.Algorand.AlgodAddr,
 		AlgodToken: cfg.Algorand.AlgodToken,
 		KmdAddr: cfg.Algorand.KmdAddr,

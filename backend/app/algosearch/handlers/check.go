@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"github.com/algorand/go-algorand-sdk/client/v2/algod"
 	"github.com/go-kivik/kivik/v4"
-	"github.com/kevguy/algosearch/backend/foundation/algorand"
+	"github.com/kevguy/algosearch/backend/foundation/algod"
 	"github.com/kevguy/algosearch/backend/foundation/couchdb"
 	"go.uber.org/zap"
 	"net/http"
@@ -37,7 +37,7 @@ func (cg checkGroup) readiness(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check Algod connection
-	if err := algorand.StatusCheck(ctx, cg.algodClient); err != nil {
+	if err := algod.StatusCheck(ctx, cg.algodClient); err != nil {
 		status = "algod client not ready"
 		statusCode = http.StatusInternalServerError
 	}

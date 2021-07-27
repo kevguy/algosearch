@@ -5,7 +5,7 @@ import (
 	"expvar" // Calls init function.
 	"fmt"
 	"github.com/kevguy/algosearch/backend/app/algosearch/blocksynchronizer"
-	"github.com/kevguy/algosearch/backend/foundation/algorand"
+	"github.com/kevguy/algosearch/backend/foundation/algod"
 	"github.com/kevguy/algosearch/backend/foundation/couchdb"
 	"net/http"
 	"os"
@@ -202,7 +202,7 @@ func run(log *zap.SugaredLogger) error {
 
 	log.Infow("startup", "status", "initializing algorand client support", "host", cfg.Algorand.AlgodAddr)
 
-	algodClient, err := algorand.Open(algorand.Config{
+	algodClient, err := algod.Open(algod.Config{
 		AlgodAddr: cfg.Algorand.AlgodAddr,
 		AlgodToken: cfg.Algorand.AlgodToken,
 		KmdAddr: cfg.Algorand.KmdAddr,

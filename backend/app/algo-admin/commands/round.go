@@ -2,15 +2,15 @@ package commands
 
 import (
 	"context"
-	app "github.com/kevguy/algosearch/backend/business/algorand"
-	"github.com/kevguy/algosearch/backend/foundation/algorand"
+	app "github.com/kevguy/algosearch/backend/business/algod"
+	"github.com/kevguy/algosearch/backend/foundation/algod"
 	"github.com/pkg/errors"
 	"time"
 )
 
 // GetRoundCmd retrieves information about the block for the specified round and prints it out.
-func GetRoundCmd(cfg algorand.Config, blockNum uint64) error {
-	client, err := algorand.Open(cfg)
+func GetRoundCmd(cfg algod.Config, blockNum uint64) error {
+	client, err := algod.Open(cfg)
 	if err != nil {
 		return errors.Wrap(err, "connect to Algorand Node")
 	}

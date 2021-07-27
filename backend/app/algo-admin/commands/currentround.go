@@ -2,15 +2,15 @@ package commands
 
 import (
 	"context"
-	app "github.com/kevguy/algosearch/backend/business/algorand"
-	"github.com/kevguy/algosearch/backend/foundation/algorand"
+	app "github.com/kevguy/algosearch/backend/business/algod"
+	"github.com/kevguy/algosearch/backend/foundation/algod"
 	"github.com/pkg/errors"
 	"time"
 )
 
 // GetCurrentRoundCmd retrieves information about the block for the latest round and prints it out.
-func GetCurrentRoundCmd(cfg algorand.Config) error {
-	client, err := algorand.Open(cfg)
+func GetCurrentRoundCmd(cfg algod.Config) error {
+	client, err := algod.Open(cfg)
 	if err != nil {
 		return errors.Wrap(err, "connect to Algorand Node")
 	}

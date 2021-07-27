@@ -1,4 +1,4 @@
-package algorand
+package algod
 
 import (
 	"context"

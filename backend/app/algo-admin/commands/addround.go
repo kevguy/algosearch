@@ -3,9 +3,9 @@ package commands
 import (
 	"context"
 	"fmt"
-	app "github.com/kevguy/algosearch/backend/business/algorand"
+	app "github.com/kevguy/algosearch/backend/business/algod"
 	"github.com/kevguy/algosearch/backend/business/couchdata/block"
-	"github.com/kevguy/algosearch/backend/foundation/algorand"
+	"github.com/kevguy/algosearch/backend/foundation/algod"
 	"github.com/kevguy/algosearch/backend/foundation/couchdb"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
@@ -13,8 +13,8 @@ import (
 )
 
 // GetCurrentRoundCmd retrieves information about the block for the latest round and prints it out.
-func AddRoundCmd(traceID string, log *zap.SugaredLogger, cfg algorand.Config, couchCfg couchdb.Config, blockNum uint64) error {
-	client, err := algorand.Open(cfg)
+func AddRoundCmd(traceID string, log *zap.SugaredLogger, cfg algod.Config, couchCfg couchdb.Config, blockNum uint64) error {
+	client, err := algod.Open(cfg)
 	if err != nil {
 		return errors.Wrap(err, "connect to Algorand Node")
 	}
