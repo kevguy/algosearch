@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/algorand/go-algorand-sdk/client/v2/algod"
-	"github.com/kevguy/algosearch/backend/business/algod"
+	algodBiz "github.com/kevguy/algosearch/backend/business/algod"
 	"github.com/kevguy/algosearch/backend/business/couchdata/block"
 	"github.com/kevguy/algosearch/backend/business/sys/validate"
 	"github.com/kevguy/algosearch/backend/foundation/web"
@@ -27,7 +27,7 @@ func (rG roundGroup) getCurrentRoundFromAPI(ctx context.Context, w http.Response
 		return web.NewShutdownError("web value missing from context")
 	}
 
-	blockData, err := algod.GetCurrentRound(ctx, v.TraceID, rG.log, rG.algodClient)
+	blockData, err := algodBiz.GetCurrentRound(ctx, v.TraceID, rG.log, rG.algodClient)
 	if err != nil {
 		return errors.Wrap(err, "unable to get current round")
 	}
@@ -48,7 +48,7 @@ func (rG roundGroup) getRoundFromAPI(ctx context.Context, w http.ResponseWriter,
 		return validate.NewRequestError(fmt.Errorf("invalid num format: %s", numStr), http.StatusBadRequest)
 	}
 
-	blockData, err := algod.GetRound(ctx, v.TraceID, rG.log, rG.algodClient, uint64(num))
+	blockData, err := algodBiz.GetRound(ctx, v.TraceID, rG.log, rG.algodClient, uint64(num))
 	if err != nil {
 		return errors.Wrapf(err, "unable to get round %d", num)
 	}
