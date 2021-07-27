@@ -7,6 +7,8 @@ import (
 	"encoding/json"
 	"expvar"
 	"github.com/algorand/go-algorand-sdk/client/v2/algod"
+	"github.com/go-kivik/kivik/v4"
+	"github.com/kevguy/algosearch/backend/business/couchdata/block"
 	"go.uber.org/zap"
 	"net/http"
 	"net/http/pprof"
@@ -71,6 +73,7 @@ type APIMuxConfig struct {
 	Log      *zap.SugaredLogger
 	Metrics  *metrics.Metrics
 	AlgodClient *algod.Client
+	CouchClient *kivik.Client
 }
 
 // APIMux constructs an http.Handler with all application routes defined.
@@ -106,10 +109,11 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) http.Handler {
 	// Register round endpoints
 	rG := roundGroup{
 		log: cfg.Log,
+		store: block.NewStore(cfg.Log, cfg.CouchClient),
 		algodClient: cfg.AlgodClient,
 	}
-	app.Handle(http.MethodGet, "/v1/current-round", rG.getCurrentRound)
-	app.Handle(http.MethodGet, "/v1/round/:num", rG.getRound)
+	app.Handle(http.MethodGet, "/v1/algod/current-round", rG.getCurrentRoundFromAPI)
+	app.Handle(http.MethodGet, "/v1/algod/round/:num", rG.getRoundFromAPI)
 
 	// Accept CORS 'OPTIONS' preflight requests if config has been provided.
 	// Don't forget to apply the CORS middleware to the routes that need it.

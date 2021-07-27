@@ -43,7 +43,7 @@ var build = "develop"
 func main() {
 
 	// Construct the application logger.
-	log := logger.New("CAL-ENGINE")
+	log := logger.New("ALGOSEARCH")
 	defer log.Sync()
 
 	// Make sure the program is using the correct
@@ -103,17 +103,17 @@ func run(log *zap.SugaredLogger) error {
 	//cfg.Version.SVN = build
 	//cfg.Version.Desc = "copyright information here"
 
-	if err := conf.Parse(os.Args[1:], "SALES", &cfg); err != nil {
+	if err := conf.Parse(os.Args[1:], "ALGOSEARCH", &cfg); err != nil {
 		switch err {
 		case conf.ErrHelpWanted:
-			usage, err := conf.Usage("SALES", &cfg)
+			usage, err := conf.Usage("ALGOSEARCH", &cfg)
 			if err != nil {
 				return errors.Wrap(err, "generating config usage")
 			}
 			fmt.Println(usage)
 			return nil
 		case conf.ErrVersionWanted:
-			version, err := conf.VersionString("SALES", &cfg)
+			version, err := conf.VersionString("ALGOSEARCH", &cfg)
 			if err != nil {
 				return errors.Wrap(err, "generating config version")
 			}
@@ -217,6 +217,23 @@ func run(log *zap.SugaredLogger) error {
 	}()
 
 	// =========================================================================
+	// Start CouchDB Client
+
+	log.Infow("startup", "status", "initializing couchdb client support", "host", cfg.CouchDB.Host)
+
+	couchConfig := couchdb.Config{
+		Protocol: cfg.CouchDB.Protocol,
+		User:     cfg.CouchDB.User,
+		Password: cfg.CouchDB.Password,
+		Host:     cfg.CouchDB.Host,
+	}
+
+	db, err := couchdb.Open(couchConfig)
+	if err != nil {
+		return errors.Wrap(err, "connect to couchdb database")
+	}
+
+	// =========================================================================
 	// Start API Service
 
 	log.Infow("startup", "status", "initializing API support")
@@ -232,6 +249,7 @@ func run(log *zap.SugaredLogger) error {
 		Log:         log,
 		Metrics:     metrics.New(),
 		AlgodClient: algodClient,
+		CouchClient: db,
 	})
 
 	// Construct a server to service the requests against the mux.
@@ -254,12 +272,7 @@ func run(log *zap.SugaredLogger) error {
 		serverErrors <- api.ListenAndServe()
 	}()
 
-	couchConfig := couchdb.Config{
-		Protocol: cfg.CouchDB.Protocol,
-		User:     cfg.CouchDB.User,
-		Password: cfg.CouchDB.Password,
-		Host:     cfg.CouchDB.Host,
-	}
+
 
 	// Start the publisher to collect/publish metrics.
 	blocksync, err := blocksynchronizer.New(log, 2*time.Second, algodClient, couchConfig)

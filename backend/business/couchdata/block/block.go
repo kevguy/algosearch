@@ -7,6 +7,7 @@ import (
 	"github.com/go-kivik/kivik/v4"
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"go.uber.org/zap"
 )
 
@@ -83,17 +84,20 @@ func (s Store) GetBlock(ctx context.Context, blockHash string) (Block, error) {
 	return block, nil
 }
 
-// AddBlock adds a block to CouchDB.
-func (s Store) GetBlockByNum(ctx context.Context, blockNum uint64) (Block, error) {
+// GetBlockByNum gets a block from CouchDB based on block number.
+func (s Store) GetBlockByNum(ctx context.Context, traceID string, log *zap.SugaredLogger, blockNum uint64) (Block, error) {
+
+	log.Infow("block.GetBlockByNum", "traceid", traceID)
 
 	ctx, span := otel.GetTracerProvider().
 		Tracer("").
-		Start(ctx, "block.AddBlockByNum")
+		Start(ctx, "block.GetBlockByNum")
+	span.SetAttributes(attribute.Any("block-num", blockNum))
 	defer span.End()
 
 	exist, err := s.couchClient.DBExists(ctx, BLOCKS)
 	if err != nil || !exist {
-		return Block{}, errors.Wrap(err, BLOCKS+ " database check fails")
+		return Block{}, errors.Wrap(err, BLOCKS + " database check fails")
 	}
 	db := s.couchClient.DB(BLOCKS)
 
@@ -203,6 +207,45 @@ func (s Store) GetLastSyncedRoundNumber(ctx context.Context) (uint64, error) {
 	//	panic(rows.Err())
 	//}
 }
+
+func (s Store) GetLatestBlock(ctx context.Context, traceID string, log *zap.SugaredLogger) (Block, error) {
+
+	log.Infow("block.GetLatestBlock", "traceid", traceID)
+
+	ctx, span := otel.GetTracerProvider().
+		Tracer("").
+		Start(ctx, "block.GetLatestBlock")
+	defer span.End()
+
+	exist, err := s.couchClient.DBExists(ctx, BLOCKS)
+	if err != nil || !exist {
+		return Block{}, errors.Wrap(err, BLOCKS+ " database check fails")
+	}
+	db := s.couchClient.DB(BLOCKS)
+
+	rows, err := db.Query(ctx, "_design/latest", "_view/latest", kivik.Options{
+		"include_docs": true,
+		"descending": true,
+		"limit": 1,
+	})
+	if err != nil {
+		return Block{}, errors.Wrap(err, "Fetch data error")
+	}
+
+	if rows.Err() != nil {
+		return Block{}, errors.Wrap(err, "rows error, Can't find anything")
+	}
+
+	rows.Next()
+	var doc Block
+	if err := rows.ScanDoc(&doc); err != nil {
+		// No docs can be found
+		return Block{}, errors.Wrap(err, "Can't find anything")
+	}
+
+	return doc, nil
+}
+
 
 func (s Store) GetLatestBlocksByOffset(ctx context.Context, lastBlockNum int64, limit int64) ([]Block, error) {
 
