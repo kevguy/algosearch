@@ -54,7 +54,34 @@ func (s Store) AddBlock(ctx context.Context, block NewBlock) (string, string, er
 	return block.BlockHash, rev, nil
 }
 
-// AddBlock adds a block to CouchDB.
+// AddBlocks add blocks to CouchDB.
+func (s Store) AddBlocks(ctx context.Context, blocks []Block) (bool, error) {
+
+	ctx, span := otel.GetTracerProvider().
+		Tracer("").
+		Start(ctx, "block.AddBlocks")
+	defer span.End()
+
+	exist, err := s.couchClient.DBExists(ctx, BLOCKS)
+	if err != nil || !exist {
+		return false, errors.Wrap(err, BLOCKS+ " database check fails")
+	}
+	db := s.couchClient.DB(BLOCKS)
+
+	blocks_ := make([]interface{}, len(blocks))
+	for i := range blocks {
+		blocks_[i] = blocks[i]
+	}
+
+	_, err = db.BulkDocs(ctx, blocks_)
+	if err != nil {
+		return false, errors.Wrap(err, "Can't bulk insert the blocks")
+	}
+
+	return true, nil
+}
+
+// GetBlock retrieves a block from CouchDB based upon the block hash.
 func (s Store) GetBlock(ctx context.Context, blockHash string) (Block, error) {
 
 	ctx, span := otel.GetTracerProvider().
@@ -84,7 +111,7 @@ func (s Store) GetBlock(ctx context.Context, blockHash string) (Block, error) {
 	return block, nil
 }
 
-// GetBlockByNum gets a block from CouchDB based on block number.
+// GetBlockByNum gets a block from CouchDB based on round number.
 func (s Store) GetBlockByNum(ctx context.Context, traceID string, log *zap.SugaredLogger, blockNum uint64) (Block, error) {
 
 	log.Infow("block.GetBlockByNum", "traceid", traceID)
@@ -124,33 +151,60 @@ func (s Store) GetBlockByNum(ctx context.Context, traceID string, log *zap.Sugar
 	return doc, nil
 }
 
-func (s Store) AddBlocks(ctx context.Context, blocks []Block) (bool, error) {
+// GetEarliestSyncedRoundNumber retrieves the earliest round number that is synced to CouchDB.
+func (s Store) GetEarliestSyncedRoundNumber(ctx context.Context) (uint64, error) {
 
 	ctx, span := otel.GetTracerProvider().
 		Tracer("").
-		Start(ctx, "block.AddBlocks")
+		Start(ctx, "block.GetEarliestSyncedRoundNumber")
+	//span.SetAttributes(attribute.String("query", q))
 	defer span.End()
 
 	exist, err := s.couchClient.DBExists(ctx, BLOCKS)
 	if err != nil || !exist {
-		return false, errors.Wrap(err, BLOCKS+ " database check fails")
+		return 0, errors.Wrap(err, BLOCKS+ " database check fails")
 	}
 	db := s.couchClient.DB(BLOCKS)
 
-	blocks_ := make([]interface{}, len(blocks))
-	for i := range blocks {
-		blocks_[i] = blocks[i]
-	}
-
-	_, err = db.BulkDocs(ctx, blocks_)
+	rows, err := db.Query(ctx, "_design/latest", "_view/latest", kivik.Options{
+		"include_docs": true,
+		"descending": false,
+		"limit": 1,
+	})
 	if err != nil {
-		return false, errors.Wrap(err, "Can't bulk insert the blocks")
+		return 0, errors.Wrap(err, "Fetch data error")
 	}
 
-	return true, nil
+	if rows.Err() != nil {
+		return 0, errors.Wrap(err, "rows error, Can't find anything")
+	}
+
+	rows.Next()
+	var doc Block
+	if err := rows.ScanDoc(&doc); err != nil {
+		// No docs can be found
+		return 0, errors.Wrap(err, "Can't find anything")
+	}
+
+	return doc.Round, nil
+	//rows, err := db.Query(context.TODO(), "_design/foo", "_view/bar", kivik.Options{
+	//	"startkey": `"foo"`,                           // Quotes are necessary so the
+	//	"endkey":   `"foo` + kivik.EndKeySuffix + `"`, // key is a valid JSON object
+	//})
+	//if err != nil {
+	//	panic(err)
+	//}
+	//for rows.Next() {
+	//	var doc interface{}
+	//	if err := rows.ScanDoc(&doc); err != nil {
+	//		panic(err)
+	//	}
+	//	/* do something with doc */
+	//}
+	//if rows.Err() != nil {
+	//	panic(rows.Err())
+	//}
 }
-
-
 
 // GetLastSyncedRoundNumber retrieves the last round number that is synced to CouchDB.
 func (s Store) GetLastSyncedRoundNumber(ctx context.Context) (uint64, error) {

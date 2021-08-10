@@ -7,6 +7,7 @@ import (
 	"github.com/kevguy/algosearch/backend/app/algosearch/blocksynchronizer"
 	"github.com/kevguy/algosearch/backend/foundation/algod"
 	"github.com/kevguy/algosearch/backend/foundation/couchdb"
+	"github.com/kevguy/algosearch/backend/foundation/indexer"
 	"net/http"
 	"os"
 	"os/signal"
@@ -83,10 +84,12 @@ func run(log *zap.SugaredLogger) error {
 			Host       string `conf:"default:127.0.0.1:5984"`
 		}
 		Algorand struct {
-			AlgodAddr	string `conf:"default:http://localhost:4001"`
-			AlgodToken	string `conf:"default:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"`
-			KmdAddr		string `conf:"default:http://localhost:7833"`
-			KmdToken	string `conf:"default:a"`
+			AlgodAddr		string `conf:"default:http://localhost:4001"`
+			AlgodToken		string `conf:"default:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"`
+			KmdAddr			string `conf:"default:http://localhost:7833"`
+			KmdToken		string `conf:"default:a"`
+			IndexerAddr 	string `conf:"default:http://localhost:8980"`
+			IndexerToken	string `conf:"default:empty"`
 		}
 		Zipkin struct {
 			ReporterURI string  `conf:"default:http://localhost:9411/api/v2/spans"`
@@ -121,6 +124,13 @@ func run(log *zap.SugaredLogger) error {
 			return nil
 		}
 		return errors.Wrap(err, "parsing config")
+	}
+
+	// This is some special handling that the configuration library cannot
+	// handle default value being an empty string
+	// TODO: fix this
+	if cfg.Algorand.IndexerToken == "empty" {
+		cfg.Algorand.IndexerAddr = ""
 	}
 
 	// =========================================================================
@@ -198,9 +208,9 @@ func run(log *zap.SugaredLogger) error {
 	}()
 
 	// =========================================================================
-	// Start Algorand Client
+	// Start Algorand Algod Client
 
-	log.Infow("startup", "status", "initializing algorand client support", "host", cfg.Algorand.AlgodAddr)
+	log.Infow("startup", "status", "initializing algorand algod client support", "host", cfg.Algorand.AlgodAddr)
 
 	algodClient, err := algod.Open(algod.Config{
 		AlgodAddr: cfg.Algorand.AlgodAddr,
@@ -212,7 +222,24 @@ func run(log *zap.SugaredLogger) error {
 		return errors.Wrap(err, "connecting to algorand node")
 	}
 	defer func() {
-		log.Infow("shutdown", "status", "stopping algorand client support", "host", cfg.Algorand.AlgodAddr)
+		log.Infow("shutdown", "status", "stopping algorand algod client support", "host", cfg.Algorand.AlgodAddr)
+		//algodClient.Close()
+	}()
+
+	// =========================================================================
+	// Start Algorand Indexer Client
+
+	log.Infow("startup", "status", "initializing algorand indexer client support", "host", cfg.Algorand.AlgodAddr)
+
+	indexerClient, err := indexer.Open(indexer.Config{
+		IndexerAddr: cfg.Algorand.IndexerAddr,
+		IndexerToken: cfg.Algorand.IndexerToken,
+	})
+	if err != nil {
+		return errors.Wrap(err, "connecting to algorand node")
+	}
+	defer func() {
+		log.Infow("shutdown", "status", "stopping algorand indexer client support", "host", cfg.Algorand.IndexerAddr)
 		//algodClient.Close()
 	}()
 
@@ -249,6 +276,7 @@ func run(log *zap.SugaredLogger) error {
 		Log:         log,
 		Metrics:     metrics.New(),
 		AlgodClient: algodClient,
+		IndexerClient: indexerClient,
 		CouchClient: db,
 	})
 

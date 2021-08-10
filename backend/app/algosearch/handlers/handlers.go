@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"expvar"
 	"github.com/algorand/go-algorand-sdk/client/v2/algod"
+	"github.com/algorand/go-algorand-sdk/client/v2/indexer"
 	"github.com/go-kivik/kivik/v4"
 	"github.com/kevguy/algosearch/backend/business/couchdata/block"
 	"go.uber.org/zap"
@@ -70,10 +71,11 @@ func DebugMux(build string, log *zap.SugaredLogger) http.Handler {
 // APIMuxConfig contains all the mandatory systems required by handlers.
 type APIMuxConfig struct {
 	Shutdown chan os.Signal
-	Log      *zap.SugaredLogger
-	Metrics  *metrics.Metrics
-	AlgodClient *algod.Client
-	CouchClient *kivik.Client
+	Log				*zap.SugaredLogger
+	Metrics			*metrics.Metrics
+	AlgodClient		*algod.Client
+	IndexerClient	*indexer.Client
+	CouchClient		*kivik.Client
 }
 
 // APIMux constructs an http.Handler with all application routes defined.

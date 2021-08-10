@@ -26,10 +26,10 @@ func printKeyRegistrationTx(txn types.Transaction, padding int) {
 		paddingStr += "\t"
 	}
 
-	fmt.Print(paddingStr + "\t- Vote Key: " + base64.StdEncoding.EncodeToString(txn.VotePK[:]))
+	fmt.Print(paddingStr + "\t- Vote Participation Key: " + base64.StdEncoding.EncodeToString(txn.VotePK[:]))
 	fmt.Print(paddingStr + "\t- Selection Key: " + base64.StdEncoding.EncodeToString(txn.SelectionPK[:]))
-	fmt.Printf(paddingStr + "\t- Vote First: %d\n", uint64(txn.VoteFirst))
-	fmt.Printf(paddingStr + "\t- Vote Last: %d\n", uint64(txn.VoteLast))
+	fmt.Printf(paddingStr + "\t- Vote First Valid: %d\n", uint64(txn.VoteFirst))
+	fmt.Printf(paddingStr + "\t- Vote Last Valid: %d\n", uint64(txn.VoteLast))
 	fmt.Printf(paddingStr + "\t- Vote Key Dilution: %d\n", txn.VoteKeyDilution)
 	fmt.Printf(paddingStr + "\t- Non Participation: %t\n", txn.Nonparticipation)
 }
@@ -99,7 +99,9 @@ func PrintTransactionInBlock(txn types.SignedTxnInBlock, padding int) {
 	fmt.Println(paddingStr + "- SignedTxn")
 
 	fmt.Println(paddingStr + padding2Str + "- Signature: " + base64.StdEncoding.EncodeToString(txn.Sig[:]))
+	// TODO: Process it
 	fmt.Println(paddingStr + padding2Str + "- Sub Siguatures (Msig MultisigSig): Not processing it")
+	// TODO: Process it
 	fmt.Println(paddingStr + padding2Str + "- Logic Signature (LSig LogicSig): Not processing it")
 	fmt.Println(paddingStr + padding2Str + "- Auth Addreess: " + txn.AuthAddr.String())
 
@@ -146,7 +148,7 @@ func PrintTransactionInBlock(txn types.SignedTxnInBlock, padding int) {
 		printAssetFreezeTx(txn.Txn, 6)
 		break
 	case types.ApplicationCallTx:
-		// TODO: finished this
+		// TODO: finish this
 		break
 	}
 

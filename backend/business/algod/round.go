@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/base32"
 	"encoding/base64"
-	"github.com/algorand/go-algorand-sdk/client/v2/algod"
+	algodv2 "github.com/algorand/go-algorand-sdk/client/v2/algod"
 	"github.com/algorand/go-algorand-sdk/client/v2/common/models"
 	"github.com/algorand/go-algorand-sdk/encoding/msgpack"
 	"github.com/kevguy/algosearch/backend/business/couchdata/block"
@@ -16,8 +16,9 @@ import (
 	"strconv"
 )
 
-func GetRound(ctx context.Context, traceID string, log *zap.SugaredLogger, algodClient *algod.Client, roundNum uint64) (*block.NewBlock, error) {
-	log.Infow("algorand.GetGetRound", "traceid", traceID)
+// GetRound retrieves a block from the Algod API based on the round number given
+func GetRound(ctx context.Context, traceID string, log *zap.SugaredLogger, algodClient *algodv2.Client, roundNum uint64) (*block.NewBlock, error) {
+	log.Infow("algod.GetRound", "traceid", traceID)
 
 	rawBlock, err := GetRoundInRawBytes(ctx, algodClient, roundNum)
 	if err != nil {
@@ -31,8 +32,9 @@ func GetRound(ctx context.Context, traceID string, log *zap.SugaredLogger, algod
 	return &blockData, nil
 }
 
-func GetCurrentRound(ctx context.Context, traceID string, log *zap.SugaredLogger, algodClient *algod.Client) (*block.NewBlock, error) {
-	log.Infow("algorand.GetCurrentRound", "traceid", traceID)
+// GetCurrentRound retrieves retrieves the current block from the Algod API
+func GetCurrentRound(ctx context.Context, traceID string, log *zap.SugaredLogger, algodClient *algodv2.Client) (*block.NewBlock, error) {
+	log.Infow("algod.GetCurrentRound", "traceid", traceID)
 
 	currNum, err := GetCurrentRoundNum(ctx, algodClient)
 	if err != nil {
@@ -46,10 +48,10 @@ func GetCurrentRound(ctx context.Context, traceID string, log *zap.SugaredLogger
 	return blockData, nil
 }
 
-// GetCurrentRoundNum retrieves the current round number.
-func GetCurrentRoundNum(ctx context.Context, algodClient *algod.Client) (uint64, error) {
+// GetCurrentRoundNum retrieves the current round number from the Algod API
+func GetCurrentRoundNum(ctx context.Context, algodClient *algodv2.Client) (uint64, error) {
 
-	ctx, span := otel.GetTracerProvider().Tracer("").Start(ctx, "algorand.GetCurrentRoundInRawBytes")
+	ctx, span := otel.GetTracerProvider().Tracer("").Start(ctx, "algod.GetCurrentRoundInRawBytes")
 	//span.SetAttributes(attribute.String("query", q))
 	defer span.End()
 
@@ -65,7 +67,7 @@ func GetCurrentRoundNum(ctx context.Context, algodClient *algod.Client) (uint64,
 }
 
 // GetRoundInRawBytes retrieves the specified round and returns result in byte format.
-func GetRoundInRawBytes(ctx context.Context, algodClient *algod.Client, roundNum uint64) ([]byte, error) {
+func GetRoundInRawBytes(ctx context.Context, algodClient *algodv2.Client, roundNum uint64) ([]byte, error) {
 
 	ctx, span := otel.GetTracerProvider().Tracer("").Start(ctx, "algorand.GetRoundInRawBytes")
 	span.SetAttributes(attribute.String("blockNum", strconv.FormatUint(roundNum, 10)))
@@ -82,7 +84,7 @@ func GetRoundInRawBytes(ctx context.Context, algodClient *algod.Client, roundNum
 // ConvertBlockRawBytes processes the block in byte format and returns it in a struct.
 func ConvertBlockRawBytes(ctx context.Context, rawBlock []byte) (block.NewBlock, error) {
 
-	ctx, span := otel.GetTracerProvider().Tracer("").Start(ctx, "algorand.ConvertBlockRawBytes")
+	ctx, span := otel.GetTracerProvider().Tracer("").Start(ctx, "algod.ConvertBlockRawBytes")
 	//span.SetAttributes(attribute.String("query", q))
 	defer span.End()
 
