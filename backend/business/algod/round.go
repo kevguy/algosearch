@@ -2,13 +2,11 @@ package algod
 
 import (
 	"context"
-	"encoding/base32"
 	"encoding/base64"
 	algodv2 "github.com/algorand/go-algorand-sdk/client/v2/algod"
 	"github.com/algorand/go-algorand-sdk/client/v2/common/models"
 	"github.com/algorand/go-algorand-sdk/encoding/msgpack"
 	"github.com/kevguy/algosearch/backend/business/couchdata/block"
-	"github.com/kevguy/algosearch/backend/business/couchdata/transaction"
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -97,70 +95,76 @@ func ConvertBlockRawBytes(ctx context.Context, rawBlock []byte) (block.NewBlock,
 	//var blockInfo = block.NewBlock{response.Block, "", ""}
 	var blockInfo = response.Block
 
-	var rewards = block.Rewards{
-		FeeSink:			blockInfo.FeeSink.String(),
-		RewardsCalRound:	uint64(blockInfo.RewardsRecalculationRound),
-		RewardsLevel:		blockInfo.RewardsLevel,
-		RewardsPool:		blockInfo.RewardsPool.String(),
-		RewardsRate:		blockInfo.RewardsRate,
-		RewardsResidue:		blockInfo.RewardsResidue,
+	var rewards = models.BlockRewards{
+		FeeSink:                 blockInfo.FeeSink.String(),
+		RewardsCalculationRound: uint64(blockInfo.RewardsRecalculationRound),
+		RewardsLevel:            blockInfo.RewardsLevel,
+		RewardsPool:             blockInfo.RewardsPool.String(),
+		RewardsRate:             blockInfo.RewardsRate,
+		RewardsResidue:          blockInfo.RewardsResidue,
 	}
 
-	var upgradeState = block.UpgradeState{
-		CurrProtocol: 			blockInfo.CurrentProtocol,
-		NextProtocol:			&blockInfo.NextProtocol,
-		NextProtocolApprovals:	blockInfo.NextProtocolApprovals,
-		NextProtocolSwitchOn:	uint64(blockInfo.NextProtocolSwitchOn),
-		NextProtocolVoteBefore:	uint64(blockInfo.NextProtocolVoteBefore),
+	var upgradeState = models.BlockUpgradeState{
+		CurrentProtocol:        blockInfo.CurrentProtocol,
+		NextProtocol:           blockInfo.NextProtocol,
+		NextProtocolApprovals:  blockInfo.NextProtocolApprovals,
+		NextProtocolSwitchOn:   uint64(blockInfo.NextProtocolSwitchOn),
+		NextProtocolVoteBefore: uint64(blockInfo.NextProtocolVoteBefore),
 	}
 
-	var upgradeVote = block.UpgradeVote{
-		UpgradeApprove:	blockInfo.UpgradeApprove,
-		UpgradeDelay: 	uint64(blockInfo.UpgradeDelay),
-		UpgradePropose: &blockInfo.UpgradePropose,
+	var upgradeVote = models.BlockUpgradeVote{
+		UpgradeApprove: blockInfo.UpgradeApprove,
+		UpgradeDelay:   uint64(blockInfo.UpgradeDelay),
+		UpgradePropose: blockInfo.UpgradePropose,
 	}
 
 	var newBlock = block.NewBlock{
-		GenesisHash:		"",
-		GenesisID:			blockInfo.GenesisID,
-		PrevBlockHash:		"",
-		Rewards:			rewards,
-		Round: 				uint64(blockInfo.Round),
-		Seed: 				"",
-		Timestamp:			uint64(blockInfo.TimeStamp),
-		//Transactions		[]uint64		`json:"transactions"`
-		TransactionsRoot:	"",
-		TransactionCounter:	blockInfo.TxnCounter,
-		UpgradeState:		upgradeState,
-		UpgradeVote:		upgradeVote,
-		Proposer:			"",
-		BlockHash:			"",
+		Block:     models.Block{
+			GenesisHash:       blockInfo.GenesisHash[:],
+			GenesisId:         blockInfo.GenesisID,
+			PreviousBlockHash: blockInfo.Branch[:],
+			Rewards:           rewards,
+			Round:             uint64(blockInfo.Round),
+			Seed:              blockInfo.Seed[:],
+			Timestamp:         uint64(blockInfo.TimeStamp),
+			Transactions:      nil,
+			TransactionsRoot:  blockInfo.TxnRoot[:],
+			TxnCounter:        blockInfo.TxnCounter,
+			UpgradeState:      upgradeState,
+			UpgradeVote:       upgradeVote,
+		},
+		Proposer:  "",
+		BlockHash: "",
 	}
 
 	// Process Genesis Hash
 	//var genesisHash = [32]byte{}
 	//copy(genesisHash[:], blockInfo.GenesisHash[:])
 	var genesisHash = [32]byte(blockInfo.GenesisHash)
-	newBlock.GenesisHash = base64.StdEncoding.EncodeToString(genesisHash[:])
+	//newBlock.GenesisHash = base64.StdEncoding.EncodeToString(genesisHash[:])
+	newBlock.GenesisHash = genesisHash[:]
 
 	// Process Previous Block Hash
-	var prevBlockHashStr = base32.StdEncoding.WithPadding(base32.NoPadding).EncodeToString(blockInfo.Branch[:])
+	//var prevBlockHashStr = base32.StdEncoding.WithPadding(base32.NoPadding).EncodeToString(blockInfo.Branch[:])
 	//newBlock.PrevBlockHash = "blk-" + prevBlockHashStr
-	newBlock.PrevBlockHash = prevBlockHashStr
+	newBlock.PreviousBlockHash = blockInfo.Branch[:]
 
 	// Process Seed
-	var seedStr = base64.StdEncoding.EncodeToString(blockInfo.Seed[:])
-	newBlock.Seed = seedStr
+	//var seedStr = base64.StdEncoding.EncodeToString(blockInfo.Seed[:])
+	newBlock.Seed = blockInfo.Seed[:]
 
 	// Process Transactions
-	newBlock.Transactions = []transaction.Transaction{}
+	newBlock.Transactions = []models.Transaction{}
 	for _, txn := range blockInfo.Payset {
-		newBlock.Transactions = append(newBlock.Transactions, ProcessTransactionInBlock(txn))
+		newBlock.Transactions = append(newBlock.Transactions, ProcessTransactionInBlock(
+			txn,
+			blockInfo))
 	}
 
 	// Print Transactions Root
 	// Don't use the String() from types.Address
-	newBlock.TransactionsRoot = base64.StdEncoding.EncodeToString(blockInfo.TxnRoot[:])
+	//newBlock.TransactionsRoot = base64.StdEncoding.EncodeToString(blockInfo.TxnRoot[:])
+	newBlock.TransactionsRoot = blockInfo.TxnRoot[:]
 
 	var certInfo = *response.Cert
 	var prop = certInfo["prop"].(map[interface{}]interface{})
