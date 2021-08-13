@@ -107,17 +107,17 @@ func PrintBlockInfoFromJsonBlock(jsonBlock models.Block) error {
 	//fmt.Println("Cert Info")
 	//fmt.Println(response.Cert)
 
-	var certInfo = *response.Cert
-	var prop = certInfo["prop"].(map[interface{}]interface{})
+	//var certInfo = *response.Cert
+	//var prop = certInfo["prop"].(map[interface{}]interface{})
 
 	// Find the Proposer, that is the correct implementation
-	var oprop = prop["oprop"].([]byte)
-	oprop_ := byteArrAsAddress(oprop)
-	fmt.Println("\t- Proposer: " + oprop_.String())
+	//var oprop = prop["oprop"].([]byte)
+	//oprop_ := byteArrAsAddress(oprop)
+	//fmt.Println("\t- Proposer: " + oprop_.String())
 
 	// Find the Block Hash
-	var dig = prop["dig"].([]byte)
-	fmt.Println("\t- Block Hash: " + base64.StdEncoding.EncodeToString(dig))
+	//var dig = prop["dig"].([]byte)
+	//fmt.Println("\t- Block Hash: " + base64.StdEncoding.EncodeToString(dig))
 
 	fmt.Println("========================================================")
 

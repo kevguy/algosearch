@@ -16,6 +16,11 @@ import (
 
 // GetRound retrieves a block from the Algod API based on the round number given
 func GetRound(ctx context.Context, traceID string, log *zap.SugaredLogger, algodClient *algodv2.Client, roundNum uint64) (*block.NewBlock, error) {
+
+	ctx, span := otel.GetTracerProvider().Tracer("").Start(ctx, "algod.GetRound")
+	span.SetAttributes(attribute.Int64("round", int64(roundNum)))
+	defer span.End()
+
 	log.Infow("algod.GetRound", "traceid", traceID)
 
 	rawBlock, err := GetRoundInRawBytes(ctx, algodClient, roundNum)
@@ -32,6 +37,10 @@ func GetRound(ctx context.Context, traceID string, log *zap.SugaredLogger, algod
 
 // GetCurrentRound retrieves retrieves the current block from the Algod API
 func GetCurrentRound(ctx context.Context, traceID string, log *zap.SugaredLogger, algodClient *algodv2.Client) (*block.NewBlock, error) {
+
+	ctx, span := otel.GetTracerProvider().Tracer("").Start(ctx, "algod.GetCurrentRound")
+	defer span.End()
+
 	log.Infow("algod.GetCurrentRound", "traceid", traceID)
 
 	currNum, err := GetCurrentRoundNum(ctx, algodClient)

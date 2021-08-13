@@ -2,6 +2,7 @@ package algod
 
 import (
 	"encoding/base64"
+	"fmt"
 	"github.com/algorand/go-algorand-sdk/client/v2/common/models"
 	"github.com/algorand/go-algorand-sdk/crypto"
 	"github.com/algorand/go-algorand-sdk/types"
@@ -364,6 +365,7 @@ func msigToTransactionMsig(msig types.MultisigSig) *models.TransactionSignatureM
 
 // https://github.com/algorand/indexer/blob/master/api/converter_utils.go#L193
 func lsigToTransactionLsig(lsig types.LogicSig) *models.TransactionSignatureLogicsig {
+	fmt.Println("fuck you ")
 	if isBlank(lsig) {
 		return nil
 	}
@@ -373,6 +375,7 @@ func lsigToTransactionLsig(lsig types.LogicSig) *models.TransactionSignatureLogi
 	//	args = append(args, base64.StdEncoding.EncodeToString(arg))
 	//}
 
+	fmt.Println("fuck you too")
 	ret := models.TransactionSignatureLogicsig{
 		Args:				lsig.Args,
 		Logic: 				lsig.Logic,
@@ -415,6 +418,14 @@ func stateDeltaToStateDelta(d types.StateDelta) []models.EvalDeltaKeyValue {
 // https://github.com/algorand/indexer/blob/6e4d737f2e4e49088b436a234caee6681435053d/api/converter_utils.go
 func ProcessTransactionInBlock(txn types.SignedTxnInBlock, blockInfo types.Block) models.Transaction {
 
+
+	var genesisHash = [32]byte(txn.Txn.GenesisHash)
+	var genesisHashStr = base64.StdEncoding.EncodeToString(genesisHash[:])
+	fmt.Println("Indexer here")
+	fmt.Println("- Genesis Hash: " + genesisHashStr)
+	fmt.Println("- ID: ")
+	fmt.Println("Bye")
+
 	var payment *models.TransactionPayment
 	var keyreg *models.TransactionKeyreg
 	var assetConfig *models.TransactionAssetConfig
@@ -446,11 +457,27 @@ func ProcessTransactionInBlock(txn types.SignedTxnInBlock, blockInfo types.Block
 		application = &applicationTx
 	}
 
-	sig := models.TransactionSignature{
-		Logicsig: *lsigToTransactionLsig(txn.SignedTxnWithAD.SignedTxn.Lsig),
-		Multisig: *msigToTransactionMsig(txn.SignedTxnWithAD.SignedTxn.Msig),
-		Sig:      *sigToTransactionSig(txn.SignedTxnWithAD.Sig),
+	sig := models.TransactionSignature{}
+
+	logicSig := lsigToTransactionLsig(txn.SignedTxnWithAD.SignedTxn.Lsig)
+	multiSig := msigToTransactionMsig(txn.SignedTxnWithAD.SignedTxn.Msig)
+	sigsig := sigToTransactionSig(txn.SignedTxnWithAD.Sig)
+
+	if logicSig != nil {
+		sig.Logicsig = *logicSig
 	}
+	if multiSig != nil {
+		sig.Multisig = *multiSig
+	}
+	if sigsig != nil {
+		sig.Sig = *sigsig
+	}
+
+	//sig := models.TransactionSignature{
+	//	Logicsig: *logicSig,
+	//	Multisig: *multiSig,
+	//	Sig:      *sigsig,
+	//}
 
 	var localStateDelta []models.AccountStateDelta
 	type tuple struct {
@@ -490,12 +517,12 @@ func ProcessTransactionInBlock(txn types.SignedTxnInBlock, blockInfo types.Block
 	}
 
 	var transaction = models.Transaction{
-		ApplicationTransaction:   *application,
-		AssetConfigTransaction:   *assetConfig,
-		AssetFreezeTransaction:   *assetFreeze,
-		AssetTransferTransaction: *assetTransfer,
-		PaymentTransaction:       *payment,
-		KeyregTransaction:        *keyreg,
+		//ApplicationTransaction:   *application,
+		//AssetConfigTransaction:   *assetConfig,
+		//AssetFreezeTransaction:   *assetFreeze,
+		//AssetTransferTransaction: *assetTransfer,
+		//PaymentTransaction:       *payment,
+		//KeyregTransaction:        *keyreg,
 
 		ClosingAmount:            uint64(txn.ClosingAmount),
 		ConfirmedRound:           uint64(blockInfo.Round),
@@ -523,6 +550,21 @@ func ProcessTransactionInBlock(txn types.SignedTxnInBlock, blockInfo types.Block
 		GlobalStateDelta:		  stateDeltaToStateDelta(txn.EvalDelta.GlobalDelta),
 		LocalStateDelta:		  localStateDelta,
 		AuthAddr:                 txn.AuthAddr.String(),
+	}
+
+	switch txn.Txn.Type {
+	case types.PaymentTx:
+		transaction.PaymentTransaction = *payment
+	case types.KeyRegistrationTx:
+		transaction.KeyregTransaction = *keyreg
+	case types.AssetConfigTx:
+		transaction.AssetConfigTransaction = *assetConfig
+	case types.AssetTransferTx:
+		transaction.AssetTransferTransaction = *assetTransfer
+	case types.AssetFreezeTx:
+		transaction.AssetFreezeTransaction = *assetFreeze
+	case types.ApplicationCallTx:
+		transaction.ApplicationTransaction = *application
 	}
 
 	if txn.Txn.Type == types.AssetConfigTx {

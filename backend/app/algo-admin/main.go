@@ -7,6 +7,7 @@ import (
 	"github.com/kevguy/algosearch/backend/app/algo-admin/commands"
 	"github.com/kevguy/algosearch/backend/foundation/algod"
 	"github.com/kevguy/algosearch/backend/foundation/couchdb"
+	"github.com/kevguy/algosearch/backend/foundation/indexer"
 	"github.com/kevguy/algosearch/backend/foundation/logger"
 	"os"
 	"strconv"
@@ -52,10 +53,20 @@ func run(log *zap.SugaredLogger) error {
 			AlgodToken	string `conf:"default:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"`
 			KmdAddr		string `conf:"default:http://localhost:7833"`
 			KmdToken	string `conf:"default:a"`
+			IndexerAddr 	string `conf:"default:http://localhost:8980"`
+			IndexerToken	string `conf:"default:empty"`
 		}
 	}
 	cfg.Version.SVN = build
 	cfg.Version.Desc = "copyright information here"
+
+
+	// This is some special handling that the configuration library cannot
+	// handle default value being an empty string
+	// TODO: fix this
+	if cfg.Algorand.IndexerToken == "empty" {
+		cfg.Algorand.IndexerAddr = ""
+	}
 
 	const prefix = "SALES"
 	if err := conf.Parse(os.Args[1:], prefix, &cfg); err != nil {
@@ -101,9 +112,44 @@ func run(log *zap.SugaredLogger) error {
 		KmdToken: cfg.Algorand.KmdToken,
 	}
 
+	indexerConfig := indexer.Config{
+		IndexerAddr:  cfg.Algorand.IndexerAddr,
+		IndexerToken: cfg.Algorand.IndexerToken,
+	}
+
 	traceID := "00000000-0000-0000-0000-000000000000"
 
 	switch cfg.Args.Num(0) {
+	case "pprint-round-algod":
+		numStr := cfg.Args.Num(1)
+		num, err := strconv.Atoi(numStr)
+		if err != nil {
+			return errors.Wrap(err, "num arg format wrong")
+		}
+		if err := commands.PrettyPrintBlockFromAlgodCmd(traceID, log, algorandConfig, uint64(num)); err != nil {
+			return errors.Wrap(err, "pretty print block from algod")
+		}
+
+	case "pprint-round-indexer":
+		numStr := cfg.Args.Num(1)
+		num, err := strconv.Atoi(numStr)
+		if err != nil {
+			return errors.Wrap(err, "num arg format wrong")
+		}
+		if err := commands.PrettyPrintBlockFromIndexerCmd(traceID, log, indexerConfig, uint64(num)); err != nil {
+			return errors.Wrap(err, "pretty print block from indexer")
+		}
+
+	case "compare-round-algod-indexer":
+		numStr := cfg.Args.Num(1)
+		num, err := strconv.Atoi(numStr)
+		if err != nil {
+			return errors.Wrap(err, "num arg format wrong")
+		}
+		if err := commands.CompareBlockBetweenAlgodAndIndexer(traceID, log, algorandConfig, indexerConfig, uint64(num)); err != nil {
+			return errors.Wrap(err, "comparing block bytes")
+		}
+
 	case "add-current-round":
 		if err := commands.AddCurrentRoundCmd(traceID, log, algorandConfig, couchConfig); err != nil {
 			return errors.Wrap(err, "add current round")

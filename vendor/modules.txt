@@ -47,6 +47,9 @@ github.com/google/uuid
 # github.com/leodido/go-urn v1.2.1
 ## explicit
 github.com/leodido/go-urn
+# github.com/nsf/jsondiff v0.0.0-20200515183724-f29ed568f4ce
+## explicit
+github.com/nsf/jsondiff
 # github.com/openzipkin/zipkin-go v0.2.5
 github.com/openzipkin/zipkin-go/model
 # github.com/pkg/errors v0.9.1

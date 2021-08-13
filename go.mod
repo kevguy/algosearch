@@ -13,6 +13,7 @@ require (
 	github.com/go-playground/validator/v10 v10.7.0
 	github.com/google/uuid v1.3.0
 	github.com/leodido/go-urn v1.2.1 // indirect
+	github.com/nsf/jsondiff v0.0.0-20200515183724-f29ed568f4ce
 	github.com/pkg/errors v0.9.1
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.21.0
 	go.opentelemetry.io/otel v1.0.0-RC1
