@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	BLOCKS = "blocks"
+	BlocksDb = "blocks"
 )
 
 type Store struct {
@@ -20,7 +20,7 @@ type Store struct {
 	couchClient *kivik.Client
 }
 
-// NewStore constructs a product store for api access.
+// NewStore constructs a block store for api access.
 func NewStore(log *zap.SugaredLogger, couchClient *kivik.Client) Store {
 	return Store{
 		log: log,
@@ -28,7 +28,7 @@ func NewStore(log *zap.SugaredLogger, couchClient *kivik.Client) Store {
 	}
 }
 
-// AddBlock adds a block to CouchDB.
+// AddBlock adds a block to CouchDB using block hash as ID.
 func (s Store) AddBlock(ctx context.Context, block NewBlock) (string, string, error) {
 
 	ctx, span := otel.GetTracerProvider().
@@ -36,11 +36,11 @@ func (s Store) AddBlock(ctx context.Context, block NewBlock) (string, string, er
 		Start(ctx, "block.AddBlock")
 	defer span.End()
 
-	exist, err := s.couchClient.DBExists(ctx, BLOCKS)
+	exist, err := s.couchClient.DBExists(ctx, BlocksDb)
 	if err != nil || !exist {
-		return "", "", errors.Wrap(err, BLOCKS+ " database check fails")
+		return "", "", errors.Wrap(err, BlocksDb+ " database check fails")
 	}
-	db := s.couchClient.DB(BLOCKS)
+	db := s.couchClient.DB(BlocksDb)
 
 	//docID, rev, err := db.CreateDoc(ctx, block, map[string]interface{}{
 	//	"_id": block.BlockHash,
@@ -48,13 +48,13 @@ func (s Store) AddBlock(ctx context.Context, block NewBlock) (string, string, er
 	//})
 	rev, err := db.Put(ctx, block.BlockHash, block)
 	if err != nil {
-		return "", "", errors.Wrap(err, BLOCKS+ " database can't insert block number " + string(block.Round))
+		return "", "", errors.Wrap(err, BlocksDb+ " database can't insert block number " + string(block.Round))
 	}
 	//return strconv.FormatUint(block.Round, 10), rev, nil
 	return block.BlockHash, rev, nil
 }
 
-// AddBlocks add blocks to CouchDB.
+// AddBlocks add blocks to CouchDB using their block hashes as IDs.
 func (s Store) AddBlocks(ctx context.Context, blocks []Block) (bool, error) {
 
 	ctx, span := otel.GetTracerProvider().
@@ -62,11 +62,11 @@ func (s Store) AddBlocks(ctx context.Context, blocks []Block) (bool, error) {
 		Start(ctx, "block.AddBlocks")
 	defer span.End()
 
-	exist, err := s.couchClient.DBExists(ctx, BLOCKS)
+	exist, err := s.couchClient.DBExists(ctx, BlocksDb)
 	if err != nil || !exist {
-		return false, errors.Wrap(err, BLOCKS+ " database check fails")
+		return false, errors.Wrap(err, BlocksDb+ " database check fails")
 	}
-	db := s.couchClient.DB(BLOCKS)
+	db := s.couchClient.DB(BlocksDb)
 
 	blocks_ := make([]interface{}, len(blocks))
 	for i := range blocks {
@@ -81,31 +81,31 @@ func (s Store) AddBlocks(ctx context.Context, blocks []Block) (bool, error) {
 	return true, nil
 }
 
-// GetBlock retrieves a block from CouchDB based upon the block hash.
-func (s Store) GetBlock(ctx context.Context, blockHash string) (Block, error) {
+// GetBlockByHash retrieves a block from CouchDB based upon the block hash.
+func (s Store) GetBlockByHash(ctx context.Context, blockHash string) (Block, error) {
 
 	ctx, span := otel.GetTracerProvider().
 		Tracer("").
-		Start(ctx, "block.GetBlock")
+		Start(ctx, "block.GetBlockByHash")
 	defer span.End()
 
-	exist, err := s.couchClient.DBExists(ctx, BLOCKS)
+	exist, err := s.couchClient.DBExists(ctx, BlocksDb)
 	if err != nil || !exist {
-		return Block{}, errors.Wrap(err, BLOCKS+ " database check fails")
+		return Block{}, errors.Wrap(err, BlocksDb+ " database check fails")
 	}
-	db := s.couchClient.DB(BLOCKS)
+	db := s.couchClient.DB(BlocksDb)
 
 	//row := db.Get(ctx, strconv.FormatUint(blockNum, 10))
 	row := db.Get(ctx, blockHash)
 	if row == nil {
-		return Block{}, errors.Wrap(err, BLOCKS+ " get data empty")
+		return Block{}, errors.Wrap(err, BlocksDb+ " get data empty")
 	}
 
 	var block Block
 	fmt.Printf("%v\n", row)
 	err = row.ScanDoc(&block)
 	if err != nil {
-		return Block{}, errors.Wrap(err, BLOCKS+ "cannot unpack data from row")
+		return Block{}, errors.Wrap(err, BlocksDb+ "cannot unpack data from row")
 	}
 
 	return block, nil
@@ -122,11 +122,11 @@ func (s Store) GetBlockByNum(ctx context.Context, traceID string, log *zap.Sugar
 	span.SetAttributes(attribute.Any("block-num", blockNum))
 	defer span.End()
 
-	exist, err := s.couchClient.DBExists(ctx, BLOCKS)
+	exist, err := s.couchClient.DBExists(ctx, BlocksDb)
 	if err != nil || !exist {
-		return Block{}, errors.Wrap(err, BLOCKS + " database check fails")
+		return Block{}, errors.Wrap(err, BlocksDb+ " database check fails")
 	}
-	db := s.couchClient.DB(BLOCKS)
+	db := s.couchClient.DB(BlocksDb)
 
 	rows, err := db.Query(ctx, "_design/latest", "_view/latest", kivik.Options{
 		"include_docs": true,
@@ -160,11 +160,11 @@ func (s Store) GetEarliestSyncedRoundNumber(ctx context.Context) (uint64, error)
 	//span.SetAttributes(attribute.String("query", q))
 	defer span.End()
 
-	exist, err := s.couchClient.DBExists(ctx, BLOCKS)
+	exist, err := s.couchClient.DBExists(ctx, BlocksDb)
 	if err != nil || !exist {
-		return 0, errors.Wrap(err, BLOCKS+ " database check fails")
+		return 0, errors.Wrap(err, BlocksDb+ " database check fails")
 	}
-	db := s.couchClient.DB(BLOCKS)
+	db := s.couchClient.DB(BlocksDb)
 
 	rows, err := db.Query(ctx, "_design/latest", "_view/latest", kivik.Options{
 		"include_docs": true,
@@ -216,11 +216,11 @@ func (s Store) GetLastSyncedRoundNumber(ctx context.Context) (uint64, error) {
 	//span.SetAttributes(attribute.String("query", q))
 	defer span.End()
 
-	exist, err := s.couchClient.DBExists(ctx, BLOCKS)
+	exist, err := s.couchClient.DBExists(ctx, BlocksDb)
 	if err != nil || !exist {
-		return 0, errors.Wrap(err, BLOCKS+ " database check fails")
+		return 0, errors.Wrap(err, BlocksDb+ " database check fails")
 	}
-	db := s.couchClient.DB(BLOCKS)
+	db := s.couchClient.DB(BlocksDb)
 
 	rows, err := db.Query(ctx, "_design/latest", "_view/latest", kivik.Options{
 		"include_docs": true,
@@ -243,25 +243,9 @@ func (s Store) GetLastSyncedRoundNumber(ctx context.Context) (uint64, error) {
 	}
 
 	return doc.Round, nil
-	//rows, err := db.Query(context.TODO(), "_design/foo", "_view/bar", kivik.Options{
-	//	"startkey": `"foo"`,                           // Quotes are necessary so the
-	//	"endkey":   `"foo` + kivik.EndKeySuffix + `"`, // key is a valid JSON object
-	//})
-	//if err != nil {
-	//	panic(err)
-	//}
-	//for rows.Next() {
-	//	var doc interface{}
-	//	if err := rows.ScanDoc(&doc); err != nil {
-	//		panic(err)
-	//	}
-	//	/* do something with doc */
-	//}
-	//if rows.Err() != nil {
-	//	panic(rows.Err())
-	//}
 }
 
+// GetLatestBlock retrieves the block that is last synced to Couch.
 func (s Store) GetLatestBlock(ctx context.Context, traceID string, log *zap.SugaredLogger) (Block, error) {
 
 	log.Infow("block.GetLatestBlock", "traceid", traceID)
@@ -271,11 +255,11 @@ func (s Store) GetLatestBlock(ctx context.Context, traceID string, log *zap.Suga
 		Start(ctx, "block.GetLatestBlock")
 	defer span.End()
 
-	exist, err := s.couchClient.DBExists(ctx, BLOCKS)
+	exist, err := s.couchClient.DBExists(ctx, BlocksDb)
 	if err != nil || !exist {
-		return Block{}, errors.Wrap(err, BLOCKS+ " database check fails")
+		return Block{}, errors.Wrap(err, BlocksDb+ " database check fails")
 	}
-	db := s.couchClient.DB(BLOCKS)
+	db := s.couchClient.DB(BlocksDb)
 
 	rows, err := db.Query(ctx, "_design/latest", "_view/latest", kivik.Options{
 		"include_docs": true,
@@ -300,7 +284,104 @@ func (s Store) GetLatestBlock(ctx context.Context, traceID string, log *zap.Suga
 	return doc, nil
 }
 
+// GetBlocksPagination retrieves a list of blocks based upon the following parameters:
+// latestBlockNum: the latest block number that user knows about
+// order: desc/asc
+// pageNo: the number of pages the user wants to look at
+// limit: number of blocks per page
+// https://docs.couchdb.org/en/main/ddocs/views/pagination.html
+func (s Store) GetBlocksPagination(ctx context.Context, traceID string, log *zap.SugaredLogger, latestBlockNum int64, order string, pageNo int64, limit int64) ([]Block, error) {
 
+
+	ctx, span := otel.GetTracerProvider().
+		Tracer("").
+		Start(ctx, "block.GetBlocksPagination")
+	span.SetAttributes(attribute.Int64("latestBlockNum", latestBlockNum))
+	span.SetAttributes(attribute.Int64("pageNo", pageNo))
+	span.SetAttributes(attribute.Int64("limit", limit))
+	defer span.End()
+
+	exist, err := s.couchClient.DBExists(ctx, BlocksDb)
+	if err != nil || !exist {
+		return nil, errors.Wrap(err, BlocksDb+ " database check fails")
+	}
+	db := s.couchClient.DB(BlocksDb)
+
+	// We can basically treat latestBlockNum as number of blocks
+	var numOfPages int64 = latestBlockNum / pageNo
+	if latestBlockNum % pageNo > 0 {
+		numOfPages += 1
+	}
+
+	if pageNo < 1 || pageNo > numOfPages {
+		return nil, errors.Wrapf(err, "page number is less than 1 or exceeds page limit: %d", numOfPages)
+	}
+
+	options := kivik.Options{
+		"include_docs": true,
+		"limit": limit,
+	}
+
+	if order == "desc" {
+		options["descending"] = true
+		options["start_key"] = latestBlockNum
+		skip := (pageNo - 1) * limit
+		options["skip"] = (pageNo - 1) * limit
+		if (latestBlockNum - skip) > limit {
+			options["limit"] = limit
+		} else {
+			options["limit"] = latestBlockNum - skip
+		}
+	} else {
+		options["descending"] = false
+		skip := (pageNo - 1) * limit
+		options["skip"] = skip
+		if (skip + limit - latestBlockNum) > 0 {
+			options["limit"] =  latestBlockNum - skip
+		} else {
+			options["limit"] = limit
+		}
+	}
+
+	//rows, err := db.Query(ctx, "_design/latest", "_view/latest", kivik.Options{
+	//	"include_docs": true,
+	//	"descending": true,
+	//	"limit": limit,
+	//	"skip": lastBlockNum - limit,
+	//})
+	rows, err := db.Query(ctx, "_design/latest", "_view/latest", options)
+	if err != nil {
+		return nil, errors.Wrap(err, "Fetch data error")
+	}
+
+	var fetchedBlocks = []Block{}
+	for rows.Next() {
+		var block = Block{}
+		if err := rows.ScanDoc(&block); err != nil {
+			return nil, errors.Wrap(err, "unwrapping block")
+		}
+		fetchedBlocks = append(fetchedBlocks, block)
+	}
+
+	if rows.Err() != nil {
+		return nil, errors.Wrap(err, "rows error, Can't find anything")
+	}
+
+	return fetchedBlocks, nil
+}
+
+/*
+	Block information endpoint
+	:lastBlock = last block to pull from
+	:limit = maximum 100 records retrieved
+	:full = if 0, return truncated data, else return full data
+*/
+// GetLatestBlocksByOffset retrieves a list of blocks starting from the round number specified (lastBlockNum),
+// and then proceed to retrieve a number of blocks (limit) that are before this block.
+// This is actually taking advantage of block numbers being in decsending order.
+// For instance, let's say there are 100 blocks,
+// lastBlockNum=100, limit=5, this will give us the earliest 5 blocks, to move on to the next 5 blocks,
+// we only need to change lastBlockNum from 100 to 95
 func (s Store) GetLatestBlocksByOffset(ctx context.Context, lastBlockNum int64, limit int64) ([]Block, error) {
 
 	ctx, span := otel.GetTracerProvider().
@@ -309,11 +390,11 @@ func (s Store) GetLatestBlocksByOffset(ctx context.Context, lastBlockNum int64, 
 	//span.SetAttributes(attribute.String("query", q))
 	defer span.End()
 
-	exist, err := s.couchClient.DBExists(ctx, BLOCKS)
+	exist, err := s.couchClient.DBExists(ctx, BlocksDb)
 	if err != nil || !exist {
-		return nil, errors.Wrap(err, BLOCKS+ " database check fails")
+		return nil, errors.Wrap(err, BlocksDb+ " database check fails")
 	}
-	db := s.couchClient.DB(BLOCKS)
+	db := s.couchClient.DB(BlocksDb)
 
 	rows, err := db.Query(ctx, "_design/latest", "_view/latest", kivik.Options{
 		"include_docs": true,

@@ -47,6 +47,9 @@ func LookupRoundInJSON(ctx context.Context, indexerClient *indexerv2.Client, rou
 	return block, nil
 }
 
+func Fuck(ctx context.Context, indexerClient *indexerv2.Client, roundNum uint64) (models.Block, error) {
+}
+
 //func ConvertBlockJSON(ctx context.Context, jsonBlock models.Block) (block.NewBlock, error) {
 //
 //	ctx, span := otel.GetTracerProvider().Tracer("").Start(ctx, "indexer.ConvertBlockJSON")

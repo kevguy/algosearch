@@ -24,7 +24,7 @@ func GetRoundInDbCmd(traceID string, log *zap.SugaredLogger, couchCfg couchdb.Co
 
 	blockStore := block.NewStore(log, db)
 
-	block, err := blockStore.GetBlock(ctx, blockHash)
+	block, err := blockStore.GetBlockByHash(ctx, blockHash)
 	if err != nil {
 		return errors.Wrap(err, "get block")
 	}
