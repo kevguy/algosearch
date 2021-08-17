@@ -4,6 +4,7 @@ package transaction
 import (
 	"context"
 	"fmt"
+	"github.com/algorand/go-algorand-sdk/client/v2/common/models"
 	"github.com/go-kivik/kivik/v4"
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/otel"
@@ -28,7 +29,7 @@ func NewStore(log *zap.SugaredLogger, couchClient *kivik.Client) Store {
 }
 
 // AddTransaction adds a transaction to CouchDB.
-func (s Store) AddTransaction(ctx context.Context, transaction Transaction) (string, string, error) {
+func (s Store) AddTransaction(ctx context.Context, transaction models.Transaction) (string, string, error) {
 
 	ctx, span := otel.GetTracerProvider().
 		Tracer("").
@@ -41,11 +42,11 @@ func (s Store) AddTransaction(ctx context.Context, transaction Transaction) (str
 	}
 	db := s.couchClient.DB(TransactionsDb)
 
-	rev, err := db.Put(ctx, transaction.ID, transaction)
+	rev, err := db.Put(ctx, transaction.Id, transaction)
 	if err != nil {
-		return "", "", errors.Wrap(err, TransactionsDb+ " database can't insert transaction id " + transaction.ID)
+		return "", "", errors.Wrap(err, TransactionsDb+ " database can't insert transaction id " + transaction.Id)
 	}
-	return transaction.ID, rev, nil
+	return transaction.Id, rev, nil
 }
 
 // GetTransaction adds a retrieves a transaction record from CouchDB.

@@ -516,7 +516,9 @@ func ProcessTransactionInBlock(txn types.SignedTxnInBlock, blockInfo types.Block
 		localStateDelta = d
 	}
 
+	// TODO:
 	txn.Txn.GenesisHash = blockInfo.GenesisHash
+	txn.Txn.GenesisID = blockInfo.GenesisID
 
 	var transaction = models.Transaction{
 		//ApplicationTransaction:   *application,

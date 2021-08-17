@@ -2,10 +2,10 @@ package blocksynchronizer
 
 import (
 	"context"
-	"fmt"
 	"github.com/algorand/go-algorand-sdk/client/v2/algod"
 	app "github.com/kevguy/algosearch/backend/business/algod"
 	"github.com/kevguy/algosearch/backend/business/couchdata/block"
+	"github.com/kevguy/algosearch/backend/business/couchdata/transaction"
 	"github.com/kevguy/algosearch/backend/foundation/couchdb"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
@@ -16,12 +16,13 @@ import (
 // BlockSynchronizer provides the ability to retrieve block data
 // on an interval.
 type BlockSynchronizer struct {
-	log       *zap.SugaredLogger
-	wg        sync.WaitGroup
-	timer     *time.Timer
-	shutdown  chan struct{}
-	algodClient *algod.Client
-	blockStore *block.Store
+	log       			*zap.SugaredLogger
+	wg        			sync.WaitGroup
+	timer     			*time.Timer
+	shutdown  			chan struct{}
+	algodClient 		*algod.Client
+	blockStore 			*block.Store
+	transactionStore	*transaction.Store
 }
 
 // New creates a BlockSynchronizer for retrieving block data and saving it to CouchDB.
@@ -81,8 +82,9 @@ func (p *BlockSynchronizer) update() {
 
 	if (currentRoundNum - lastSyncedBlockNum) > 1 {
 		rawBlock, err := app.GetRoundInRawBytes(context.Background(), p.algodClient, lastSyncedBlockNum + 1)
-		fmt.Printf("raw block: %v\n", rawBlock)
-		fmt.Printf("last synced num: %d\n", lastSyncedBlockNum + 1)
+		//fmt.Printf("raw block: %v\n", rawBlock)
+		//fmt.Printf("last synced num: %d\n", lastSyncedBlockNum + 1)
+		p.log.Infof("Adding Round #%d\n", lastSyncedBlockNum + 1)
 
 		newBlock, err := app.ConvertBlockRawBytes(context.Background(), rawBlock)
 		if err != nil {
@@ -90,10 +92,18 @@ func (p *BlockSynchronizer) update() {
 		}
 
 		//docID, rev, err := field.BlockStore.AddBlock(ctx, newBlock)
-		_, _, err = p.blockStore.AddBlock(context.Background(), newBlock)
+		blockDocId, blockDocRev, err := p.blockStore.AddBlock(context.Background(), newBlock)
 		if err != nil {
 			p.log.Errorw("blocksynchronizer", "status", "can't add new block", "ERROR", err)
 		}
-	}
+		p.log.Infof("\t- Added block %s with rev %s to CouchDB Block table\n", blockDocId, blockDocRev)
 
+		for _, transaction := range newBlock.Transactions {
+			transactionDocId, transactionDocRev, err := p.transactionStore.AddTransaction(context.Background(), transaction)
+			if err != nil {
+				p.log.Errorw("blocksynchronizer", "status", "can't add new transaction", "ERROR", err)
+			}
+			p.log.Infof("\t\t- Added transaction %s with rev %s to CouchDB Transaction table\n", transactionDocId, transactionDocRev)
+		}
+	}
 }
