@@ -292,7 +292,6 @@ func (s Store) GetLatestBlock(ctx context.Context, traceID string, log *zap.Suga
 // https://docs.couchdb.org/en/main/ddocs/views/pagination.html
 func (s Store) GetBlocksPagination(ctx context.Context, traceID string, log *zap.SugaredLogger, latestBlockNum int64, order string, pageNo int64, limit int64) ([]Block, error) {
 
-
 	ctx, span := otel.GetTracerProvider().
 		Tracer("").
 		Start(ctx, "block.GetBlocksPagination")

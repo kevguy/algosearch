@@ -516,6 +516,8 @@ func ProcessTransactionInBlock(txn types.SignedTxnInBlock, blockInfo types.Block
 		localStateDelta = d
 	}
 
+	txn.Txn.GenesisHash = blockInfo.GenesisHash
+
 	var transaction = models.Transaction{
 		//ApplicationTransaction:   *application,
 		//AssetConfigTransaction:   *assetConfig,
@@ -533,10 +535,15 @@ func ProcessTransactionInBlock(txn types.SignedTxnInBlock, blockInfo types.Block
 		RoundTime:                uint64(blockInfo.TimeStamp),
 		Fee:                      uint64(txn.Txn.Fee),
 		FirstValid:               uint64(txn.Txn.FirstValid),
-		GenesisHash:              txn.Txn.GenesisHash[:],
-		GenesisId:                txn.Txn.GenesisID,
+		// TODO: this is because ... Kevin! Write down what you got from Jason Paulos
+		//GenesisHash:              txn.Txn.GenesisHash[:],
+		GenesisHash:			  blockInfo.GenesisHash[:],
+		// TODO: this is because ... Kevin! Write down what you got from Jason Paulos
+		//GenesisId:                txn.Txn.GenesisID,
+		GenesisId: 				  blockInfo.GenesisID,
 		Group:					  txn.Txn.Group[:],
 		LastValid:                uint64(txn.Txn.LastValid),
+		// TODO:
 		Lease:                    txn.Txn.Lease[:],
 		Note:                     txn.Txn.Note[:],
 		Sender:                   txn.Txn.Sender.String(),
@@ -546,6 +553,7 @@ func ProcessTransactionInBlock(txn types.SignedTxnInBlock, blockInfo types.Block
 		Type:                     string(txn.Txn.Type),
 		Signature:                sig,
 		Id:   					  crypto.TransactionIDString(txn.Txn),
+		// TODO
 		RekeyTo: 				  txn.Txn.RekeyTo.String(),
 		GlobalStateDelta:		  stateDeltaToStateDelta(txn.EvalDelta.GlobalDelta),
 		LocalStateDelta:		  localStateDelta,
