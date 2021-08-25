@@ -44,6 +44,10 @@ start-local-couchdb:
 	#docker run -e COUCHDB_USER=admin -e COUCHDB_PASSWORD=password -p 5984:5984 --name my-couchdb -v $(pwd)/db-data:/opt/couchdb/data -d couchdb
 	docker run -e COUCHDB_USER=admin -e COUCHDB_PASSWORD=password -p 5984:5984 --name algosearch-couchdb -v $(shell pwd)/db-data:/opt/couchdb/data -d couchdb
 
+stop-local-couchdb:
+	docker stop algosearch-couchdb
+	docker rm algosearch-couchdb
+
 # ==============================================================================
 # Monitoring
 

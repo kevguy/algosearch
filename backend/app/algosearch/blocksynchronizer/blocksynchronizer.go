@@ -117,14 +117,21 @@ func (p *BlockSynchronizer) update() {
 		}
 		p.log.Infof("\t- Added block %s with rev %s to CouchDB Block table\n", blockDocId, blockDocRev)
 
-		for _, transaction := range newBlock.Transactions {
-			fmt.Println("Got transaction")
-			fmt.Printf("%v\n", transaction)
-			transactionDocId, transactionDocRev, err := p.transactionStore.AddTransaction(context.Background(), transaction)
+		if len(newBlock.Transactions) > 0 {
+			_, err = p.transactionStore.AddTransactions(context.Background(), newBlock.Transactions)
 			if err != nil {
-				p.log.Errorw("blocksynchronizer", "status", "can't add new transaction", "ERROR", err)
+				p.log.Errorw("blocksynchronizer", "status", "can't add new transaction(s)", "ERROR", err)
 			}
-			p.log.Infof("\t\t- Added transaction %s with rev %s to CouchDB Transaction table\n", transactionDocId, transactionDocRev)
+			p.log.Infof("\t\t- Added %d transactions with block %s to CouchDB Transaction table\n", len(newBlock.Transactions), newBlock.BlockHash)
 		}
+		//for _, transaction := range newBlock.Transactions {
+		//	fmt.Println("Got transaction")
+		//	fmt.Printf("%v\n", transaction)
+		//	transactionDocId, transactionDocRev, err := p.transactionStore.AddTransaction(context.Background(), transaction)
+		//	if err != nil {
+		//		p.log.Errorw("blocksynchronizer", "status", "can't add new transaction", "ERROR", err)
+		//	}
+		//	p.log.Infof("\t\t- Added transaction %s with rev %s to CouchDB Transaction table\n", transactionDocId, transactionDocRev)
+		//}
 	}
 }

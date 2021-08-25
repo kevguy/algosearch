@@ -57,7 +57,10 @@ func (s Store) AddTransaction(ctx context.Context, transaction models.Transactio
 	return doc.Id, rev, nil
 }
 
-func (s Store) AddTransactions(ctx context.Context, transactions []Transaction) (bool, error) {
+// AddTransactions bulk-adds transactions to CouchDB.
+// It receives the []models.Transaction object and transform them into Transaction document objects and then
+// insert them into the global CouchDB table.
+func (s Store) AddTransactions(ctx context.Context, transactions []models.Transaction) (bool, error) {
 
 	ctx, span := otel.GetTracerProvider().
 		Tracer("").
@@ -71,11 +74,27 @@ func (s Store) AddTransactions(ctx context.Context, transactions []Transaction) 
 	db := s.couchClient.DB(schema.GlobalDbName)
 
 	transactions_ := make([]interface{}, len(transactions))
+	fmt.Println("Here are teh transactions")
+	fmt.Printf("%v\n", transactions)
+
+	// https://stackoverflow.com/questions/55755929/go-convert-interface-to-map
+	// https://stackoverflow.com/questions/44094325/add-data-to-interface-in-struct
 	for i := range transactions {
-		transactions_[i] = transactions[i]
-		v, _ := transactions_[i].(map[string]interface{})
-		v["_id"] = transactions[i].Id
-		transactions_[i] = v
+		doc := NewTransaction{
+			ID: &transactions[i].Id,
+			Transaction: transactions[i],
+			DocType:     DocType,
+		}
+		transactions_[i] = doc
+		//fmt.Println("YYYYYYYYYY")
+		//fmt.Printf("%v\n", transactions_[i])
+		//v, _ := transactions_[i].(map[string]interface{})
+		//fmt.Println("VVVVVVVV")
+		//fmt.Printf("%v\n", v)
+		//v["_id"] = transactions[i].Id
+		//transactions_[i] = v
+		//fmt.Println("looping")
+		//fmt.Println(transactions_[i])
 	}
 
 	_, err = db.BulkDocs(ctx, transactions_)
@@ -86,7 +105,7 @@ func (s Store) AddTransactions(ctx context.Context, transactions []Transaction) 
 	return true, nil
 }
 
-// GetTransaction adds a retrieves a transaction record from CouchDB based upon the transaction ID given.
+// GetTransaction retrieves a transaction record from CouchDB based upon the transaction ID given.
 func (s Store) GetTransaction(ctx context.Context, transactionID string) (models.Transaction, error) {
 
 	ctx, span := otel.GetTracerProvider().
@@ -130,7 +149,7 @@ func (s Store) GetEarliestTransactionId(ctx context.Context) (string, error) {
 	}
 	db := s.couchClient.DB(schema.GlobalDbName)
 
-	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" + schema.TransactionLatestView, kivik.Options{
+	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" + schema.TransactionViewByIdInLatest, kivik.Options{
 		"include_docs": true,
 		"descending": false,
 		"limit": 1,
@@ -157,7 +176,7 @@ func (s Store) GetLatestTransactionId(ctx context.Context) (string, error) {
 
 	ctx, span := otel.GetTracerProvider().
 		Tracer("").
-		Start(ctx, "transaction.GetEarliestTransactionId")
+		Start(ctx, "transaction.GetLatestTransactionId")
 	//span.SetAttributes(attribute.String("query", q))
 	defer span.End()
 
@@ -167,7 +186,7 @@ func (s Store) GetLatestTransactionId(ctx context.Context) (string, error) {
 	}
 	db := s.couchClient.DB(schema.GlobalDbName)
 
-	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" + schema.TransactionLatestView, kivik.Options{
+	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" + schema.TransactionViewByIdInLatest, kivik.Options{
 		"include_docs": true,
 		"descending": true,
 		"limit": 1,
@@ -188,6 +207,46 @@ func (s Store) GetLatestTransactionId(ctx context.Context) (string, error) {
 	}
 
 	return doc.Id, nil
+}
+
+// https://stackoverflow.com/questions/11284383/couchdb-count-unique-document-field
+// https://stackoverflow.com/questions/12944294/using-a-couchdb-view-can-i-count-groups-and-filter-by-key-range-at-the-same-tim
+func (s Store) GetTransactionCountBtnKeys(ctx context.Context, startKey, endKey string) (int64, error) {
+
+	ctx, span := otel.GetTracerProvider().
+		Tracer("").
+		Start(ctx, "transaction.GetTransactionCountBtnKeys")
+	//span.SetAttributes(attribute.String("query", q))
+	defer span.End()
+
+	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
+	if err != nil || !exist {
+		return 0, errors.Wrap(err, schema.GlobalDbName + " database check fails")
+	}
+	db := s.couchClient.DB(schema.GlobalDbName)
+
+	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" + schema.TransactionViewByIdInCount, kivik.Options{
+		"include_docs": false,
+		"start_key": startKey,
+		"end_key": endKey,
+	})
+	if err != nil {
+		return 0, errors.Wrap(err, "Fetch data error")
+	}
+
+	type Payload struct {
+		Key string `json:"key"`
+		Value int64 `json:"value"`
+	}
+
+	var payload Payload
+	for rows.Next() {
+		if err := rows.ScanDoc(&payload); err != nil {
+			return 0, errors.Wrap(err, "Can't find anything")
+		}
+	}
+
+	return payload.Value, nil
 }
 
 // GetBlocksPagination retrieves a list of blocks based upon the following parameters:

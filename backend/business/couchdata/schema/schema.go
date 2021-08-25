@@ -15,8 +15,9 @@ const (
 	BlockDDoc                = "_design/block"
 	BlockViewByRoundInLatest = "blockByLatest"
 
-	TransactionDDoc = "_design/txn"
-	TransactionLatestView = "txnByLatest"
+	TransactionDDoc             = "_design/txn"
+	TransactionViewByIdInLatest = "txnByLatest"
+	TransactionViewByIdInCount	= "txnByCount"
 
 	AccountDDoc = "_design/acct"
 	AccountLatestView = "byLatest"
@@ -92,7 +93,7 @@ func InsertTransactionViewsForGlobalDB(ctx context.Context, client *kivik.Client
 	}
 	db := client.DB(dbName)
 
-	_, err = db.Query(ctx, TransactionDDoc, "_view/" + TransactionLatestView)
+	_, err = db.Query(ctx, TransactionDDoc, "_view/" +TransactionViewByIdInLatest)
 	//if err != nil {
 	//	return errors.Wrap(err, dbName + " database and query by timestamp view failed to be queried")
 	//}
@@ -100,12 +101,20 @@ func InsertTransactionViewsForGlobalDB(ctx context.Context, client *kivik.Client
 		_, err = db.Put(context.TODO(), TransactionDDoc, map[string]interface{}{
 			"_id": TransactionDDoc,
 			"views": map[string]interface{}{
-				TransactionLatestView: map[string]interface{}{
+				TransactionViewByIdInLatest: map[string]interface{}{
 					"map": `function(doc) { 
 						if (doc.doc_type === 'txn') {
-							emit(doc.round, {_id: doc.Id});
+							emit(doc.id, {_id: doc.id});
 						}
 					}`,
+				},
+				TransactionViewByIdInCount: map[string]interface{}{
+					"map": `function(doc) {
+						if (doc.doc_type === 'txn') {
+							emit(doc.id, 1);
+						}
+					}`,
+					"reduce": "_sum",
 				},
 			},
 		})
