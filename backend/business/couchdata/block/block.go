@@ -13,9 +13,7 @@ import (
 )
 
 const (
-	//BlocksDb = "algo_global"
 	DocType = "block"
-	//BlocksViewByRoundNum = ""
 )
 
 type Store struct {

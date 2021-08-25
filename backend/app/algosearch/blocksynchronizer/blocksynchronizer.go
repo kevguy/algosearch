@@ -66,6 +66,7 @@ func (p *BlockSynchronizer) Stop() {
 	p.wg.Wait()
 }
 
+// TODO: add retry
 // update pulls the block data and saves it to CouchDB.
 func (p *BlockSynchronizer) update() {
 

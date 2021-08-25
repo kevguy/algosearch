@@ -67,7 +67,11 @@ func InsertBlockViewsForGlobalDB(ctx context.Context, client *kivik.Client, dbNa
 			"views": map[string]interface{}{
 				// https://docs.couchdb.org/en/main/ddocs/views/joins.html
 				BlockViewByRoundInLatest: map[string]interface{}{
-					"map": "function(doc) { if (doc.doc_type === 'block')  { emit(doc.round, {_id: doc.BlockHash}); } }",
+					"map": `function(doc) { 
+						if (doc.doc_type === 'block')  {
+							emit(doc.round, {_id: doc.BlockHash});
+						}
+					}`,
 				},
 			},
 		})
@@ -93,13 +97,13 @@ func InsertTransactionViewsForGlobalDB(ctx context.Context, client *kivik.Client
 	//	return errors.Wrap(err, dbName + " database and query by timestamp view failed to be queried")
 	//}
 	//if !rows.Next() {
-		_, err = db.Put(context.TODO(), "_design/" + TransactionLatestView, map[string]interface{}{
+		_, err = db.Put(context.TODO(), TransactionDDoc, map[string]interface{}{
 			"_id": TransactionDDoc,
 			"views": map[string]interface{}{
 				TransactionLatestView: map[string]interface{}{
 					"map": `function(doc) { 
 						if (doc.type === 'txn') {
-							emit(doc.round, doc);
+							emit(doc.round, {_id: doc.Id});
 						}
 					}`,
 				},
