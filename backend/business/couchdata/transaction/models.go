@@ -2,8 +2,13 @@ package transaction
 
 import "github.com/algorand/go-algorand-sdk/client/v2/common/models"
 
-type Transaction struct {
+type NewTransaction struct {
 	models.Transaction
-	ID	string `json:"_id"`
-	Rev string `json:"_rev,omitempty"`
+	DocType string	`json:"doc_type"`
+}
+
+type Transaction struct {
+	NewTransaction
+	ID		string	`json:"_id,omitempty"`
+	Rev		string	`json:"_rev,omitempty"`
 }

@@ -2,6 +2,7 @@ package blocksynchronizer
 
 import (
 	"context"
+	"fmt"
 	"github.com/algorand/go-algorand-sdk/client/v2/algod"
 	app "github.com/kevguy/algosearch/backend/business/algod"
 	"github.com/kevguy/algosearch/backend/business/couchdata/block"
@@ -81,6 +82,7 @@ func (p *BlockSynchronizer) update() {
 	p.log.Infow("updating latest round here", "last synced round", lastSyncedBlockNum)
 
 	if (currentRoundNum - lastSyncedBlockNum) > 1 {
+		fmt.Printf("Trying to get round number: %d\n", lastSyncedBlockNum + 1)
 		rawBlock, err := app.GetRoundInRawBytes(context.Background(), p.algodClient, lastSyncedBlockNum + 1)
 		//fmt.Printf("raw block: %v\n", rawBlock)
 		//fmt.Printf("last synced num: %d\n", lastSyncedBlockNum + 1)
@@ -98,12 +100,12 @@ func (p *BlockSynchronizer) update() {
 		}
 		p.log.Infof("\t- Added block %s with rev %s to CouchDB Block table\n", blockDocId, blockDocRev)
 
-		for _, transaction := range newBlock.Transactions {
-			transactionDocId, transactionDocRev, err := p.transactionStore.AddTransaction(context.Background(), transaction)
-			if err != nil {
-				p.log.Errorw("blocksynchronizer", "status", "can't add new transaction", "ERROR", err)
-			}
-			p.log.Infof("\t\t- Added transaction %s with rev %s to CouchDB Transaction table\n", transactionDocId, transactionDocRev)
-		}
+		//for _, transaction := range newBlock.Transactions {
+		//	transactionDocId, transactionDocRev, err := p.transactionStore.AddTransaction(context.Background(), transaction)
+		//	if err != nil {
+		//		p.log.Errorw("blocksynchronizer", "status", "can't add new transaction", "ERROR", err)
+		//	}
+		//	p.log.Infof("\t\t- Added transaction %s with rev %s to CouchDB Transaction table\n", transactionDocId, transactionDocRev)
+		//}
 	}
 }
