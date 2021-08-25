@@ -71,19 +71,32 @@ func (p *BlockSynchronizer) update() {
 
 	lastSyncedBlockNum, err := p.blockStore.GetLastSyncedRoundNumber(context.Background())
 	if err != nil {
-		p.log.Errorw("blocksynchronizer", "status", "get data", "ERROR", err)
+		p.log.Errorw("blocksynchronizer", "status", "get last synced round number", "ERROR", err)
 	}
 
 	currentRoundNum, err := app.GetCurrentRoundNum(context.Background(), p.algodClient)
 	if err != nil {
-		p.log.Errorw("blocksynchronizer", "status", "get data", "ERROR", err)
+		p.log.Errorw("blocksynchronizer", "status", "get current round num", "ERROR", err)
 	}
 
 	p.log.Infow("updating latest round here", "last synced round", lastSyncedBlockNum)
 
 	if (currentRoundNum - lastSyncedBlockNum) > 1 {
 		fmt.Printf("Trying to get round number: %d\n", lastSyncedBlockNum + 1)
-		rawBlock, err := app.GetRoundInRawBytes(context.Background(), p.algodClient, lastSyncedBlockNum + 1)
+
+		getRoundSuccessful := false
+		var rawBlock []byte
+		for !getRoundSuccessful {
+			rawBlock, err = app.GetRoundInRawBytes(context.Background(), p.algodClient, lastSyncedBlockNum + 1)
+			if err != nil {
+				p.log.Errorw("blocksynchronizer", "status", "get round in raw bytes", "ERROR", err)
+				// Assuming it's not just block data not available, jump to the next round
+				lastSyncedBlockNum += 1
+			} else {
+				getRoundSuccessful = true
+			}
+		}
+
 		//fmt.Printf("raw block: %v\n", rawBlock)
 		//fmt.Printf("last synced num: %d\n", lastSyncedBlockNum + 1)
 		p.log.Infof("Adding Round #%d\n", lastSyncedBlockNum + 1)
@@ -100,12 +113,12 @@ func (p *BlockSynchronizer) update() {
 		}
 		p.log.Infof("\t- Added block %s with rev %s to CouchDB Block table\n", blockDocId, blockDocRev)
 
-		//for _, transaction := range newBlock.Transactions {
-		//	transactionDocId, transactionDocRev, err := p.transactionStore.AddTransaction(context.Background(), transaction)
-		//	if err != nil {
-		//		p.log.Errorw("blocksynchronizer", "status", "can't add new transaction", "ERROR", err)
-		//	}
-		//	p.log.Infof("\t\t- Added transaction %s with rev %s to CouchDB Transaction table\n", transactionDocId, transactionDocRev)
-		//}
+		for _, transaction := range newBlock.Transactions {
+			transactionDocId, transactionDocRev, err := p.transactionStore.AddTransaction(context.Background(), transaction)
+			if err != nil {
+				p.log.Errorw("blocksynchronizer", "status", "can't add new transaction", "ERROR", err)
+			}
+			p.log.Infof("\t\t- Added transaction %s with rev %s to CouchDB Transaction table\n", transactionDocId, transactionDocRev)
+		}
 	}
 }
