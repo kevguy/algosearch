@@ -102,7 +102,7 @@ func InsertTransactionViewsForGlobalDB(ctx context.Context, client *kivik.Client
 			"views": map[string]interface{}{
 				TransactionLatestView: map[string]interface{}{
 					"map": `function(doc) { 
-						if (doc.type === 'txn') {
+						if (doc.doc_type === 'txn') {
 							emit(doc.round, {_id: doc.Id});
 						}
 					}`,

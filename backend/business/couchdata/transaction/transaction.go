@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	DocType = "transaction"
+	DocType = "txn"
 )
 
 type Store struct {

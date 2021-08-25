@@ -43,6 +43,9 @@ func New(log *zap.SugaredLogger, interval time.Duration, algodClient *algod.Clie
 	blockStore := block.NewStore(log, db)
 	p.blockStore = &blockStore
 
+	transactionStore := transaction.NewStore(log, db)
+	p.transactionStore = &transactionStore
+
 	p.wg.Add(1)
 	go func() {
 		defer p.wg.Done()
@@ -115,6 +118,8 @@ func (p *BlockSynchronizer) update() {
 		p.log.Infof("\t- Added block %s with rev %s to CouchDB Block table\n", blockDocId, blockDocRev)
 
 		for _, transaction := range newBlock.Transactions {
+			fmt.Println("Got transaction")
+			fmt.Printf("%v\n", transaction)
 			transactionDocId, transactionDocRev, err := p.transactionStore.AddTransaction(context.Background(), transaction)
 			if err != nil {
 				p.log.Errorw("blocksynchronizer", "status", "can't add new transaction", "ERROR", err)
