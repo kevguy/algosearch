@@ -321,7 +321,7 @@ func (s Store) GetBlocksPagination(ctx context.Context, traceID string, log *zap
 
 	// We can basically treat latestBlockNum as number of blocks
 	var numOfPages int64 = (latestBlockNum - int64(earliestBlkNum) + 1) / limit
-	if latestBlockNum % pageNo > 0 {
+	if (latestBlockNum - int64(earliestBlkNum) + 1) % limit > 0 {
 		numOfPages += 1
 	}
 
