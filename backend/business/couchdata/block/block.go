@@ -322,7 +322,7 @@ func (s Store) GetBlocksPagination(ctx context.Context, traceID string, log *zap
 	db := s.couchClient.DB(schema.GlobalDbName)
 
 	// We can basically treat latestBlockNum as number of blocks
-	var numOfPages int64 = (latestBlockNum - int64(earliestBlkNum) + 1) / pageNo
+	var numOfPages int64 = (latestBlockNum - int64(earliestBlkNum) + 1) / limit
 	if latestBlockNum % pageNo > 0 {
 		numOfPages += 1
 	}

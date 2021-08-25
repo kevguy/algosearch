@@ -204,6 +204,28 @@ func run(log *zap.SugaredLogger) error {
 			return errors.Wrap(err, "add current round")
 		}
 
+	case "get-rounds-pagination":
+		latestBlockNumStr := cfg.Args.Num(1)
+		latestBlockNum, err := strconv.Atoi(latestBlockNumStr)
+		if err != nil {
+			return errors.Wrap(err, "latestBlockNum arg format wrong")
+		}
+		noOfItemsStr := cfg.Args.Num(2)
+		noOfItems, err := strconv.Atoi(noOfItemsStr)
+		if err != nil {
+			return errors.Wrap(err, "noOfItems arg format wrong")
+		}
+		pageNoStr := cfg.Args.Num(3)
+		pageNo, err := strconv.Atoi(pageNoStr)
+		if err != nil {
+			return errors.Wrap(err, "pageNo arg format wrong")
+		}
+		order := cfg.Args.Num(4)
+		if err := commands.GetRoundsPaginationCmd(traceID, log, couchConfig, int64(latestBlockNum), int64(noOfItems), int64(pageNo), order); err != nil {
+			return errors.Wrap(err, "add round from db")
+		}
+
+
 	case "migrate":
 		if err := commands.Migrate(couchConfig); err != nil {
 			return errors.Wrap(err, "migrating database")
