@@ -2,9 +2,9 @@ package mid
 
 import (
 	"context"
+	"fmt"
 	"github.com/kevguy/algosearch/backend/business/sys/metrics"
 	"github.com/kevguy/algosearch/backend/foundation/web"
-	"github.com/pkg/errors"
 	"net/http"
 )
 
@@ -22,11 +22,14 @@ func Panics() web.Middleware {
 			// variable after the fact.
 			defer func() {
 				if rec := recover(); rec != nil {
-					err = errors.Errorf("PANIC: %v", rec)
+
+					// Stack trace will be provided.
+					err = fmt.Errorf("PANIC [%v]", rec)
 
 					// Log the Go stack trace for this panic'd goroutine.
 					//log.Printf("%s : PANIC	:\n%s", v.TraceID, debug.Stack())
 
+					// Updates the metrics stored in the context.
 					metrics.AddPanics(ctx)
 				}
 			}()

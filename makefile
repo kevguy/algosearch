@@ -26,6 +26,11 @@ export PROJECT = ardan-starter-kit
 # ==============================================================================
 # Mine
 
+kill-postgres:
+	# https://askubuntu.com/questions/547434/how-to-nicely-stop-all-postgres-processes
+	sudo pkill -u postgres
+
+
 get-current-round:
 	go run app/algo-admin/main.go get-current-round
 

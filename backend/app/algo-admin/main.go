@@ -23,7 +23,11 @@ var build = "develop"
 func main() {
 
 	// Construct the application logger.
-	log := logger.New("ADMIN")
+	log, err := logger.New("ADMIN")
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 	defer log.Sync()
 
 	if err := run(log); err != nil {
@@ -68,30 +72,30 @@ func run(log *zap.SugaredLogger) error {
 		cfg.Algorand.IndexerAddr = ""
 	}
 
-	const prefix = "SALES"
+	const prefix = "ALGOSEARCH"
 	if err := conf.Parse(os.Args[1:], prefix, &cfg); err != nil {
 		switch err {
 		case conf.ErrHelpWanted:
 			usage, err := conf.Usage(prefix, &cfg)
 			if err != nil {
-				return errors.Wrap(err, "generating config usage")
+				return fmt.Errorf("generating config usage: %w", err)
 			}
 			fmt.Println(usage)
 			return nil
 		case conf.ErrVersionWanted:
 			version, err := conf.VersionString(prefix, &cfg)
 			if err != nil {
-				return errors.Wrap(err, "generating config version")
+				return fmt.Errorf("generating config version: %w", err)
 			}
 			fmt.Println(version)
 			return nil
 		}
-		return errors.Wrap(err, "parsing config")
+		return fmt.Errorf("parsing config: %w", err)
 	}
 
 	out, err := conf.String(&cfg)
 	if err != nil {
-		return errors.Wrap(err, "generating config for output")
+		return fmt.Errorf("generating config for output: %w", err)
 	}
 	log.Infow("startup", "config", out)
 
@@ -124,7 +128,7 @@ func run(log *zap.SugaredLogger) error {
 		numStr := cfg.Args.Num(1)
 		num, err := strconv.Atoi(numStr)
 		if err != nil {
-			return errors.Wrap(err, "num arg format wrong")
+			return fmt.Errorf("num arg format wrong: %w", err)
 		}
 		if err := commands.PrettyPrintBlockFromAlgodCmd(traceID, log, algorandConfig, uint64(num)); err != nil {
 			return errors.Wrap(err, "pretty print block from algod")
@@ -134,101 +138,117 @@ func run(log *zap.SugaredLogger) error {
 		numStr := cfg.Args.Num(1)
 		num, err := strconv.Atoi(numStr)
 		if err != nil {
-			return errors.Wrap(err, "num arg format wrong")
+			return fmt.Errorf("num arg format wrong: %w", err)
 		}
 		if err := commands.PrettyPrintBlockFromIndexerCmd(traceID, log, indexerConfig, uint64(num)); err != nil {
-			return errors.Wrap(err, "pretty print block from indexer")
+			return fmt.Errorf("pretty print block from indexer: : %w", err)
 		}
 
 	case "compare-round-algod-indexer":
 		numStr := cfg.Args.Num(1)
 		num, err := strconv.Atoi(numStr)
 		if err != nil {
-			return errors.Wrap(err, "num arg format wrong")
+			return fmt.Errorf("num arg format wrong: %w", err)
 		}
 		if err := commands.CompareBlockBetweenAlgodAndIndexer(traceID, log, algorandConfig, indexerConfig, uint64(num)); err != nil {
-			return errors.Wrap(err, "comparing block bytes")
+			return fmt.Errorf("comparing block bytes: %w", err)
 		}
 
 	case "add-current-round":
 		if err := commands.AddCurrentRoundCmd(traceID, log, algorandConfig, couchConfig); err != nil {
-			return errors.Wrap(err, "add current round")
+			return fmt.Errorf("add current round: %w", err)
 		}
 
 	case "get-current-round":
 		if err := commands.GetCurrentRoundCmd(algorandConfig); err != nil {
-			return errors.Wrap(err, "getting current round")
+			return fmt.Errorf("getting current round: %w", err)
 		}
 
 	case "add-round":
 		numStr := cfg.Args.Num(1)
 		num, err := strconv.Atoi(numStr)
 		if err != nil {
-			return errors.Wrap(err, "num arg format wrong")
+			return fmt.Errorf("num arg format wrong: %w", err)
 		}
 		if err := commands.AddRoundCmd(traceID, log, algorandConfig, couchConfig, uint64(num)); err != nil {
-			return errors.Wrap(err, "getting current round")
+			return fmt.Errorf("getting current round: %w", err)
 		}
 
 	case "get-round":
 		numStr := cfg.Args.Num(1)
 		num, err := strconv.Atoi(numStr)
 		if err != nil {
-			return errors.Wrap(err, "num arg format wrong")
+			return fmt.Errorf("num arg format wrong: %w", err)
 		}
 		if err := commands.GetRoundCmd(algorandConfig, uint64(num)); err != nil {
-			return errors.Wrap(err, "getting current round")
+			return fmt.Errorf("getting current round: %w", err)
 		}
 
 	case "get-round-from-db":
 		blockHashStr := cfg.Args.Num(1)
 		if err != nil {
-			return errors.Wrap(err, "num arg format wrong")
+			return fmt.Errorf("num arg format wrong: %w", err)
 		}
 		if err := commands.GetRoundInDbCmd(traceID, log, couchConfig, blockHashStr); err != nil {
-			return errors.Wrap(err, "add round from db")
+			return fmt.Errorf("add round from db: %w", err)
 		}
 
 	case "get-round-from-db-by-num":
 		numStr := cfg.Args.Num(1)
 		num, err := strconv.Atoi(numStr)
 		if err != nil {
-			return errors.Wrap(err, "num arg format wrong")
+			return fmt.Errorf("num arg format wrong: %w", err)
 		}
 		if err := commands.GetRoundNumInDbCmd(traceID, log, couchConfig, uint64(num)); err != nil {
-			return errors.Wrap(err, "add round from db")
+			return fmt.Errorf("num arg format wrong: %w", err)
 		}
 
 	case "get-last-synced-round-num":
 		if err := commands.GetLastSyncedRoundCmd(traceID, log, couchConfig); err != nil {
-			return errors.Wrap(err, "add current round")
+			return fmt.Errorf("add current round: %w", err)
 		}
 
 	case "get-rounds-pagination":
 		latestBlockNumStr := cfg.Args.Num(1)
 		latestBlockNum, err := strconv.Atoi(latestBlockNumStr)
 		if err != nil {
-			return errors.Wrap(err, "latestBlockNum arg format wrong")
+			return fmt.Errorf("latestBlockNum arg format wrong: %w", err)
 		}
 		noOfItemsStr := cfg.Args.Num(2)
 		noOfItems, err := strconv.Atoi(noOfItemsStr)
 		if err != nil {
-			return errors.Wrap(err, "noOfItems arg format wrong")
+			return fmt.Errorf("noOfItems arg format wrong: %w", err)
 		}
 		pageNoStr := cfg.Args.Num(3)
 		pageNo, err := strconv.Atoi(pageNoStr)
 		if err != nil {
-			return errors.Wrap(err, "pageNo arg format wrong")
+			return fmt.Errorf("pageNo arg format wrong: %w", err)
 		}
 		order := cfg.Args.Num(4)
 		if err := commands.GetRoundsPaginationCmd(traceID, log, couchConfig, int64(latestBlockNum), int64(noOfItems), int64(pageNo), order); err != nil {
-			return errors.Wrap(err, "add round from db")
+			return fmt.Errorf("add round from db: %w", err)
 		}
 
+	case "get-txns-pagination":
+		latestTxnId := cfg.Args.Num(1)
+		noOfItemsStr := cfg.Args.Num(2)
+		noOfItems, err := strconv.Atoi(noOfItemsStr)
+		if err != nil {
+			return fmt.Errorf("noOfItems arg format wrong: %w", err)
+		}
+		pageNoStr := cfg.Args.Num(3)
+		pageNo, err := strconv.Atoi(pageNoStr)
+		if err != nil {
+			return fmt.Errorf("pageNo arg format wrong: %w", err)
+		}
+		order := cfg.Args.Num(4)
+		if err := commands.GetTransactionsPaginationCmd(traceID, log, couchConfig, latestTxnId, int64(noOfItems), int64(pageNo), order); err != nil {
+			return fmt.Errorf("add round from db: %w", err)
+		}
 
 	case "migrate":
 		if err := commands.Migrate(couchConfig); err != nil {
-			return errors.Wrap(err, "migrating database")
+			return fmt.Errorf("migrating database: %w", err)
 		}
 
 	default:

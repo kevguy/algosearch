@@ -16,15 +16,15 @@ var ErrHelp = errors.New("provided help")
 func Migrate(cfg couchdb.Config) error {
 	db, err := couchdb.Open(cfg)
 	if err != nil {
-		return errors.Wrap(err, "connect to couchdb database")
+		return fmt.Errorf("connect database: %w", err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer db.Close(ctx)
 	defer cancel()
 
 	if err := schema.Migrate(ctx, db); err != nil {
-		return errors.Wrap(err, "migrate couchdb database")
+		return fmt.Errorf("migrate database: %w", err)
 	}
 
 	fmt.Println("migrations complete")

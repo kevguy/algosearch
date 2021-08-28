@@ -13,19 +13,6 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-// ctxKey represents the type of value for the context key.
-type ctxKey int
-
-// KeyValues is how request values are stored/retrieved.
-const KeyValues ctxKey = 1
-
-// Values represent state for each request.
-type Values struct {
-	TraceID    string
-	Now        time.Time
-	StatusCode int
-}
-
 // A Handler is a type that handles an http request within our own little mini
 // framework.
 type Handler func(ctx context.Context, w http.ResponseWriter, r *http.Request) error
@@ -100,7 +87,7 @@ func (a *App) Handle(method string, path string, handler Handler, mw ...Middlewa
 			TraceID: span.SpanContext().TraceID().String(),
 			Now:     time.Now(),
 		}
-		ctx = context.WithValue(ctx, KeyValues, &v)
+		ctx = context.WithValue(ctx, key, &v)
 
 		// Call the wrapped handler functions.
 		if err := handler(ctx, w, r); err != nil {

@@ -16,7 +16,6 @@ import (
 	"github.com/kevguy/algosearch/backend/app/sidecar/metrics/publisher"
 	"github.com/kevguy/algosearch/backend/app/sidecar/metrics/publisher/expvar"
 	"github.com/kevguy/algosearch/backend/foundation/logger"
-	"github.com/pkg/errors"
 	"go.uber.org/automaxprocs/maxprocs"
 	"go.uber.org/zap"
 )
@@ -27,7 +26,11 @@ var build = "develop"
 func main() {
 
 	// Construct the application logger.
-	log := logger.New("METRICS")
+	log, err := logger.New("METRICS")
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 	defer log.Sync()
 
 	// Make sure the program is using the correct
@@ -76,29 +79,30 @@ func run(log *zap.SugaredLogger) error {
 		},
 	}
 
-	if err := conf.Parse(os.Args[1:], "METRICS", &cfg); err != nil {
+	const prefix = "METRICS"
+	if err := conf.Parse(os.Args[1:], prefix, &cfg); err != nil {
 		switch err {
 		case conf.ErrHelpWanted:
-			usage, err := conf.Usage("METRICS", &cfg)
+			usage, err := conf.Usage(prefix, &cfg)
 			if err != nil {
-				return errors.Wrap(err, "generating config usage")
+				return fmt.Errorf("generating config usage: %w", err)
 			}
 			fmt.Println(usage)
 			return nil
 		case conf.ErrVersionWanted:
-			version, err := conf.VersionString("METRICS", &cfg)
+			version, err := conf.VersionString(prefix, &cfg)
 			if err != nil {
-				return errors.Wrap(err, "generating config version")
+				return fmt.Errorf("generating config version: %w", err)
 			}
 			fmt.Println(version)
 			return nil
 		}
-		return errors.Wrap(err, "parsing config")
+		return fmt.Errorf("parsing config: %w", err)
 	}
 
 	out, err := conf.String(&cfg)
 	if err != nil {
-		return errors.Wrap(err, "generating config for output")
+		return fmt.Errorf("generating config for output: %w", err)
 	}
 	log.Infow("startup", "config", out)
 
@@ -132,7 +136,7 @@ func run(log *zap.SugaredLogger) error {
 	// Initialize to allow for the collection of metrics.
 	collector, err := collector.New(cfg.Collect.From)
 	if err != nil {
-		return errors.Wrap(err, "starting collector")
+		return fmt.Errorf("starting collector: %w", err)
 	}
 
 	// Create a stdout publisher.
@@ -142,7 +146,7 @@ func run(log *zap.SugaredLogger) error {
 	// Start the publisher to collect/publish metrics.
 	publish, err := publisher.New(log, collector, cfg.Publish.Interval, exp.Publish, stdout.Publish)
 	if err != nil {
-		return errors.Wrap(err, "starting publisher")
+		return fmt.Errorf("starting publisher: %w", err)
 	}
 	defer publish.Stop()
 

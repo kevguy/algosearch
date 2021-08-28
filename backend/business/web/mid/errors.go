@@ -6,7 +6,6 @@ import (
 	"github.com/kevguy/algosearch/backend/foundation/web"
 	"net/http"
 
-	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
 
@@ -23,8 +22,8 @@ func Errors(log *zap.SugaredLogger) web.Middleware {
 
 			// If the context is missing this value, request the service
 			// to be shutdown gracefully.
-			v, ok := ctx.Value(web.KeyValues).(*web.Values)
-			if !ok {
+			v, err := web.GetValues(ctx)
+			if err != nil {
 				return web.NewShutdownError("web value missing from context")
 			}
 
@@ -37,7 +36,7 @@ func Errors(log *zap.SugaredLogger) web.Middleware {
 				// Build out the error response.
 				var er validate.ErrorResponse
 				var status int
-				switch act := errors.Cause(err).(type) {
+				switch act := validate.Cause(err).(type) {
 				case validate.FieldErrors:
 					er = validate.ErrorResponse{
 						Error:  "data validation error",

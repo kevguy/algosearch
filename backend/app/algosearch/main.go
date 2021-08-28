@@ -5,9 +5,11 @@ import (
 	"expvar" // Calls init function.
 	"fmt"
 	"github.com/kevguy/algosearch/backend/app/algosearch/blocksynchronizer"
+	"github.com/kevguy/algosearch/backend/business/sys/auth"
 	"github.com/kevguy/algosearch/backend/foundation/algod"
 	"github.com/kevguy/algosearch/backend/foundation/couchdb"
 	"github.com/kevguy/algosearch/backend/foundation/indexer"
+	"github.com/kevguy/algosearch/backend/foundation/keystore"
 	"net/http"
 	"os"
 	"os/signal"
@@ -44,16 +46,12 @@ var build = "develop"
 func main() {
 
 	// Construct the application logger.
-	log := logger.New("ALGOSEARCH")
-	defer log.Sync()
-
-	// Make sure the program is using the correct
-	// number of threads if a CPU quota is set.
-	if _, err := maxprocs.Set(); err != nil {
-		log.Errorw("startup", zap.Error(err))
+	log, err := logger.New("ALGOSEARCH")
+	if err != nil {
+		fmt.Println(err)
 		os.Exit(1)
 	}
-	log.Infow("startup", "GOMAXPROCS", runtime.GOMAXPROCS(0))
+	defer log.Sync()
 
 	// Perform the startup and shutdown sequence.
 	if err := run(log); err != nil {
@@ -63,6 +61,17 @@ func main() {
 }
 
 func run(log *zap.SugaredLogger) error {
+
+	// =========================================================================
+	// CPU Quota
+
+	// Make sure the program is using the correct
+	// number of threads if a CPU quota is set.
+	if _, err := maxprocs.Set(); err != nil {
+		log.Errorw("startup", zap.Error(err))
+		os.Exit(1)
+	}
+	log.Infow("startup", "GOMAXPROCS", runtime.GOMAXPROCS(0))
 
 	// =========================================================================
 	// Configuration
@@ -76,6 +85,10 @@ func run(log *zap.SugaredLogger) error {
 			WriteTimeout    time.Duration `conf:"default:10s"`
 			IdleTimeout     time.Duration `conf:"default:120s"`
 			ShutdownTimeout time.Duration `conf:"default:20s"`
+		}
+		Auth struct {
+			KeysFolder string `conf:"default:zarf/keys/"`
+			ActiveKID  string `conf:"default:54bb2165-71e1-41a6-af3e-7da4a0e1e2c1"`
 		}
 		CouchDB struct {
 			Protocol   string `conf:"default:http"`
@@ -93,7 +106,7 @@ func run(log *zap.SugaredLogger) error {
 		}
 		Zipkin struct {
 			ReporterURI string  `conf:"default:http://localhost:9411/api/v2/spans"`
-			ServiceName string  `conf:"default:cal-engine"`
+			ServiceName string  `conf:"default:algosearch"`
 			Probability float64 `conf:"default:0.05"`
 		}
 	}{
@@ -103,27 +116,25 @@ func run(log *zap.SugaredLogger) error {
 		},
 	}
 
-	//cfg.Version.SVN = build
-	//cfg.Version.Desc = "copyright information here"
-
-	if err := conf.Parse(os.Args[1:], "ALGOSEARCH", &cfg); err != nil {
+	const prefix = "ALGOSEARCH"
+	if err := conf.Parse(os.Args[1:], prefix, &cfg); err != nil {
 		switch err {
 		case conf.ErrHelpWanted:
-			usage, err := conf.Usage("ALGOSEARCH", &cfg)
+			usage, err := conf.Usage(prefix, &cfg)
 			if err != nil {
-				return errors.Wrap(err, "generating config usage")
+				return fmt.Errorf("generating config usage: %w", err)
 			}
 			fmt.Println(usage)
 			return nil
 		case conf.ErrVersionWanted:
-			version, err := conf.VersionString("ALGOSEARCH", &cfg)
+			version, err := conf.VersionString(prefix, &cfg)
 			if err != nil {
-				return errors.Wrap(err, "generating config version")
+				return fmt.Errorf("generating config version: %w", err)
 			}
 			fmt.Println(version)
 			return nil
 		}
-		return errors.Wrap(err, "parsing config")
+		return fmt.Errorf("parsing config: %w", err)
 	}
 
 	// This is some special handling that the configuration library cannot
@@ -142,9 +153,27 @@ func run(log *zap.SugaredLogger) error {
 
 	out, err := conf.String(&cfg)
 	if err != nil {
-		return errors.Wrap(err, "generating config for output")
+		return fmt.Errorf("generating config for output: %w", err)
 	}
 	log.Infow("startup", "config", out)
+
+	// =========================================================================
+	// Initialize authentication support
+
+	log.Infow("startup", "status", "initializing authentication support")
+
+	// Construct a key store based on the key files stored in
+	// the specified directory.
+	ks, err := keystore.NewFS(os.DirFS(cfg.Auth.KeysFolder))
+	if err != nil {
+		return fmt.Errorf("reading keys: %w", err)
+	}
+
+	auth, err := auth.New(cfg.Auth.ActiveKID, ks)
+	if err != nil {
+		return fmt.Errorf("constructing auth: %w", err)
+	}
+
 
 	// =========================================================================
 	// Start Tracing Support
@@ -160,7 +189,7 @@ func run(log *zap.SugaredLogger) error {
 		// zipkin.WithLogger(zap.NewStdLog(log)),
 	)
 	if err != nil {
-		return errors.Wrap(err, "creating new exporter")
+		return fmt.Errorf("creating new exporter: %w", err)
 	}
 
 	traceProvider := trace.NewTracerProvider(
@@ -275,6 +304,7 @@ func run(log *zap.SugaredLogger) error {
 		Shutdown:    shutdown,
 		Log:         log,
 		Metrics:     metrics.New(),
+		Auth:     auth,
 		AlgodClient: algodClient,
 		IndexerClient: indexerClient,
 		CouchClient: db,
@@ -316,7 +346,7 @@ func run(log *zap.SugaredLogger) error {
 	// Blocking main and waiting for shutdown.
 	select {
 	case err := <-serverErrors:
-		return errors.Wrap(err, "server error")
+		return fmt.Errorf("server error: %w", err)
 
 	case sig := <-shutdown:
 		log.Infow("shutdown", "status", "shutdown started", "signal", sig)
@@ -329,7 +359,7 @@ func run(log *zap.SugaredLogger) error {
 		// Asking listener to shutdown and shed load.
 		if err := api.Shutdown(ctx); err != nil {
 			api.Close()
-			return errors.Wrap(err, "could not stop server gracefully")
+			return fmt.Errorf("could not stop server gracefully: %w", err)
 		}
 	}
 

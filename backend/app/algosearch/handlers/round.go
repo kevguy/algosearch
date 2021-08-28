@@ -22,8 +22,8 @@ type roundGroup struct {
 
 // getCurrentRoundFromAPI retrieves the current round and returns the block data from Algod API
 func (rG roundGroup) getCurrentRoundFromAPI(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	v, ok := ctx.Value(web.KeyValues).(*web.Values)
-	if !ok {
+	v, err := web.GetValues(ctx)
+	if err != nil {
 		return web.NewShutdownError("web value missing from context")
 	}
 
@@ -37,8 +37,8 @@ func (rG roundGroup) getCurrentRoundFromAPI(ctx context.Context, w http.Response
 
 // getRoundFromAPI retrieves a block from the Algod API based on the round number (num)
 func (rG roundGroup) getRoundFromAPI(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	v, ok := ctx.Value(web.KeyValues).(*web.Values)
-	if !ok {
+	v, err := web.GetValues(ctx)
+	if err != nil {
 		return web.NewShutdownError("web value missing from context")
 	}
 
@@ -58,8 +58,8 @@ func (rG roundGroup) getRoundFromAPI(ctx context.Context, w http.ResponseWriter,
 
 // getRound retrieves a block from CouchDB based on the round number (num)
 func (rG roundGroup) getRound(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	v, ok := ctx.Value(web.KeyValues).(*web.Values)
-	if !ok {
+	v, err := web.GetValues(ctx)
+	if err != nil {
 		return web.NewShutdownError("web value missing from context")
 	}
 
@@ -80,8 +80,8 @@ func (rG roundGroup) getRound(ctx context.Context, w http.ResponseWriter, r *htt
 
 // getLatestRound retrieves the latest block from CouchDB.
 func (rG roundGroup) getLatestRound(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	v, ok := ctx.Value(web.KeyValues).(*web.Values)
-	if !ok {
+	v, err := web.GetValues(ctx)
+	if err != nil {
 		return web.NewShutdownError("web value missing from context")
 	}
 

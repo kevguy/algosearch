@@ -10,6 +10,7 @@ import (
 	"github.com/algorand/go-algorand-sdk/client/v2/indexer"
 	"github.com/go-kivik/kivik/v4"
 	"github.com/kevguy/algosearch/backend/business/couchdata/block"
+	"github.com/kevguy/algosearch/backend/business/sys/auth"
 	"go.uber.org/zap"
 	"net/http"
 	"net/http/pprof"
@@ -73,6 +74,7 @@ type APIMuxConfig struct {
 	Shutdown chan os.Signal
 	Log				*zap.SugaredLogger
 	Metrics			*metrics.Metrics
+	Auth			*auth.Auth
 	AlgodClient		*algod.Client
 	IndexerClient	*indexer.Client
 	CouchClient		*kivik.Client
@@ -80,7 +82,6 @@ type APIMuxConfig struct {
 
 // APIMux constructs an http.Handler with all application routes defined.
 func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) http.Handler {
-
 	var opts Options
 	for _, option := range options {
 		option(&opts)
