@@ -301,7 +301,7 @@ func (s Store) GetLatestBlock(ctx context.Context, traceID string, log *zap.Suga
 // pageNo: the number of pages the user wants to look at
 // limit: number of blocks per page
 // https://docs.couchdb.org/en/main/ddocs/views/pagination.html
-func (s Store) GetBlocksPagination(ctx context.Context, traceID string, log *zap.SugaredLogger, latestBlockNum int64, order string, pageNo int64, limit int64) ([]Block, error) {
+func (s Store) GetBlocksPagination(ctx context.Context, traceID string, log *zap.SugaredLogger, latestBlockNum int64, order string, pageNo int64, limit int64) ([]Block, int64, int64, error) {
 
 	ctx, span := otel.GetTracerProvider().
 		Tracer("").
@@ -314,19 +314,20 @@ func (s Store) GetBlocksPagination(ctx context.Context, traceID string, log *zap
 	// Get the earliest block number
 	earliestBlkNum, err := s.GetEarliestSyncedRoundNumber(ctx)
 	if err != nil {
-		return nil, errors.Wrapf(err, ": Get earliest synced round number")
+		return nil, 0, 0, errors.Wrapf(err, ": Get earliest synced round number")
 	}
 	// We can skip database check cuz GetEarliestSyncedRoundNumber already did it
 	db := s.couchClient.DB(schema.GlobalDbName)
 
 	// We can basically treat latestBlockNum as number of blocks
-	var numOfPages int64 = (latestBlockNum - int64(earliestBlkNum) + 1) / limit
-	if (latestBlockNum - int64(earliestBlkNum) + 1) % limit > 0 {
+	var numOfBlks = latestBlockNum - int64(earliestBlkNum) + 1
+	var numOfPages = numOfBlks / limit
+	if numOfBlks % limit > 0 {
 		numOfPages += 1
 	}
 
 	if pageNo < 1 || pageNo > numOfPages {
-		return nil, errors.Wrapf(err, "page number is less than 1 or exceeds page limit: %d", numOfPages)
+		return nil, 0, 0, errors.Wrapf(err, "page number is less than 1 or exceeds page limit: %d", numOfPages)
 	}
 
 	options := kivik.Options{
@@ -374,21 +375,21 @@ func (s Store) GetBlocksPagination(ctx context.Context, traceID string, log *zap
 	//})
 	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" + schema.BlockViewByRoundInLatest, options)
 	if err != nil {
-		return nil, errors.Wrap(err, "Fetch data error")
+		return nil, 0, 0, errors.Wrap(err, "Fetch data error")
 	}
 
 	var fetchedBlocks = []Block{}
 	for rows.Next() {
 		var block = Block{}
 		if err := rows.ScanDoc(&block); err != nil {
-			return nil, errors.Wrap(err, "unwrapping block")
+			return nil, 0, 0, errors.Wrap(err, "unwrapping block")
 		}
 		fetchedBlocks = append(fetchedBlocks, block)
 	}
 
 	if rows.Err() != nil {
-		return nil, errors.Wrap(err, "rows error, Can't find anything")
+		return nil, 0, 0, errors.Wrap(err, "rows error, Can't find anything")
 	}
 
-	return fetchedBlocks, nil
+	return fetchedBlocks, numOfPages, numOfBlks, nil
 }

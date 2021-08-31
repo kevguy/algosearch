@@ -116,9 +116,10 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) http.Handler {
 		algodClient: cfg.AlgodClient,
 	}
 	app.Handle(http.MethodGet, "/v1/algod/current-round", rG.getCurrentRoundFromAPI)
-	app.Handle(http.MethodGet, "/v1/algod/round/:num", rG.getRoundFromAPI)
+	app.Handle(http.MethodGet, "/v1/algod/rounds/:num", rG.getRoundFromAPI)
 	app.Handle(http.MethodGet, "/v1/current-round", rG.getLatestRound)
 	app.Handle(http.MethodGet, "/v1/round/:num", rG.getRound)
+	app.Handle(http.MethodGet, "/v1/rounds", rG.getRoundsPagination)
 
 	// Accept CORS 'OPTIONS' preflight requests if config has been provided.
 	// Don't forget to apply the CORS middleware to the routes that need it.
