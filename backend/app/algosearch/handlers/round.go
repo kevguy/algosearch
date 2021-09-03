@@ -78,8 +78,8 @@ func (rG roundGroup) getRound(ctx context.Context, w http.ResponseWriter, r *htt
 
 }
 
-// getLatestRound retrieves the latest block from CouchDB.
-func (rG roundGroup) getLatestRound(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+// getLatestSyncedRound retrieves the latest block from CouchDB.
+func (rG roundGroup) getLatestSyncedRound(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	v, err := web.GetValues(ctx)
 	if err != nil {
 		return web.NewShutdownError("web value missing from context")
@@ -87,12 +87,36 @@ func (rG roundGroup) getLatestRound(ctx context.Context, w http.ResponseWriter, 
 
 	blockData, err := rG.store.GetLatestBlock(ctx, v.TraceID, rG.log)
 	if err != nil {
-		return errors.Wrapf(err, "unable to get latest round")
+		return errors.Wrapf(err, "unable to get latest synced round")
 	}
 
 	return web.Respond(ctx, w, blockData, http.StatusOK)
 }
 
+// getEarliestSyncedRound retrieves the earliest block from CouchDB.
+func (rG roundGroup) getEarliestSyncedRound(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	_, err := web.GetValues(ctx)
+	if err != nil {
+		return web.NewShutdownError("web value missing from context")
+	}
+
+	blockData, err := rG.store.GetEarliestSyncedRoundNumber(ctx)
+	if err != nil {
+		return errors.Wrapf(err, "unable to get earliest synced round")
+	}
+
+	return web.Respond(ctx, w, blockData, http.StatusOK)
+}
+
+// getRoundPagination accepts the following parameters:
+// - limit: number of items per page
+// - latest_blk: the latest block number client wants to start with
+// - page: number of pages
+// - order: asc/desc
+// The application counts from the latest_blk, calculates the number of pages using the number
+// of items specified and retrieves the list of block for different pages.
+// It returns the number of pages, number of blocks til the end and the list of blocks of interest
+// as the response.
 func (rG roundGroup) getRoundsPagination(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	v, err := web.GetValues(ctx)
 	if err != nil {
@@ -112,7 +136,7 @@ func (rG roundGroup) getRoundsPagination(ctx context.Context, w http.ResponseWri
 	// latest_blk
 	latestBlkQueries := web.Query(r, "latest_blk")
 	if len(latestBlkQueries) == 0 {
-		return validate.NewRequestError(fmt.Errorf("missing query parameter: start"), http.StatusBadRequest)
+		return validate.NewRequestError(fmt.Errorf("missing query parameter: latest_blk"), http.StatusBadRequest)
 	}
 	latestBlk, err := strconv.Atoi(latestBlkQueries[0])
 	if err != nil {

@@ -10,6 +10,7 @@ import (
 	"github.com/algorand/go-algorand-sdk/client/v2/indexer"
 	"github.com/go-kivik/kivik/v4"
 	"github.com/kevguy/algosearch/backend/business/couchdata/block"
+	"github.com/kevguy/algosearch/backend/business/couchdata/transaction"
 	"github.com/kevguy/algosearch/backend/business/sys/auth"
 	"go.uber.org/zap"
 	"net/http"
@@ -117,9 +118,20 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) http.Handler {
 	}
 	app.Handle(http.MethodGet, "/v1/algod/current-round", rG.getCurrentRoundFromAPI)
 	app.Handle(http.MethodGet, "/v1/algod/rounds/:num", rG.getRoundFromAPI)
-	app.Handle(http.MethodGet, "/v1/current-round", rG.getLatestRound)
+	app.Handle(http.MethodGet, "/v1/current-round", rG.getLatestSyncedRound)
+	app.Handle(http.MethodGet, "/v1/earliest-round", rG.getEarliestSyncedRound)
 	app.Handle(http.MethodGet, "/v1/round/:num", rG.getRound)
 	app.Handle(http.MethodGet, "/v1/rounds", rG.getRoundsPagination)
+
+	tG := transactionGroup{
+		log: cfg.Log,
+		store: transaction.NewStore(cfg.Log, cfg.CouchClient),
+		algodClient: cfg.AlgodClient,
+	}
+	app.Handle(http.MethodGet, "/v1/current-txn", tG.getLatestSyncedTransaction)
+	app.Handle(http.MethodGet, "/v1/earliest-txn", tG.getEarliestSyncedTransaction)
+	app.Handle(http.MethodGet, "/v1/transaction/:num", tG.getTransaction)
+	app.Handle(http.MethodGet, "/v1/transactions", tG.getTransactionsPagination)
 
 	// Accept CORS 'OPTIONS' preflight requests if config has been provided.
 	// Don't forget to apply the CORS middleware to the routes that need it.

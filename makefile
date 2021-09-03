@@ -26,6 +26,18 @@ export PROJECT = ardan-starter-kit
 # ==============================================================================
 # Mine
 
+# https://github.com/ThiagoBarradas/woocommerce-docker/issues/2
+start-wp:
+	docker run --name woocommerce -p80:80 -d thiagobarradas/woocommerce:3.5.3-wp5.0.2-php7.2
+
+# https://developer.algorand.org/docs/run-a-node/setup/install/
+stop-algorand:
+	sudo systemctl stop algorand
+
+# https://www.cyberciti.biz/faq/star-stop-restart-apache2-webserver/
+stop-apache:
+	/etc/init.d/apache2 stop
+
 kill-postgres:
 	# https://askubuntu.com/questions/547434/how-to-nicely-stop-all-postgres-processes
 	sudo pkill -u postgres
