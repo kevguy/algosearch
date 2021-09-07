@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/algorand/go-algorand-sdk/client/v2/algod"
+	"github.com/algorand/go-algorand-sdk/types"
 	app "github.com/kevguy/algosearch/backend/business/algod"
 	"github.com/kevguy/algosearch/backend/business/couchdata/block"
 	"github.com/kevguy/algosearch/backend/business/couchdata/transaction"
@@ -123,6 +124,27 @@ func (p *BlockSynchronizer) update() {
 				p.log.Errorw("blocksynchronizer", "status", "can't add new transaction(s)", "ERROR", err)
 			}
 			p.log.Infof("\t\t- Added %d transactions with block %s to CouchDB Transaction table\n", len(newBlock.Transactions), newBlock.BlockHash)
+
+
+			for _, txn := range newBlock.Transactions {
+
+				switch types.TxType(txn.Type) {
+				case types.PaymentTx:
+					//txn.PaymentTransaction
+				case types.KeyRegistrationTx:
+					//txn.KeyregTransaction
+				case types.AssetConfigTx:
+					//txn.AssetConfigTransaction
+				case types.AssetTransferTx:
+					//txn.AssetTransferTransaction
+				case types.AssetFreezeTx:
+					//txn.AssetFreezeTransaction
+				case types.ApplicationCallTx:
+					//txn.ApplicationTransaction
+				}
+
+			}
+
 		}
 		//for _, transaction := range newBlock.Transactions {
 		//	fmt.Println("Got transaction")

@@ -125,6 +125,48 @@ func InsertTransactionViewsForGlobalDB(ctx context.Context, client *kivik.Client
 	return nil
 }
 
+// InsertAcctViewsForGlobalDB creates a the latest view for the acct design document. It stores
+// transaction data.
+func InsertAcctViewsForGlobalDB(ctx context.Context, client *kivik.Client, dbName string) error {
+	// Check if DB exists
+	exist, err := client.DBExists(ctx, dbName)
+	if err != nil || !exist {
+		return errors.Wrap(err, dbName + " database check fails")
+	}
+	db := client.DB(dbName)
+
+	_, err = db.Query(ctx, AccountDDoc, "_view/" + AccountLatestView)
+	//if err != nil {
+	//	return errors.Wrap(err, dbName + " database and query by timestamp view failed to be queried")
+	//}
+	//if !rows.Next() {
+	_, err = db.Put(context.TODO(), AccountDDoc, map[string]interface{}{
+		"_id": AccountDDoc,
+		"views": map[string]interface{}{
+			AccountLatestView: map[string]interface{}{
+				"map": `function(doc) { 
+						if (doc.doc_type === 'acct') {
+							emit(doc.id, {_id: doc.id});
+						}
+					}`,
+			},
+			//TransactionViewByIdInCount: map[string]interface{}{
+			//	"map": `function(doc) {
+			//			if (doc.doc_type === 'txn') {
+			//				emit(doc.id, 1);
+			//			}
+			//		}`,
+			//	"reduce": "_sum",
+			//},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, dbName + " database and query by timestamp view failed to be created")
+	}
+	//}
+	return nil
+}
+
 
 // https://stackoverflow.com/questions/5422622/couchdb-views-tied-between-two-databases
 // https://stackoverflow.com/questions/6380045/couchdb-join-two-documents
@@ -279,7 +321,9 @@ func Migrate(ctx context.Context, db *kivik.Client) error {
 		return errors.Wrap(err, "database fails to create view(s) for transactions")
 	}
 
-	// To-Be-Deleted
+	// Account views
+
+	// TODO: To-Be-Deleted
 	//if err := InsertQueryViewForTransactionDB(ctx, db, "transactions"); err != nil {
 	//	return errors.Wrap(err, "transactions database fails to create query view")
 	//}

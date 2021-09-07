@@ -123,6 +123,7 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) http.Handler {
 	app.Handle(http.MethodGet, "/v1/round/:num", rG.getRound)
 	app.Handle(http.MethodGet, "/v1/rounds", rG.getRoundsPagination)
 
+	// Register transaction endpoints
 	tG := transactionGroup{
 		log: cfg.Log,
 		store: transaction.NewStore(cfg.Log, cfg.CouchClient),
