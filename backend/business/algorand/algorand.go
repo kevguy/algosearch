@@ -3,6 +3,7 @@ package algorand
 import (
 	"context"
 	algodv2 "github.com/algorand/go-algorand-sdk/client/v2/algod"
+	"github.com/algorand/go-algorand-sdk/client/v2/common/models"
 	indexerv2 "github.com/algorand/go-algorand-sdk/client/v2/indexer"
 	"github.com/kevguy/algosearch/backend/business/algod"
 	"github.com/kevguy/algosearch/backend/business/couchdata/block"
@@ -90,7 +91,7 @@ func (a Agent) GetRound(ctx context.Context, traceID string, log *zap.SugaredLog
 // it fetches the transaction data from Indexer and the additional data from Couch (this sounds
 // redundant, but this is written with mind of getting rid of Couch in future), if not
 // then return the data from Couch.
-func (a Agent) GetTransaction(ctx context.Context, traceID string, log *zap.SugaredLogger, transactionID string) (*transaction.Transaction, error) {
+func (a Agent) GetTransaction(ctx context.Context, traceID string, log *zap.SugaredLogger, transactionID string) (*models.Transaction, error) {
 
 	ctx, span := otel.GetTracerProvider().Tracer("").Start(ctx, "algorand.GetTransaction")
 	span.SetAttributes(attribute.String("transactionID", transactionID))
@@ -98,7 +99,7 @@ func (a Agent) GetTransaction(ctx context.Context, traceID string, log *zap.Suga
 
 	log.Infow("algorand.GetTransaction", "traceid", traceID)
 
-	var transactionData transaction.Transaction
+	//var transactionData models.Transaction
 	var err error
 
 	// Whatever we do, we still have to get data from Couch (for proposer and block hash, at least for the time being)
@@ -113,10 +114,21 @@ func (a Agent) GetTransaction(ctx context.Context, traceID string, log *zap.Suga
 		if err != nil {
 			log.Errorf("unable to get transaction data from indexer for transaction ID %s\n", transactionID)
 		} else {
-			transactionData = transaction.Transaction{
-				Transaction: idxBlock,
-			}
-			return &transactionData, nil
+			//transactionData = transaction.Transaction{
+			//	NewTransaction: transaction.NewTransaction{
+			//		ID:          nil,
+			//		Transaction: idxBlock,
+			//		DocType:     "",
+			//	},
+			//	ID:             "",
+			//	Rev:            "",
+			//}
+
+			//transactionData = transaction.Transaction{
+			//	Transaction: idxBlock,
+			//}
+			//return &transactionData, nil
+			return &idxBlock, nil
 		}
 	}
 	return &couchTransaction, nil
