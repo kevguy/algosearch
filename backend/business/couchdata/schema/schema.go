@@ -19,14 +19,17 @@ const (
 	TransactionViewByIdInLatest = "txnByLatest"
 	TransactionViewByIdInCount	= "txnByCount"
 
-	AccountDDoc = "_design/acct"
-	AccountLatestView = "byLatest"
+	AccountDDoc             = "_design/acct"
+	AccountViewByIdInLatest = "acctByLatest"
+	AccountViewByIdInCount  = "acctByCount"
 
-	AssetDDoc = "_design/asset"
-	AssetLatestView = "byLatest"
+	AssetDDoc             = "_design/asset"
+	AssetViewByIdInLatest = "assetByLatest"
+	AssetViewByIdInCount  = "assetByCount"
 
-	ApplicationDDoc = "_design/app"
-	ApplicationLatestView = "byLatest"
+	ApplicationDDoc             = "_design/app"
+	ApplicationViewByIdInLatest = "appByLatest"
+	ApplicationViewByIdInCount  = "appByCount"
 )
 
 func createDB(ctx context.Context, db *kivik.Client, dbName string) error {
@@ -135,7 +138,7 @@ func InsertAcctViewsForGlobalDB(ctx context.Context, client *kivik.Client, dbNam
 	}
 	db := client.DB(dbName)
 
-	_, err = db.Query(ctx, AccountDDoc, "_view/" + AccountLatestView)
+	_, err = db.Query(ctx, AccountDDoc, "_view/" +AccountViewByIdInLatest)
 	//if err != nil {
 	//	return errors.Wrap(err, dbName + " database and query by timestamp view failed to be queried")
 	//}
@@ -143,21 +146,105 @@ func InsertAcctViewsForGlobalDB(ctx context.Context, client *kivik.Client, dbNam
 	_, err = db.Put(context.TODO(), AccountDDoc, map[string]interface{}{
 		"_id": AccountDDoc,
 		"views": map[string]interface{}{
-			AccountLatestView: map[string]interface{}{
+			AccountViewByIdInLatest: map[string]interface{}{
 				"map": `function(doc) { 
-						if (doc.doc_type === 'acct') {
-							emit(doc.id, {_id: doc.id});
-						}
-					}`,
+					if (doc.doc_type === 'acct') {
+						emit(doc.id, {_id: doc.id});
+					}
+				}`,
 			},
-			//TransactionViewByIdInCount: map[string]interface{}{
-			//	"map": `function(doc) {
-			//			if (doc.doc_type === 'txn') {
-			//				emit(doc.id, 1);
-			//			}
-			//		}`,
-			//	"reduce": "_sum",
-			//},
+			AccountViewByIdInCount: map[string]interface{}{
+				"map": `function(doc) {
+					if (doc.doc_type === 'acct') {
+						emit(doc.id, 1);
+					}
+				}`,
+				"reduce": "_sum",
+			},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, dbName + " database and query by timestamp view failed to be created")
+	}
+	//}
+	return nil
+}
+
+// InsertAssetViewsForGlobalDB creates a the latest view for the asset design document. It stores
+// asset data.
+func InsertAssetViewsForGlobalDB(ctx context.Context, client *kivik.Client, dbName string) error {
+	// Check if DB exists
+	exist, err := client.DBExists(ctx, dbName)
+	if err != nil || !exist {
+		return errors.Wrap(err, dbName + " database check fails")
+	}
+	db := client.DB(dbName)
+
+	_, err = db.Query(ctx, AssetDDoc, "_view/" +AssetViewByIdInLatest)
+	//if err != nil {
+	//	return errors.Wrap(err, dbName + " database and query by timestamp view failed to be queried")
+	//}
+	//if !rows.Next() {
+	_, err = db.Put(context.TODO(), AssetDDoc, map[string]interface{}{
+		"_id": AssetDDoc,
+		"views": map[string]interface{}{
+			AssetViewByIdInLatest: map[string]interface{}{
+				"map": `function(doc) { 
+					if (doc.doc_type === 'asset') {
+						emit(doc.id, {_id: doc.id});
+					}
+				}`,
+			},
+			AssetViewByIdInCount: map[string]interface{}{
+				"map": `function(doc) {
+					if (doc.doc_type === 'asset') {
+						emit(doc.id, 1);
+					}
+				}`,
+				"reduce": "_sum",
+			},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, dbName + " database and query by timestamp view failed to be created")
+	}
+	//}
+	return nil
+}
+
+// InsertApplicationViewsForGlobalDB creates a the latest view for the app design document. It stores
+// application data.
+func InsertApplicationViewsForGlobalDB(ctx context.Context, client *kivik.Client, dbName string) error {
+	// Check if DB exists
+	exist, err := client.DBExists(ctx, dbName)
+	if err != nil || !exist {
+		return errors.Wrap(err, dbName + " database check fails")
+	}
+	db := client.DB(dbName)
+
+	_, err = db.Query(ctx, ApplicationDDoc, "_view/" +ApplicationViewByIdInLatest)
+	//if err != nil {
+	//	return errors.Wrap(err, dbName + " database and query by timestamp view failed to be queried")
+	//}
+	//if !rows.Next() {
+	_, err = db.Put(context.TODO(), ApplicationDDoc, map[string]interface{}{
+		"_id": AssetDDoc,
+		"views": map[string]interface{}{
+			ApplicationViewByIdInLatest: map[string]interface{}{
+				"map": `function(doc) { 
+					if (doc.doc_type === 'app') {
+						emit(doc.id, {_id: doc.id});
+					}
+				}`,
+			},
+			ApplicationViewByIdInCount: map[string]interface{}{
+				"map": `function(doc) {
+					if (doc.doc_type === 'app') {
+						emit(doc.id, 1);
+					}
+				}`,
+				"reduce": "_sum",
+			},
 		},
 	})
 	if err != nil {
@@ -322,6 +409,19 @@ func Migrate(ctx context.Context, db *kivik.Client) error {
 	}
 
 	// Account views
+	if err := InsertAcctViewsForGlobalDB(ctx, db, GlobalDbName); err != nil {
+		return errors.Wrap(err, "database fails to create view(s) for accounts")
+	}
+
+	// Asset views
+	if err := InsertAssetViewsForGlobalDB(ctx, db, GlobalDbName); err != nil {
+		return errors.Wrap(err, "database fails to create view(s) for assets")
+	}
+
+	// Application views
+	if err := InsertApplicationViewsForGlobalDB(ctx, db, GlobalDbName); err != nil {
+		return errors.Wrap(err, "database fails to create view(s) for applications")
+	}
 
 	// TODO: To-Be-Deleted
 	//if err := InsertQueryViewForTransactionDB(ctx, db, "transactions"); err != nil {

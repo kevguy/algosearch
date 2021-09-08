@@ -83,3 +83,16 @@ For every block retrieved:
             - insert a document with the type `acct` using key `['acct_account_id', 0]`
             - insert all the associated transactions with the key `['acct_account_id', 1]`
 
+
+There are 5 kinds of transactions:
+- PaymentTx (PaymentTransaction)
+- KeyRegistrationTx (KeyregTransaction)
+- AssetConfigTx (AssetConfigTransaction)
+- AssetTransferTx (AssetTransferTransaction)
+- AssetFreezeTx (AssetFreezeTransaction)
+- ApplicationCallTx (ApplicationTransaction)
+
+For all the transactions, there's a sender
+
+### Payment Transaction
+
