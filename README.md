@@ -1,5 +1,25 @@
 # AlgoSearch
 
+
+```shell
+# kill local postgres to make way for sandbox's postgres
+make kill-postgres
+
+# delete couchdb data
+sudo rm -rf db-data
+
+# start couchdb
+make start-local-couchdb
+
+# insert the design documents into couchdb
+make migrate-couch
+
+# start sandbox
+
+# start the service
+make it-rain
+```
+
 ## Folder Structure
 
 ```

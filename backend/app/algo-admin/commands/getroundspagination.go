@@ -22,7 +22,9 @@ func GetRoundsPaginationCmd(traceID string, log *zap.SugaredLogger, couchCfg cou
 
 	blockStore := block.NewStore(log, db)
 
-	blocks, err := blockStore.GetBlocksPagination(ctx, traceID, log, latestBlockNum, order, pageNo, noOfItems)
+	blocks, numOfPages, numOfBlks, err := blockStore.GetBlocksPagination(ctx, traceID, log, latestBlockNum, order, pageNo, noOfItems)
+	fmt.Printf("Num of pages: %d", numOfPages)
+	fmt.Printf("Num of blocks: %d", numOfBlks)
 	for _, item := range blocks {
 		fmt.Println(item.Round)
 	}

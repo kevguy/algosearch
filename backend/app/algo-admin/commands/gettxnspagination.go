@@ -22,7 +22,9 @@ func GetTransactionsPaginationCmd(traceID string, log *zap.SugaredLogger, couchC
 
 	transactionStore := transaction.NewStore(log, db)
 
-	txns, err := transactionStore.GetTransactionsPagination(ctx, traceID, log, latestTxnId, order, pageNo, noOfItems)
+	txns, numOfPages, numOfTxns, err := transactionStore.GetTransactionsPagination(ctx, traceID, log, latestTxnId, order, pageNo, noOfItems)
+	fmt.Printf("Num of pages: %d", numOfPages)
+	fmt.Printf("Num of txns: %d", numOfTxns)
 	for _, item := range txns {
 		fmt.Println(item.ID)
 	}

@@ -6,9 +6,9 @@ type NewTransaction struct {
 	ID *string							`json:"_id"`
 	models.Transaction
 	DocType					string		`json:"doc_type"`
-	AssociatedAccounts		[]string	`json:"associated_accounts"`
-	AssociatedApplications	[]uint64	`json:"associated_applications"`
-	AssociatedAssets		[]uint64	`json:"associated_assets"`
+	AssociatedAccounts		[]string	`json:"associated_accounts,omitempty"`
+	AssociatedApplications	[]uint64	`json:"associated_applications,omitempty"`
+	AssociatedAssets		[]uint64	`json:"associated_assets,omitempty"`
 }
 
 type Transaction struct {
