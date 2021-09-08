@@ -73,7 +73,8 @@ func InsertBlockViewsForGlobalDB(ctx context.Context, client *kivik.Client, dbNa
 				BlockViewByRoundInLatest: map[string]interface{}{
 					"map": `function(doc) { 
 						if (doc.doc_type === 'block')  {
-							emit(doc.round, {_id: doc.BlockHash});
+							// emit(doc.round, {_id: doc.BlockHash});
+							emit(doc.round, null);
 						}
 					}`,
 				},
@@ -107,7 +108,8 @@ func InsertTransactionViewsForGlobalDB(ctx context.Context, client *kivik.Client
 				TransactionViewByIdInLatest: map[string]interface{}{
 					"map": `function(doc) { 
 						if (doc.doc_type === 'txn') {
-							emit(doc.id, {_id: doc.id});
+							// emit(doc.id, {_id: doc.id});
+							emit(doc.id, null);
 						}
 					}`,
 				},
@@ -149,7 +151,8 @@ func InsertAcctViewsForGlobalDB(ctx context.Context, client *kivik.Client, dbNam
 			AccountViewByIdInLatest: map[string]interface{}{
 				"map": `function(doc) { 
 					if (doc.doc_type === 'acct') {
-						emit(doc.id, {_id: doc.id});
+						// emit(doc.id, {_id: doc.id});
+						emit(doc.id, null);
 					}
 				}`,
 			},
@@ -191,7 +194,8 @@ func InsertAssetViewsForGlobalDB(ctx context.Context, client *kivik.Client, dbNa
 			AssetViewByIdInLatest: map[string]interface{}{
 				"map": `function(doc) { 
 					if (doc.doc_type === 'asset') {
-						emit(doc.id, {_id: doc.id});
+						// emit(doc.id, {_id: doc.id});
+						emit(doc.id, null);
 					}
 				}`,
 			},
@@ -233,7 +237,8 @@ func InsertApplicationViewsForGlobalDB(ctx context.Context, client *kivik.Client
 			ApplicationViewByIdInLatest: map[string]interface{}{
 				"map": `function(doc) { 
 					if (doc.doc_type === 'app') {
-						emit(doc.id, {_id: doc.id});
+						// emit(doc.id, {_id: doc.id});
+						emit(doc.id, null);
 					}
 				}`,
 			},
