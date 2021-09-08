@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/algorand/go-algorand-sdk/client/v2/common/models"
 	"github.com/go-kivik/kivik/v4"
+	app "github.com/kevguy/algosearch/backend/business/algod"
 	"github.com/kevguy/algosearch/backend/business/couchdata/schema"
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/otel"
@@ -43,6 +44,9 @@ func (s Store) AddTransaction(ctx context.Context, transaction models.Transactio
 	var doc = NewTransaction{
 		Transaction: transaction,
 		DocType:     DocType,
+		AssociatedAccounts: app.ExtractAccountAddrsFromTxn(transaction),
+		AssociatedApplications: app.ExtractApplicationIdsFromTxn(transaction),
+		AssociatedAssets: app.ExtractAssetIdsFromTxn(transaction),
 	}
 	//docId := fmt.Sprintf("%s.%s", DocType, doc.Id)
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
@@ -85,6 +89,9 @@ func (s Store) AddTransactions(ctx context.Context, transactions []models.Transa
 			ID: &transactions[i].Id,
 			Transaction: transactions[i],
 			DocType:     DocType,
+			AssociatedAccounts: app.ExtractAccountAddrsFromTxn(transactions[i]),
+			AssociatedApplications: app.ExtractApplicationIdsFromTxn(transactions[i]),
+			AssociatedAssets: app.ExtractAssetIdsFromTxn(transactions[i]),
 		}
 		transactions_[i] = doc
 		//fmt.Println("YYYYYYYYYY")

@@ -7,8 +7,8 @@ type NewTransaction struct {
 	models.Transaction
 	DocType					string		`json:"doc_type"`
 	AssociatedAccounts		[]string	`json:"associated_accounts"`
-	AssociatedApplications	[]string	`json:"associated_applications"`
-	AssociatedAssets		[]string	`json:"associated_assets"`
+	AssociatedApplications	[]uint64	`json:"associated_applications"`
+	AssociatedAssets		[]uint64	`json:"associated_assets"`
 }
 
 type Transaction struct {
