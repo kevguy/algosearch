@@ -6,6 +6,7 @@ import (
 	"github.com/algorand/go-algorand-sdk/client/v2/common/models"
 	"github.com/go-kivik/kivik/v4"
 	"github.com/kevguy/algosearch/backend/business/data/schema"
+	"github.com/kevguy/algosearch/backend/foundation/web"
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -21,7 +22,7 @@ type Store struct {
 	couchClient *kivik.Client
 }
 
-// NewStore constructs a account store for api access.
+// NewStore constructs an account store for api access.
 func NewStore(log *zap.SugaredLogger, couchClient *kivik.Client) Store {
 	return Store{
 		log: log,
@@ -29,12 +30,17 @@ func NewStore(log *zap.SugaredLogger, couchClient *kivik.Client) Store {
 	}
 }
 
+// AddAccount adds an account to CouchDB.
+// It receives the models.Account object and transform it into an Account document object and then
+// insert it into the global CouchDB table.
 func (s Store) AddAccount(ctx context.Context, account models.Account) (string, string, error) {
 
 	ctx, span := otel.GetTracerProvider().
 		Tracer("").
 		Start(ctx, "account.AddAccount")
 	defer span.End()
+
+	s.log.Infow("account.AddAccount", "traceid", web.GetTraceID(ctx))
 
 	var doc = NewAccount{
 		Account: account,
@@ -64,6 +70,8 @@ func (s Store) AddAccounts(ctx context.Context, accounts []models.Account) (bool
 		Tracer("").
 		Start(ctx, "account.AddAccounts")
 	defer span.End()
+
+	s.log.Infow("account.AddAccounts", "traceid", web.GetTraceID(ctx))
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
@@ -111,6 +119,8 @@ func (s Store) GetAccount(ctx context.Context, accountAddr string) (models.Accou
 		Start(ctx, "account.GetAccount")
 	defer span.End()
 
+	s.log.Infow("account.GetAccount", "traceid", web.GetTraceID(ctx), "accountAddr", accountAddr)
+
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
 		return models.Account{}, errors.Wrap(err, schema.GlobalDbName+ " database check fails")
@@ -140,6 +150,8 @@ func (s Store) GetEarliestAccountId(ctx context.Context) (string, error) {
 		Start(ctx, "account.GetEarliestAccountId")
 	//span.SetAttributes(attribute.String("query", q))
 	defer span.End()
+
+	s.log.Infow("account.GetEarliestAccountId", "traceid", web.GetTraceID(ctx))
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
@@ -178,6 +190,8 @@ func (s Store) GetLatestAccountId(ctx context.Context) (string, error) {
 	//span.SetAttributes(attribute.String("query", q))
 	defer span.End()
 
+	s.log.Infow("account.GetLatestAccountId", "traceid", web.GetTraceID(ctx))
+
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
 		return "", errors.Wrap(err, schema.GlobalDbName+ " database check fails")
@@ -214,8 +228,14 @@ func (s Store) GetAccountCountBtnKeys(ctx context.Context, startKey, endKey stri
 	ctx, span := otel.GetTracerProvider().
 		Tracer("").
 		Start(ctx, "account.GetAccountCountBtnKeys")
-	//span.SetAttributes(attribute.String("query", q))
+	span.SetAttributes(attribute.String("startKey", startKey))
+	span.SetAttributes(attribute.String("endKey", endKey))
 	defer span.End()
+
+	s.log.Infow("account.GetAccountCountBtnKeys",
+		"traceid", web.GetTraceID(ctx),
+		"startKey", startKey,
+		"endKey", endKey)
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
@@ -246,7 +266,7 @@ func (s Store) GetAccountCountBtnKeys(ctx context.Context, startKey, endKey stri
 	return payload.Value, nil
 }
 
-func (s Store) GetAccountsPagination(ctx context.Context, traceID string, log *zap.SugaredLogger, latestAccountId string, order string, pageNo, limit int64) ([]Account, int64, int64, error) {
+func (s Store) GetAccountsPagination(ctx context.Context, latestAccountId string, order string, pageNo, limit int64) ([]Account, int64, int64, error) {
 
 	ctx, span := otel.GetTracerProvider().
 		Tracer("").
@@ -255,6 +275,12 @@ func (s Store) GetAccountsPagination(ctx context.Context, traceID string, log *z
 	span.SetAttributes(attribute.Int64("pageNo", pageNo))
 	span.SetAttributes(attribute.Int64("limit", limit))
 	defer span.End()
+
+	s.log.Infow("account.GetAccountsPagination",
+		"traceid", web.GetTraceID(ctx),
+		"latestAccountId", latestAccountId,
+		"pageNo", pageNo,
+		"limit", limit)
 
 	// Get the earliest account id
 	earliestTxnId, err := s.GetEarliestAccountId(ctx)

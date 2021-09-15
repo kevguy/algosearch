@@ -3,9 +3,11 @@ package mid
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"runtime/debug"
+
 	"github.com/kevguy/algosearch/backend/business/sys/metrics"
 	"github.com/kevguy/algosearch/backend/foundation/web"
-	"net/http"
 )
 
 // Panics recovers from panics and converts the panic to an error so it is
@@ -24,10 +26,8 @@ func Panics() web.Middleware {
 				if rec := recover(); rec != nil {
 
 					// Stack trace will be provided.
-					err = fmt.Errorf("PANIC [%v]", rec)
-
-					// Log the Go stack trace for this panic'd goroutine.
-					//log.Printf("%s : PANIC	:\n%s", v.TraceID, debug.Stack())
+					trace := debug.Stack()
+					err = fmt.Errorf("PANIC [%v] TRACE[%s]", rec, string(trace))
 
 					// Updates the metrics stored in the context.
 					metrics.AddPanics(ctx)

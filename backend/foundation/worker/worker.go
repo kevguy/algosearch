@@ -36,6 +36,17 @@ func (w *Worker) Running() int {
 	return len(w.running)
 }
 
+func (w *Worker) RunningKeys() []string {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+
+	keys := make([]string, 0, len(w.running))
+	for k := range w.running {
+		keys = append(keys, k)
+	}
+	return keys
+}
+
 // Shutdown waits for all jobs to complete before it returns.
 func (w *Worker) Shutdown(ctx context.Context) error {
 

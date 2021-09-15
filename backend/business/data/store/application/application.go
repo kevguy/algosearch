@@ -7,6 +7,7 @@ import (
 	"github.com/algorand/go-algorand-sdk/client/v2/common/models"
 	"github.com/go-kivik/kivik/v4"
 	"github.com/kevguy/algosearch/backend/business/data/schema"
+	"github.com/kevguy/algosearch/backend/foundation/web"
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -23,7 +24,7 @@ type Store struct {
 	couchClient *kivik.Client
 }
 
-// NewStore constructs a application store for api access.
+// NewStore constructs an application store for api access.
 func NewStore(log *zap.SugaredLogger, couchClient *kivik.Client) Store {
 	return Store{
 		log: log,
@@ -31,7 +32,7 @@ func NewStore(log *zap.SugaredLogger, couchClient *kivik.Client) Store {
 	}
 }
 
-// AddApplication adds a application to CouchDB.
+// AddApplication adds an application to CouchDB.
 // It receives the models.Application object and transform it into a Application document object and then
 // insert it into the global CouchDB table.
 func (s Store) AddApplication(ctx context.Context, application models.Application) (string, string, error) {
@@ -40,6 +41,8 @@ func (s Store) AddApplication(ctx context.Context, application models.Applicatio
 		Tracer("").
 		Start(ctx, "application.AddApplication")
 	defer span.End()
+
+	s.log.Infow("application.AddApplication", "traceid", web.GetTraceID(ctx))
 
 	var doc = NewApplication{
 		Application: application,
@@ -69,6 +72,8 @@ func (s Store) AddApplications(ctx context.Context, applications []models.Applic
 		Tracer("").
 		Start(ctx, "application.AddApplications")
 	defer span.End()
+
+	s.log.Infow("application.AddApplications", "traceid", web.GetTraceID(ctx))
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
@@ -109,13 +114,15 @@ func (s Store) AddApplications(ctx context.Context, applications []models.Applic
 	return true, nil
 }
 
-// GetApplication retrieves a application record from CouchDB based upon the application ID given.
+// GetApplication retrieves an application record from CouchDB based upon the application ID given.
 func (s Store) GetApplication(ctx context.Context, applicationID string) (models.Application, error) {
 
 	ctx, span := otel.GetTracerProvider().
 		Tracer("").
 		Start(ctx, "application.GetApplication")
 	defer span.End()
+
+	s.log.Infow("application.GetApplication", "traceid", web.GetTraceID(ctx), "applicationID", applicationID)
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
@@ -146,6 +153,8 @@ func (s Store) GetEarliestApplicationId(ctx context.Context) (string, error) {
 		Start(ctx, "application.GetEarliestApplicationId")
 	//span.SetAttributes(attribute.String("query", q))
 	defer span.End()
+
+	s.log.Infow("application.GetEarliestApplicationId", "traceid", web.GetTraceID(ctx))
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
@@ -185,6 +194,8 @@ func (s Store) GetLatestApplicationId(ctx context.Context) (string, error) {
 	//span.SetAttributes(attribute.String("query", q))
 	defer span.End()
 
+	s.log.Infow("application.GetLatestApplicationId", "traceid", web.GetTraceID(ctx))
+
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
 		return "", errors.Wrap(err, schema.GlobalDbName+ " database check fails")
@@ -222,8 +233,14 @@ func (s Store) GetApplicationCountBtnKeys(ctx context.Context, startKey, endKey 
 	ctx, span := otel.GetTracerProvider().
 		Tracer("").
 		Start(ctx, "application.GetApplicationCountBtnKeys")
-	//span.SetAttributes(attribute.String("query", q))
+	span.SetAttributes(attribute.String("startKey", startKey))
+	span.SetAttributes(attribute.String("endKey", endKey))
 	defer span.End()
+
+	s.log.Infow("application.GetApplicationCountBtnKeys",
+		"traceid", web.GetTraceID(ctx),
+		"startKey", startKey,
+		"endKey", endKey)
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
@@ -254,7 +271,7 @@ func (s Store) GetApplicationCountBtnKeys(ctx context.Context, startKey, endKey 
 	return payload.Value, nil
 }
 
-func (s Store) GetApplicationsPagination(ctx context.Context, traceID string, log *zap.SugaredLogger, latestApplicationId string, order string, pageNo, limit int64) ([]Application, int64, int64, error) {
+func (s Store) GetApplicationsPagination(ctx context.Context, latestApplicationId string, order string, pageNo, limit int64) ([]Application, int64, int64, error) {
 
 	ctx, span := otel.GetTracerProvider().
 		Tracer("").
@@ -263,6 +280,12 @@ func (s Store) GetApplicationsPagination(ctx context.Context, traceID string, lo
 	span.SetAttributes(attribute.Int64("pageNo", pageNo))
 	span.SetAttributes(attribute.Int64("limit", limit))
 	defer span.End()
+
+	s.log.Infow("application.GetApplicationsPagination",
+		"traceid", web.GetTraceID(ctx),
+		"latestApplicationId", latestApplicationId,
+		"pageNo", pageNo,
+		"limit", limit)
 
 	// Get the earliest application id
 	earliestTxnId, err := s.GetEarliestApplicationId(ctx)
