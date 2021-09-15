@@ -120,6 +120,7 @@ func (s Store) GetApplication(ctx context.Context, applicationID string) (models
 	ctx, span := otel.GetTracerProvider().
 		Tracer("").
 		Start(ctx, "application.GetApplication")
+	span.SetAttributes(attribute.String("applicationID", applicationID))
 	defer span.End()
 
 	s.log.Infow("application.GetApplication", "traceid", web.GetTraceID(ctx), "applicationID", applicationID)

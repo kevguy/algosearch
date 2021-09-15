@@ -117,6 +117,7 @@ func (s Store) GetAccount(ctx context.Context, accountAddr string) (models.Accou
 	ctx, span := otel.GetTracerProvider().
 		Tracer("").
 		Start(ctx, "account.GetAccount")
+	span.SetAttributes(attribute.String("accountAddr", accountAddr))
 	defer span.End()
 
 	s.log.Infow("account.GetAccount", "traceid", web.GetTraceID(ctx), "accountAddr", accountAddr)

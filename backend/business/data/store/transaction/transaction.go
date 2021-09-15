@@ -8,6 +8,7 @@ import (
 	"github.com/go-kivik/kivik/v4"
 	app "github.com/kevguy/algosearch/backend/business/algod"
 	"github.com/kevguy/algosearch/backend/business/data/schema"
+	"github.com/kevguy/algosearch/backend/foundation/web"
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -41,6 +42,8 @@ func (s Store) AddTransaction(ctx context.Context, transaction models.Transactio
 		Start(ctx, "transaction.AddTransaction")
 	defer span.End()
 
+	s.log.Infow("transaction.AddTransaction", "traceid", web.GetTraceID(ctx))
+
 	var doc = NewTransaction{
 		Transaction:            transaction,
 		DocType:                DocType,
@@ -71,6 +74,8 @@ func (s Store) AddTransactions(ctx context.Context, transactions []models.Transa
 		Tracer("").
 		Start(ctx, "transaction.AddTransactions")
 	defer span.End()
+
+	s.log.Infow("transaction.AddTransactions", "traceid", web.GetTraceID(ctx))
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
@@ -119,7 +124,10 @@ func (s Store) GetTransaction(ctx context.Context, transactionID string) (models
 	ctx, span := otel.GetTracerProvider().
 		Tracer("").
 		Start(ctx, "transaction.GetTransaction")
+	span.SetAttributes(attribute.String("transactionID", transactionID))
 	defer span.End()
+
+	s.log.Infow("transaction.GetTransaction", "traceid", web.GetTraceID(ctx), "transactionID", transactionID)
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
@@ -150,6 +158,8 @@ func (s Store) GetEarliestTransactionId(ctx context.Context) (string, error) {
 		Start(ctx, "transaction.GetEarliestTransactionId")
 	//span.SetAttributes(attribute.String("query", q))
 	defer span.End()
+
+	s.log.Infow("transaction.GetEarliestTransactionId", "traceid", web.GetTraceID(ctx))
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
@@ -188,6 +198,8 @@ func (s Store) GetLatestTransactionId(ctx context.Context) (string, error) {
 	//span.SetAttributes(attribute.String("query", q))
 	defer span.End()
 
+	s.log.Infow("transaction.GetLatestTransactionId", "traceid", web.GetTraceID(ctx))
+
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
 		return "", errors.Wrap(err, schema.GlobalDbName+ " database check fails")
@@ -224,8 +236,14 @@ func (s Store) GetTransactionCountBtnKeys(ctx context.Context, startKey, endKey 
 	ctx, span := otel.GetTracerProvider().
 		Tracer("").
 		Start(ctx, "transaction.GetTransactionCountBtnKeys")
-	//span.SetAttributes(attribute.String("query", q))
+	span.SetAttributes(attribute.String("startKey", startKey))
+	span.SetAttributes(attribute.String("endKey", endKey))
 	defer span.End()
+
+	s.log.Infow("transaction.GetTransactionCountBtnKeys",
+		"traceid", web.GetTraceID(ctx),
+		"startKey", startKey,
+		"endKey", endKey)
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
@@ -256,7 +274,7 @@ func (s Store) GetTransactionCountBtnKeys(ctx context.Context, startKey, endKey 
 	return payload.Value, nil
 }
 
-func (s Store) GetTransactionsPagination(ctx context.Context, traceID string, log *zap.SugaredLogger, latestTransactionId string, order string, pageNo, limit int64) ([]Transaction, int64, int64, error) {
+func (s Store) GetTransactionsPagination(ctx context.Context, latestTransactionId string, order string, pageNo, limit int64) ([]Transaction, int64, int64, error) {
 
 	ctx, span := otel.GetTracerProvider().
 		Tracer("").
@@ -265,6 +283,12 @@ func (s Store) GetTransactionsPagination(ctx context.Context, traceID string, lo
 	span.SetAttributes(attribute.Int64("pageNo", pageNo))
 	span.SetAttributes(attribute.Int64("limit", limit))
 	defer span.End()
+
+	s.log.Infow("transaction.GetTransactionsPagination",
+		"traceid", web.GetTraceID(ctx),
+		"latestTranasctionId", latestTransactionId,
+		"pageNo", pageNo,
+		"limit", limit)
 
 	// Get the earliest transaction id
 	earliestTxnId, err := s.GetEarliestTransactionId(ctx)

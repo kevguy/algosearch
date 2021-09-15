@@ -7,6 +7,7 @@ import (
 	"github.com/algorand/go-algorand-sdk/client/v2/common/models"
 	"github.com/go-kivik/kivik/v4"
 	"github.com/kevguy/algosearch/backend/business/data/schema"
+	"github.com/kevguy/algosearch/backend/foundation/web"
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -15,7 +16,7 @@ import (
 )
 
 const (
-	DocType = "app"
+	DocType = "asset"
 )
 
 type Store struct {
@@ -31,8 +32,8 @@ func NewStore(log *zap.SugaredLogger, couchClient *kivik.Client) Store {
 	}
 }
 
-// AddAsset adds a asset to CouchDB.
-// It receives the models.Asset object and transform it into a Asset document object and then
+// AddAsset adds an asset to CouchDB.
+// It receives the models.Asset object and transform it into an Asset document object and then
 // insert it into the global CouchDB table.
 func (s Store) AddAsset(ctx context.Context, asset models.Asset) (string, string, error) {
 
@@ -40,6 +41,8 @@ func (s Store) AddAsset(ctx context.Context, asset models.Asset) (string, string
 		Tracer("").
 		Start(ctx, "asset.AddAsset")
 	defer span.End()
+
+	s.log.Infow("asset.AddAsset", "traceid", web.GetTraceID(ctx))
 
 	var doc = NewAsset{
 		Asset:   asset,
@@ -69,6 +72,8 @@ func (s Store) AddAssets(ctx context.Context, assets []models.Asset) (bool, erro
 		Tracer("").
 		Start(ctx, "asset.AddAssets")
 	defer span.End()
+
+	s.log.Infow("asset.AddAssets", "traceid", web.GetTraceID(ctx))
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
@@ -115,7 +120,10 @@ func (s Store) GetAsset(ctx context.Context, assetID string) (models.Asset, erro
 	ctx, span := otel.GetTracerProvider().
 		Tracer("").
 		Start(ctx, "asset.GetAsset")
+	span.SetAttributes(attribute.String("assetID", assetID))
 	defer span.End()
+
+	s.log.Infow("asset.GetAsset", "traceid", web.GetTraceID(ctx), "assetID", assetID)
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
@@ -146,6 +154,8 @@ func (s Store) GetEarliestAssetId(ctx context.Context) (string, error) {
 		Start(ctx, "asset.GetEarliestAssetId")
 	//span.SetAttributes(attribute.String("query", q))
 	defer span.End()
+
+	s.log.Infow("asset.GetEarliestAssetId", "traceid", web.GetTraceID(ctx))
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
@@ -185,6 +195,8 @@ func (s Store) GetLatestAssetId(ctx context.Context) (string, error) {
 	//span.SetAttributes(attribute.String("query", q))
 	defer span.End()
 
+	s.log.Infow("asset.GetLatestAssetId", "traceid", web.GetTraceID(ctx))
+
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
 		return "", errors.Wrap(err, schema.GlobalDbName+ " database check fails")
@@ -222,8 +234,14 @@ func (s Store) GetAssetCountBtnKeys(ctx context.Context, startKey, endKey string
 	ctx, span := otel.GetTracerProvider().
 		Tracer("").
 		Start(ctx, "asset.GetAssetCountBtnKeys")
-	//span.SetAttributes(attribute.String("query", q))
+	span.SetAttributes(attribute.String("startKey", startKey))
+	span.SetAttributes(attribute.String("endKey", endKey))
 	defer span.End()
+
+	s.log.Infow("asset.GetAssetCountBtnKeys",
+		"traceid", web.GetTraceID(ctx),
+		"startKey", startKey,
+		"endKey", endKey)
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
@@ -254,7 +272,7 @@ func (s Store) GetAssetCountBtnKeys(ctx context.Context, startKey, endKey string
 	return payload.Value, nil
 }
 
-func (s Store) GetAssetsPagination(ctx context.Context, traceID string, log *zap.SugaredLogger, latestAssetId string, order string, pageNo, limit int64) ([]Asset, int64, int64, error) {
+func (s Store) GetAssetsPagination(ctx context.Context, latestAssetId string, order string, pageNo, limit int64) ([]Asset, int64, int64, error) {
 
 	ctx, span := otel.GetTracerProvider().
 		Tracer("").
@@ -263,6 +281,12 @@ func (s Store) GetAssetsPagination(ctx context.Context, traceID string, log *zap
 	span.SetAttributes(attribute.Int64("pageNo", pageNo))
 	span.SetAttributes(attribute.Int64("limit", limit))
 	defer span.End()
+
+	s.log.Infow("asset.GetAssetsPagination",
+		"traceid", web.GetTraceID(ctx),
+		"latestAssetId", latestAssetId,
+		"pageNo", pageNo,
+		"limit", limit)
 
 	// Get the earliest asset id
 	earliestTxnId, err := s.GetEarliestAssetId(ctx)

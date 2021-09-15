@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/go-kivik/kivik/v4"
 	"github.com/kevguy/algosearch/backend/business/data/schema"
+	"github.com/kevguy/algosearch/backend/foundation/web"
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -36,6 +37,8 @@ func (s Store) AddBlock(ctx context.Context, block NewBlock) (string, string, er
 		Tracer("").
 		Start(ctx, "block.AddBlock")
 	defer span.End()
+
+	s.log.Infow("block.AddBlock", "traceid", web.GetTraceID(ctx))
 
 	var doc = NewBlockDoc{
 		NewBlock: block,
@@ -70,6 +73,8 @@ func (s Store) AddBlocks(ctx context.Context, blocks []Block) (bool, error) {
 		Start(ctx, "block.AddBlocks")
 	defer span.End()
 
+	s.log.Infow("block.AddBlocks", "traceid", web.GetTraceID(ctx))
+
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
 		return false, errors.Wrap(err, schema.GlobalDbName+ " database check fails")
@@ -98,7 +103,10 @@ func (s Store) GetBlockByHash(ctx context.Context, blockHash string) (Block, err
 	ctx, span := otel.GetTracerProvider().
 		Tracer("").
 		Start(ctx, "block.GetBlockByHash")
+	span.SetAttributes(attribute.String("blockHash", blockHash))
 	defer span.End()
+
+	s.log.Infow("block.GetBlockByHash", "traceid", web.GetTraceID(ctx), "blockHash", blockHash)
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
@@ -125,13 +133,13 @@ func (s Store) GetBlockByHash(ctx context.Context, blockHash string) (Block, err
 // GetBlockByNum gets a block from CouchDB based on round number.
 func (s Store) GetBlockByNum(ctx context.Context, traceID string, log *zap.SugaredLogger, blockNum uint64) (Block, error) {
 
-	log.Infow("block.GetBlockByNum", "traceid", traceID)
-
 	ctx, span := otel.GetTracerProvider().
 		Tracer("").
 		Start(ctx, "block.GetBlockByNum")
 	span.SetAttributes(attribute.Any("block-num", blockNum))
 	defer span.End()
+
+	log.Infow("block.GetBlockByNum", "traceid", traceID, "blockNum", blockNum)
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
@@ -170,6 +178,8 @@ func (s Store) GetEarliestSyncedRoundNumber(ctx context.Context) (uint64, error)
 		Start(ctx, "block.GetEarliestSyncedRoundNumber")
 	//span.SetAttributes(attribute.String("query", q))
 	defer span.End()
+
+	s.log.Infow("block.GetEarliestSyncedRoundNumber", "traceid", web.GetTraceID(ctx))
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
@@ -227,6 +237,9 @@ func (s Store) GetLastSyncedRoundNumber(ctx context.Context) (uint64, error) {
 	//span.SetAttributes(attribute.String("query", q))
 	defer span.End()
 
+	s.log.Infow("block.GetLastSyncedRoundNumber", "traceid", web.GetTraceID(ctx))
+
+
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
 		return 0, errors.Wrap(err, schema.GlobalDbName+ " database check fails")
@@ -266,6 +279,8 @@ func (s Store) GetLatestBlock(ctx context.Context, traceID string, log *zap.Suga
 		Start(ctx, "block.GetLatestBlock")
 	defer span.End()
 
+	s.log.Infow("block.GetLatestBlock", "traceid", web.GetTraceID(ctx))
+
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
 		return Block{}, errors.Wrap(err, schema.GlobalDbName+ " database check fails")
@@ -301,7 +316,7 @@ func (s Store) GetLatestBlock(ctx context.Context, traceID string, log *zap.Suga
 // pageNo: the number of pages the user wants to look at
 // limit: number of blocks per page
 // https://docs.couchdb.org/en/main/ddocs/views/pagination.html
-func (s Store) GetBlocksPagination(ctx context.Context, traceID string, log *zap.SugaredLogger, latestBlockNum int64, order string, pageNo int64, limit int64) ([]Block, int64, int64, error) {
+func (s Store) GetBlocksPagination(ctx context.Context, latestBlockNum int64, order string, pageNo int64, limit int64) ([]Block, int64, int64, error) {
 
 	ctx, span := otel.GetTracerProvider().
 		Tracer("").
@@ -310,6 +325,12 @@ func (s Store) GetBlocksPagination(ctx context.Context, traceID string, log *zap
 	span.SetAttributes(attribute.Int64("pageNo", pageNo))
 	span.SetAttributes(attribute.Int64("limit", limit))
 	defer span.End()
+
+	s.log.Infow("block.GetBlocksPagination",
+		"traceid", web.GetTraceID(ctx),
+		"latestBlockNum", latestBlockNum,
+		"pageNo", pageNo,
+		"limit", limit)
 
 	// Get the earliest block number
 	earliestBlkNum, err := s.GetEarliestSyncedRoundNumber(ctx)
