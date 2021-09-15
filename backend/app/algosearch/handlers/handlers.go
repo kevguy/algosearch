@@ -9,8 +9,8 @@ import (
 	"github.com/algorand/go-algorand-sdk/client/v2/algod"
 	"github.com/algorand/go-algorand-sdk/client/v2/indexer"
 	"github.com/go-kivik/kivik/v4"
-	"github.com/kevguy/algosearch/backend/business/couchdata/block"
-	"github.com/kevguy/algosearch/backend/business/couchdata/transaction"
+	"github.com/kevguy/algosearch/backend/business/data/store/block"
+	"github.com/kevguy/algosearch/backend/business/data/store/transaction"
 	"github.com/kevguy/algosearch/backend/business/sys/auth"
 	"go.uber.org/zap"
 	"net/http"
@@ -112,8 +112,8 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) http.Handler {
 
 	// Register round endpoints
 	rG := roundGroup{
-		log: cfg.Log,
-		store: block.NewStore(cfg.Log, cfg.CouchClient),
+		log:         cfg.Log,
+		store:       block.NewStore(cfg.Log, cfg.CouchClient),
 		algodClient: cfg.AlgodClient,
 	}
 	app.Handle(http.MethodGet, "/v1/algod/current-round", rG.getCurrentRoundFromAPI)
@@ -125,8 +125,8 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) http.Handler {
 
 	// Register transaction endpoints
 	tG := transactionGroup{
-		log: cfg.Log,
-		store: transaction.NewStore(cfg.Log, cfg.CouchClient),
+		log:         cfg.Log,
+		store:       transaction.NewStore(cfg.Log, cfg.CouchClient),
 		algodClient: cfg.AlgodClient,
 	}
 	app.Handle(http.MethodGet, "/v1/current-txn", tG.getLatestSyncedTransaction)

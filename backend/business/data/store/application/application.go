@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/algorand/go-algorand-sdk/client/v2/common/models"
 	"github.com/go-kivik/kivik/v4"
-	"github.com/kevguy/algosearch/backend/business/couchdata/schema"
+	"github.com/kevguy/algosearch/backend/business/data/schema"
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -48,14 +48,14 @@ func (s Store) AddApplication(ctx context.Context, application models.Applicatio
 	//docId := fmt.Sprintf("%s.%s", DocType, doc.Id)
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
-		return "", "", errors.Wrap(err, schema.GlobalDbName + " database check fails")
+		return "", "", errors.Wrap(err, schema.GlobalDbName+ " database check fails")
 	}
 	db := s.couchClient.DB(schema.GlobalDbName)
 
 	docId := strconv.FormatUint(doc.Id, 10)
 	rev, err := db.Put(ctx, docId, doc)
 	if err != nil {
-		return "", "", errors.Wrap(err, schema.GlobalDbName + " database can't insert application id " + docId)
+		return "", "", errors.Wrap(err, schema.GlobalDbName+ " database can't insert application id " + docId)
 	}
 	return docId, rev, nil
 }
@@ -72,7 +72,7 @@ func (s Store) AddApplications(ctx context.Context, applications []models.Applic
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
-		return false, errors.Wrap(err, schema.GlobalDbName + " database check fails")
+		return false, errors.Wrap(err, schema.GlobalDbName+ " database check fails")
 	}
 	db := s.couchClient.DB(schema.GlobalDbName)
 
@@ -85,7 +85,7 @@ func (s Store) AddApplications(ctx context.Context, applications []models.Applic
 	for i := range applications {
 		docId := strconv.FormatUint(applications[i].Id, 10)
 		doc := NewApplication{
-			ID: &docId,
+			ID:          &docId,
 			Application: applications[i],
 			DocType:     DocType,
 		}
@@ -119,21 +119,21 @@ func (s Store) GetApplication(ctx context.Context, applicationID string) (models
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
-		return models.Application{}, errors.Wrap(err, schema.GlobalDbName + " database check fails")
+		return models.Application{}, errors.Wrap(err, schema.GlobalDbName+ " database check fails")
 	}
 	db := s.couchClient.DB(schema.GlobalDbName)
 
 	docId := fmt.Sprintf("%s.%s", DocType, applicationID)
 	row := db.Get(ctx, docId)
 	if row == nil {
-		return models.Application{}, errors.Wrap(err, schema.GlobalDbName + " get data empty")
+		return models.Application{}, errors.Wrap(err, schema.GlobalDbName+ " get data empty")
 	}
 
 	var application Application
 	fmt.Printf("%v\n", row)
 	err = row.ScanDoc(&application)
 	if err != nil {
-		return models.Application{}, errors.Wrap(err, schema.GlobalDbName + "cannot unpack data from row")
+		return models.Application{}, errors.Wrap(err, schema.GlobalDbName+ "cannot unpack data from row")
 	}
 
 	return application.Application, nil
@@ -149,11 +149,11 @@ func (s Store) GetEarliestApplicationId(ctx context.Context) (string, error) {
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
-		return "", errors.Wrap(err, schema.GlobalDbName + " database check fails")
+		return "", errors.Wrap(err, schema.GlobalDbName+ " database check fails")
 	}
 	db := s.couchClient.DB(schema.GlobalDbName)
 
-	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" + schema.ApplicationViewByIdInLatest, kivik.Options{
+	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" +schema.ApplicationViewByIdInLatest, kivik.Options{
 		"include_docs": true,
 		"descending": false,
 		"limit": 1,
@@ -187,11 +187,11 @@ func (s Store) GetLatestApplicationId(ctx context.Context) (string, error) {
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
-		return "", errors.Wrap(err, schema.GlobalDbName + " database check fails")
+		return "", errors.Wrap(err, schema.GlobalDbName+ " database check fails")
 	}
 	db := s.couchClient.DB(schema.GlobalDbName)
 
-	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" + schema.ApplicationViewByIdInLatest, kivik.Options{
+	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" +schema.ApplicationViewByIdInLatest, kivik.Options{
 		"include_docs": true,
 		"descending": true,
 		"limit": 1,
@@ -227,11 +227,11 @@ func (s Store) GetApplicationCountBtnKeys(ctx context.Context, startKey, endKey 
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
-		return 0, errors.Wrap(err, schema.GlobalDbName + " database check fails")
+		return 0, errors.Wrap(err, schema.GlobalDbName+ " database check fails")
 	}
 	db := s.couchClient.DB(schema.GlobalDbName)
 
-	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" + schema.ApplicationViewByIdInCount, kivik.Options{
+	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" +schema.ApplicationViewByIdInCount, kivik.Options{
 		"start_key": startKey,
 		"end_key": endKey,
 	})
@@ -324,7 +324,7 @@ func (s Store) GetApplicationsPagination(ctx context.Context, traceID string, lo
 		}
 	}
 
-	rows, err := db.Query(ctx, schema.ApplicationDDoc, "_view/" + schema.ApplicationViewByIdInLatest, options)
+	rows, err := db.Query(ctx, schema.ApplicationDDoc, "_view/" +schema.ApplicationViewByIdInLatest, options)
 	if err != nil {
 		return nil, 0, 0, errors.Wrap(err, "Fetch data error")
 	}

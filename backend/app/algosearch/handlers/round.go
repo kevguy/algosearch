@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/algorand/go-algorand-sdk/client/v2/algod"
 	algodBiz "github.com/kevguy/algosearch/backend/business/algod"
-	"github.com/kevguy/algosearch/backend/business/couchdata/block"
+	block2 "github.com/kevguy/algosearch/backend/business/data/store/block"
 	"github.com/kevguy/algosearch/backend/business/sys/validate"
 	"github.com/kevguy/algosearch/backend/foundation/web"
 	"github.com/pkg/errors"
@@ -15,9 +15,9 @@ import (
 )
 
 type roundGroup struct {
-	log			*zap.SugaredLogger
-	store		block.Store
-	algodClient	*algod.Client
+	log         *zap.SugaredLogger
+	store       block2.Store
+	algodClient *algod.Client
 }
 
 // getCurrentRoundFromAPI retrieves the current round and returns the block data from Algod API
@@ -173,8 +173,8 @@ func (rG roundGroup) getRoundsPagination(ctx context.Context, w http.ResponseWri
 
 	type Payload struct {
 		NumOfPages	int64 `json:"num_of_pages"`
-		NumOfBlks	int64 `json:"num_of_blks"`
-		Items []block.Block `json:"items"`
+		NumOfBlks	int64   `json:"num_of_blks"`
+		Items []block2.Block `json:"items"`
 	}
 
 	return web.Respond(ctx, w, Payload{

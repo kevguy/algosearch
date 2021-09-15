@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/algorand/go-algorand-sdk/client/v2/common/models"
 	"github.com/go-kivik/kivik/v4"
-	"github.com/kevguy/algosearch/backend/business/couchdata/schema"
+	"github.com/kevguy/algosearch/backend/business/data/schema"
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -38,18 +38,18 @@ func (s Store) AddAccount(ctx context.Context, account models.Account) (string, 
 
 	var doc = NewAccount{
 		Account: account,
-		DocType:     DocType,
+		DocType: DocType,
 	}
 	//docId := fmt.Sprintf("%s.%s", DocType, doc.Id)
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
-		return "", "", errors.Wrap(err, schema.GlobalDbName + " database check fails")
+		return "", "", errors.Wrap(err, schema.GlobalDbName+ " database check fails")
 	}
 	db := s.couchClient.DB(schema.GlobalDbName)
 
 	rev, err := db.Put(ctx, doc.Address, doc)
 	if err != nil {
-		return "", "", errors.Wrap(err, schema.GlobalDbName + " database can't insert account id " + doc.Address)
+		return "", "", errors.Wrap(err, schema.GlobalDbName+ " database can't insert account id " + doc.Address)
 	}
 	return doc.Address, rev, nil
 
@@ -67,7 +67,7 @@ func (s Store) AddAccounts(ctx context.Context, accounts []models.Account) (bool
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
-		return false, errors.Wrap(err, schema.GlobalDbName + " database check fails")
+		return false, errors.Wrap(err, schema.GlobalDbName+ " database check fails")
 	}
 	db := s.couchClient.DB(schema.GlobalDbName)
 
@@ -79,9 +79,9 @@ func (s Store) AddAccounts(ctx context.Context, accounts []models.Account) (bool
 	// https://stackoverflow.com/questions/44094325/add-data-to-interface-in-struct
 	for i := range accounts {
 		doc := NewAccount{
-			ID: &accounts[i].Address,
+			ID:      &accounts[i].Address,
 			Account: accounts[i],
-			DocType:     DocType,
+			DocType: DocType,
 		}
 		accounts_[i] = doc
 		//fmt.Println("YYYYYYYYYY")
@@ -113,21 +113,21 @@ func (s Store) GetAccount(ctx context.Context, accountAddr string) (models.Accou
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
-		return models.Account{}, errors.Wrap(err, schema.GlobalDbName + " database check fails")
+		return models.Account{}, errors.Wrap(err, schema.GlobalDbName+ " database check fails")
 	}
 	db := s.couchClient.DB(schema.GlobalDbName)
 
 	docId := fmt.Sprintf("%s.%s", DocType, accountAddr)
 	row := db.Get(ctx, docId)
 	if row == nil {
-		return models.Account{}, errors.Wrap(err, schema.GlobalDbName + " get data empty")
+		return models.Account{}, errors.Wrap(err, schema.GlobalDbName+ " get data empty")
 	}
 
 	var account Account
 	fmt.Printf("%v\n", row)
 	err = row.ScanDoc(&account)
 	if err != nil {
-		return models.Account{}, errors.Wrap(err, schema.GlobalDbName + "cannot unpack data from row")
+		return models.Account{}, errors.Wrap(err, schema.GlobalDbName+ "cannot unpack data from row")
 	}
 
 	return account.Account, nil
@@ -143,11 +143,11 @@ func (s Store) GetEarliestAccountId(ctx context.Context) (string, error) {
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
-		return "", errors.Wrap(err, schema.GlobalDbName + " database check fails")
+		return "", errors.Wrap(err, schema.GlobalDbName+ " database check fails")
 	}
 	db := s.couchClient.DB(schema.GlobalDbName)
 
-	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" + schema.AccountViewByIdInLatest, kivik.Options{
+	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" +schema.AccountViewByIdInLatest, kivik.Options{
 		"include_docs": true,
 		"descending": false,
 		"limit": 1,
@@ -180,11 +180,11 @@ func (s Store) GetLatestAccountId(ctx context.Context) (string, error) {
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
-		return "", errors.Wrap(err, schema.GlobalDbName + " database check fails")
+		return "", errors.Wrap(err, schema.GlobalDbName+ " database check fails")
 	}
 	db := s.couchClient.DB(schema.GlobalDbName)
 
-	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" + schema.AccountViewByIdInLatest, kivik.Options{
+	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" +schema.AccountViewByIdInLatest, kivik.Options{
 		"include_docs": true,
 		"descending": true,
 		"limit": 1,
@@ -219,11 +219,11 @@ func (s Store) GetAccountCountBtnKeys(ctx context.Context, startKey, endKey stri
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
-		return 0, errors.Wrap(err, schema.GlobalDbName + " database check fails")
+		return 0, errors.Wrap(err, schema.GlobalDbName+ " database check fails")
 	}
 	db := s.couchClient.DB(schema.GlobalDbName)
 
-	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" + schema.AccountViewByIdInCount, kivik.Options{
+	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" +schema.AccountViewByIdInCount, kivik.Options{
 		"start_key": startKey,
 		"end_key": endKey,
 	})
@@ -316,7 +316,7 @@ func (s Store) GetAccountsPagination(ctx context.Context, traceID string, log *z
 		}
 	}
 
-	rows, err := db.Query(ctx, schema.AccountDDoc, "_view/" + schema.AccountViewByIdInLatest, options)
+	rows, err := db.Query(ctx, schema.AccountDDoc, "_view/" +schema.AccountViewByIdInLatest, options)
 	if err != nil {
 		return nil, 0, 0, errors.Wrap(err, "Fetch data error")
 	}

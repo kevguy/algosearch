@@ -6,7 +6,7 @@ import (
 	algodv2 "github.com/algorand/go-algorand-sdk/client/v2/algod"
 	"github.com/algorand/go-algorand-sdk/client/v2/common/models"
 	"github.com/algorand/go-algorand-sdk/encoding/msgpack"
-	"github.com/kevguy/algosearch/backend/business/couchdata/block"
+	"github.com/kevguy/algosearch/backend/business/data/store/block"
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"

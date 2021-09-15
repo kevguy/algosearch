@@ -7,7 +7,7 @@ import (
 	"github.com/algorand/go-algorand-sdk/client/v2/common/models"
 	"github.com/go-kivik/kivik/v4"
 	app "github.com/kevguy/algosearch/backend/business/algod"
-	"github.com/kevguy/algosearch/backend/business/couchdata/schema"
+	"github.com/kevguy/algosearch/backend/business/data/schema"
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -42,22 +42,22 @@ func (s Store) AddTransaction(ctx context.Context, transaction models.Transactio
 	defer span.End()
 
 	var doc = NewTransaction{
-		Transaction: transaction,
-		DocType:     DocType,
-		AssociatedAccounts: app.ExtractAccountAddrsFromTxn(transaction),
+		Transaction:            transaction,
+		DocType:                DocType,
+		AssociatedAccounts:     app.ExtractAccountAddrsFromTxn(transaction),
 		AssociatedApplications: app.ExtractApplicationIdsFromTxn(transaction),
-		AssociatedAssets: app.ExtractAssetIdsFromTxn(transaction),
+		AssociatedAssets:       app.ExtractAssetIdsFromTxn(transaction),
 	}
 	//docId := fmt.Sprintf("%s.%s", DocType, doc.Id)
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
-		return "", "", errors.Wrap(err, schema.GlobalDbName + " database check fails")
+		return "", "", errors.Wrap(err, schema.GlobalDbName+ " database check fails")
 	}
 	db := s.couchClient.DB(schema.GlobalDbName)
 
 	rev, err := db.Put(ctx, doc.Id, doc)
 	if err != nil {
-		return "", "", errors.Wrap(err, schema.GlobalDbName + " database can't insert transaction id " + doc.Id)
+		return "", "", errors.Wrap(err, schema.GlobalDbName+ " database can't insert transaction id " + doc.Id)
 	}
 	return doc.Id, rev, nil
 }
@@ -74,7 +74,7 @@ func (s Store) AddTransactions(ctx context.Context, transactions []models.Transa
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
-		return false, errors.Wrap(err, schema.GlobalDbName + " database check fails")
+		return false, errors.Wrap(err, schema.GlobalDbName+ " database check fails")
 	}
 	db := s.couchClient.DB(schema.GlobalDbName)
 
@@ -86,12 +86,12 @@ func (s Store) AddTransactions(ctx context.Context, transactions []models.Transa
 	// https://stackoverflow.com/questions/44094325/add-data-to-interface-in-struct
 	for i := range transactions {
 		doc := NewTransaction{
-			ID: &transactions[i].Id,
-			Transaction: transactions[i],
-			DocType:     DocType,
-			AssociatedAccounts: app.ExtractAccountAddrsFromTxn(transactions[i]),
+			ID:                     &transactions[i].Id,
+			Transaction:            transactions[i],
+			DocType:                DocType,
+			AssociatedAccounts:     app.ExtractAccountAddrsFromTxn(transactions[i]),
 			AssociatedApplications: app.ExtractApplicationIdsFromTxn(transactions[i]),
-			AssociatedAssets: app.ExtractAssetIdsFromTxn(transactions[i]),
+			AssociatedAssets:       app.ExtractAssetIdsFromTxn(transactions[i]),
 		}
 		transactions_[i] = doc
 		//fmt.Println("YYYYYYYYYY")
@@ -123,21 +123,21 @@ func (s Store) GetTransaction(ctx context.Context, transactionID string) (models
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
-		return models.Transaction{}, errors.Wrap(err, schema.GlobalDbName + " database check fails")
+		return models.Transaction{}, errors.Wrap(err, schema.GlobalDbName+ " database check fails")
 	}
 	db := s.couchClient.DB(schema.GlobalDbName)
 
 	docId := fmt.Sprintf("%s.%s", DocType, transactionID)
 	row := db.Get(ctx, docId)
 	if row == nil {
-		return models.Transaction{}, errors.Wrap(err, schema.GlobalDbName + " get data empty")
+		return models.Transaction{}, errors.Wrap(err, schema.GlobalDbName+ " get data empty")
 	}
 
 	var transaction Transaction
 	fmt.Printf("%v\n", row)
 	err = row.ScanDoc(&transaction)
 	if err != nil {
-		return models.Transaction{}, errors.Wrap(err, schema.GlobalDbName + "cannot unpack data from row")
+		return models.Transaction{}, errors.Wrap(err, schema.GlobalDbName+ "cannot unpack data from row")
 	}
 
 	return transaction.Transaction, nil
@@ -153,11 +153,11 @@ func (s Store) GetEarliestTransactionId(ctx context.Context) (string, error) {
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
-		return "", errors.Wrap(err, schema.GlobalDbName + " database check fails")
+		return "", errors.Wrap(err, schema.GlobalDbName+ " database check fails")
 	}
 	db := s.couchClient.DB(schema.GlobalDbName)
 
-	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" + schema.TransactionViewByIdInLatest, kivik.Options{
+	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" +schema.TransactionViewByIdInLatest, kivik.Options{
 		"include_docs": true,
 		"descending": false,
 		"limit": 1,
@@ -190,11 +190,11 @@ func (s Store) GetLatestTransactionId(ctx context.Context) (string, error) {
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
-		return "", errors.Wrap(err, schema.GlobalDbName + " database check fails")
+		return "", errors.Wrap(err, schema.GlobalDbName+ " database check fails")
 	}
 	db := s.couchClient.DB(schema.GlobalDbName)
 
-	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" + schema.TransactionViewByIdInLatest, kivik.Options{
+	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" +schema.TransactionViewByIdInLatest, kivik.Options{
 		"include_docs": true,
 		"descending": true,
 		"limit": 1,
@@ -229,11 +229,11 @@ func (s Store) GetTransactionCountBtnKeys(ctx context.Context, startKey, endKey 
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
-		return 0, errors.Wrap(err, schema.GlobalDbName + " database check fails")
+		return 0, errors.Wrap(err, schema.GlobalDbName+ " database check fails")
 	}
 	db := s.couchClient.DB(schema.GlobalDbName)
 
-	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" + schema.TransactionViewByIdInCount, kivik.Options{
+	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" +schema.TransactionViewByIdInCount, kivik.Options{
 		"start_key": startKey,
 		"end_key": endKey,
 	})
@@ -326,7 +326,7 @@ func (s Store) GetTransactionsPagination(ctx context.Context, traceID string, lo
 		}
 	}
 
-	rows, err := db.Query(ctx, schema.TransactionDDoc, "_view/" + schema.TransactionViewByIdInLatest, options)
+	rows, err := db.Query(ctx, schema.TransactionDDoc, "_view/" +schema.TransactionViewByIdInLatest, options)
 	if err != nil {
 		return nil, 0, 0, errors.Wrap(err, "Fetch data error")
 	}

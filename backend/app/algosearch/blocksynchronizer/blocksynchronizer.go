@@ -6,11 +6,11 @@ import (
 	"github.com/algorand/go-algorand-sdk/client/v2/algod"
 	"github.com/algorand/go-algorand-sdk/client/v2/common/models"
 	app "github.com/kevguy/algosearch/backend/business/algod"
-	"github.com/kevguy/algosearch/backend/business/couchdata/account"
-	"github.com/kevguy/algosearch/backend/business/couchdata/application"
-	"github.com/kevguy/algosearch/backend/business/couchdata/asset"
-	"github.com/kevguy/algosearch/backend/business/couchdata/block"
-	"github.com/kevguy/algosearch/backend/business/couchdata/transaction"
+	"github.com/kevguy/algosearch/backend/business/data/store/account"
+	"github.com/kevguy/algosearch/backend/business/data/store/application"
+	"github.com/kevguy/algosearch/backend/business/data/store/asset"
+	"github.com/kevguy/algosearch/backend/business/data/store/block"
+	"github.com/kevguy/algosearch/backend/business/data/store/transaction"
 	"github.com/kevguy/algosearch/backend/foundation/couchdb"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
@@ -156,7 +156,6 @@ func (p *BlockSynchronizer) update() {
 						p.log.Errorw("blocksynchronizer", "status", "can't get account", "ERROR", err)
 					}
 					accountList = append(accountList, *accountInfo)
-					//p.accountStore.AddAccount(context.Background(), *accountInfo)
 				}
 
 				for _, appID := range applicationIDs {
@@ -165,7 +164,6 @@ func (p *BlockSynchronizer) update() {
 						p.log.Errorw("blocksynchronizer", "status", "can't get app", "ERROR", err)
 					}
 					appList = append(appList, *appInfo)
-					//p.appStore.AddApplication(context.Background(), *appInfo)
 				}
 
 				for _, assetID := range assetIDs {
@@ -174,10 +172,8 @@ func (p *BlockSynchronizer) update() {
 						p.log.Errorw("blocksynchronizer", "status", "can't get asset", "ERROR", err)
 					}
 					assetList = append(assetList, *assetInfo)
-					//p.assetStore.AddAsset(context.Background(), *assetInfo)
 				}
 			}
-
 		}
 
 		_, err = p.accountStore.AddAccounts(context.Background(), accountList)

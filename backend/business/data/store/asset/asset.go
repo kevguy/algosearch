@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/algorand/go-algorand-sdk/client/v2/common/models"
 	"github.com/go-kivik/kivik/v4"
-	"github.com/kevguy/algosearch/backend/business/couchdata/schema"
+	"github.com/kevguy/algosearch/backend/business/data/schema"
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -42,20 +42,20 @@ func (s Store) AddAsset(ctx context.Context, asset models.Asset) (string, string
 	defer span.End()
 
 	var doc = NewAsset{
-		Asset: asset,
-		DocType:     DocType,
+		Asset:   asset,
+		DocType: DocType,
 	}
 	//docId := fmt.Sprintf("%s.%s", DocType, doc.Id)
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
-		return "", "", errors.Wrap(err, schema.GlobalDbName + " database check fails")
+		return "", "", errors.Wrap(err, schema.GlobalDbName+ " database check fails")
 	}
 	db := s.couchClient.DB(schema.GlobalDbName)
 
 	docId := strconv.FormatUint(doc.Index, 10)
 	rev, err := db.Put(ctx, docId, doc)
 	if err != nil {
-		return "", "", errors.Wrap(err, schema.GlobalDbName + " database can't insert asset id " + docId)
+		return "", "", errors.Wrap(err, schema.GlobalDbName+ " database can't insert asset id " + docId)
 	}
 	return docId, rev, nil
 }
@@ -72,7 +72,7 @@ func (s Store) AddAssets(ctx context.Context, assets []models.Asset) (bool, erro
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
-		return false, errors.Wrap(err, schema.GlobalDbName + " database check fails")
+		return false, errors.Wrap(err, schema.GlobalDbName+ " database check fails")
 	}
 	db := s.couchClient.DB(schema.GlobalDbName)
 
@@ -85,9 +85,9 @@ func (s Store) AddAssets(ctx context.Context, assets []models.Asset) (bool, erro
 	for i := range assets {
 		docId := strconv.FormatUint(assets[i].Index, 10)
 		doc := NewAsset{
-			ID: &docId,
-			Asset: assets[i],
-			DocType:     DocType,
+			ID:      &docId,
+			Asset:   assets[i],
+			DocType: DocType,
 		}
 		assets_[i] = doc
 		//fmt.Println("YYYYYYYYYY")
@@ -119,21 +119,21 @@ func (s Store) GetAsset(ctx context.Context, assetID string) (models.Asset, erro
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
-		return models.Asset{}, errors.Wrap(err, schema.GlobalDbName + " database check fails")
+		return models.Asset{}, errors.Wrap(err, schema.GlobalDbName+ " database check fails")
 	}
 	db := s.couchClient.DB(schema.GlobalDbName)
 
 	docId := fmt.Sprintf("%s.%s", DocType, assetID)
 	row := db.Get(ctx, docId)
 	if row == nil {
-		return models.Asset{}, errors.Wrap(err, schema.GlobalDbName + " get data empty")
+		return models.Asset{}, errors.Wrap(err, schema.GlobalDbName+ " get data empty")
 	}
 
 	var asset Asset
 	fmt.Printf("%v\n", row)
 	err = row.ScanDoc(&asset)
 	if err != nil {
-		return models.Asset{}, errors.Wrap(err, schema.GlobalDbName + "cannot unpack data from row")
+		return models.Asset{}, errors.Wrap(err, schema.GlobalDbName+ "cannot unpack data from row")
 	}
 
 	return asset.Asset, nil
@@ -149,11 +149,11 @@ func (s Store) GetEarliestAssetId(ctx context.Context) (string, error) {
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
-		return "", errors.Wrap(err, schema.GlobalDbName + " database check fails")
+		return "", errors.Wrap(err, schema.GlobalDbName+ " database check fails")
 	}
 	db := s.couchClient.DB(schema.GlobalDbName)
 
-	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" + schema.AssetViewByIdInLatest, kivik.Options{
+	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" +schema.AssetViewByIdInLatest, kivik.Options{
 		"include_docs": true,
 		"descending": false,
 		"limit": 1,
@@ -187,11 +187,11 @@ func (s Store) GetLatestAssetId(ctx context.Context) (string, error) {
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
-		return "", errors.Wrap(err, schema.GlobalDbName + " database check fails")
+		return "", errors.Wrap(err, schema.GlobalDbName+ " database check fails")
 	}
 	db := s.couchClient.DB(schema.GlobalDbName)
 
-	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" + schema.AssetViewByIdInLatest, kivik.Options{
+	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" +schema.AssetViewByIdInLatest, kivik.Options{
 		"include_docs": true,
 		"descending": true,
 		"limit": 1,
@@ -227,11 +227,11 @@ func (s Store) GetAssetCountBtnKeys(ctx context.Context, startKey, endKey string
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
-		return 0, errors.Wrap(err, schema.GlobalDbName + " database check fails")
+		return 0, errors.Wrap(err, schema.GlobalDbName+ " database check fails")
 	}
 	db := s.couchClient.DB(schema.GlobalDbName)
 
-	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" + schema.AssetViewByIdInCount, kivik.Options{
+	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" +schema.AssetViewByIdInCount, kivik.Options{
 		"start_key": startKey,
 		"end_key": endKey,
 	})
@@ -324,7 +324,7 @@ func (s Store) GetAssetsPagination(ctx context.Context, traceID string, log *zap
 		}
 	}
 
-	rows, err := db.Query(ctx, schema.AssetDDoc, "_view/" + schema.AssetViewByIdInLatest, options)
+	rows, err := db.Query(ctx, schema.AssetDDoc, "_view/" +schema.AssetViewByIdInLatest, options)
 	if err != nil {
 		return nil, 0, 0, errors.Wrap(err, "Fetch data error")
 	}

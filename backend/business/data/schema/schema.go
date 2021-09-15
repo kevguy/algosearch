@@ -61,7 +61,7 @@ func InsertBlockViewsForGlobalDB(ctx context.Context, client *kivik.Client, dbNa
 	}
 	db := client.DB(dbName)
 
-	_, err = db.Query(ctx, BlockDDoc, "_view/" + BlockViewByRoundInLatest)
+	_, err = db.Query(ctx, BlockDDoc, "_view/" +BlockViewByRoundInLatest)
 	//if err != nil {
 	//	return errors.Wrap(err, dbName + " database and query by timestamp view failed to be queried")
 	//}

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	app "github.com/kevguy/algosearch/backend/business/algod"
-	"github.com/kevguy/algosearch/backend/business/couchdata/block"
+	"github.com/kevguy/algosearch/backend/business/data/store/block"
 	"github.com/kevguy/algosearch/backend/foundation/algod"
 	"github.com/kevguy/algosearch/backend/foundation/couchdb"
 	"github.com/pkg/errors"

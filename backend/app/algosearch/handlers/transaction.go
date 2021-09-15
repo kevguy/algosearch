@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/algorand/go-algorand-sdk/client/v2/algod"
-	"github.com/kevguy/algosearch/backend/business/couchdata/transaction"
+	transaction2 "github.com/kevguy/algosearch/backend/business/data/store/transaction"
 	"github.com/kevguy/algosearch/backend/business/sys/validate"
 	"github.com/kevguy/algosearch/backend/foundation/web"
 	"github.com/pkg/errors"
@@ -14,9 +14,9 @@ import (
 )
 
 type transactionGroup struct {
-	log			*zap.SugaredLogger
-	store		transaction.Store
-	algodClient	*algod.Client
+	log         *zap.SugaredLogger
+	store       transaction2.Store
+	algodClient *algod.Client
 }
 
 // getTransaction retrieves a block from CouchDB based on the round number (num)
@@ -119,8 +119,8 @@ func (tG transactionGroup) getTransactionsPagination(ctx context.Context, w http
 
 	type Payload struct {
 		NumOfPages	int64 `json:"num_of_pages"`
-		NumOfTxns	int64 `json:"num_of_txns"`
-		Items []transaction.Transaction `json:"items"`
+		NumOfTxns	int64               `json:"num_of_txns"`
+		Items []transaction2.Transaction `json:"items"`
 	}
 
 	return web.Respond(ctx, w, Payload{

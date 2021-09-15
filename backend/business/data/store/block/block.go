@@ -5,7 +5,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/go-kivik/kivik/v4"
-	"github.com/kevguy/algosearch/backend/business/couchdata/schema"
+	"github.com/kevguy/algosearch/backend/business/data/schema"
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -43,7 +43,7 @@ func (s Store) AddBlock(ctx context.Context, block NewBlock) (string, string, er
 	}
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
-		return "", "", errors.Wrap(err, schema.GlobalDbName + " database check fails")
+		return "", "", errors.Wrap(err, schema.GlobalDbName+ " database check fails")
 	}
 	db := s.couchClient.DB(schema.GlobalDbName)
 
@@ -56,7 +56,7 @@ func (s Store) AddBlock(ctx context.Context, block NewBlock) (string, string, er
 	fmt.Println(doc.Round)
 	rev, err := db.Put(ctx, doc.BlockHash, doc)
 	if err != nil {
-		return "", "", errors.Wrap(err, schema.GlobalDbName + " database can't insert block number " + string(block.Round))
+		return "", "", errors.Wrap(err, schema.GlobalDbName+ " database can't insert block number " + string(block.Round))
 	}
 	//return strconv.FormatUint(block.Round, 10), rev, nil
 	return block.BlockHash, rev, nil
@@ -72,7 +72,7 @@ func (s Store) AddBlocks(ctx context.Context, blocks []Block) (bool, error) {
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
-		return false, errors.Wrap(err, schema.GlobalDbName + " database check fails")
+		return false, errors.Wrap(err, schema.GlobalDbName+ " database check fails")
 	}
 	db := s.couchClient.DB(schema.GlobalDbName)
 
@@ -102,21 +102,21 @@ func (s Store) GetBlockByHash(ctx context.Context, blockHash string) (Block, err
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
-		return Block{}, errors.Wrap(err, schema.GlobalDbName + " database check fails")
+		return Block{}, errors.Wrap(err, schema.GlobalDbName+ " database check fails")
 	}
 	db := s.couchClient.DB(schema.GlobalDbName)
 
 	//row := db.Get(ctx, strconv.FormatUint(blockNum, 10))
 	row := db.Get(ctx, blockHash)
 	if row == nil {
-		return Block{}, errors.Wrap(err, schema.GlobalDbName + " get data empty")
+		return Block{}, errors.Wrap(err, schema.GlobalDbName+ " get data empty")
 	}
 
 	var block Block
 	fmt.Printf("%v\n", row)
 	err = row.ScanDoc(&block)
 	if err != nil {
-		return Block{}, errors.Wrap(err, schema.GlobalDbName + "cannot unpack data from row")
+		return Block{}, errors.Wrap(err, schema.GlobalDbName+ "cannot unpack data from row")
 	}
 
 	return block, nil
@@ -135,11 +135,11 @@ func (s Store) GetBlockByNum(ctx context.Context, traceID string, log *zap.Sugar
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
-		return Block{}, errors.Wrap(err, schema.GlobalDbName + " database check fails")
+		return Block{}, errors.Wrap(err, schema.GlobalDbName+ " database check fails")
 	}
 	db := s.couchClient.DB(schema.GlobalDbName)
 
-	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" + schema.BlockViewByRoundInLatest, kivik.Options{
+	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" +schema.BlockViewByRoundInLatest, kivik.Options{
 		"include_docs": true,
 		"key": blockNum,
 		"limit": 1,
@@ -173,11 +173,11 @@ func (s Store) GetEarliestSyncedRoundNumber(ctx context.Context) (uint64, error)
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
-		return 0, errors.Wrap(err, schema.GlobalDbName + " database check fails")
+		return 0, errors.Wrap(err, schema.GlobalDbName+ " database check fails")
 	}
 	db := s.couchClient.DB(schema.GlobalDbName)
 
-	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" + schema.BlockViewByRoundInLatest, kivik.Options{
+	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" +schema.BlockViewByRoundInLatest, kivik.Options{
 		"include_docs": true,
 		"descending": false,
 		"limit": 1,
@@ -229,11 +229,11 @@ func (s Store) GetLastSyncedRoundNumber(ctx context.Context) (uint64, error) {
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
-		return 0, errors.Wrap(err, schema.GlobalDbName + " database check fails")
+		return 0, errors.Wrap(err, schema.GlobalDbName+ " database check fails")
 	}
 	db := s.couchClient.DB(schema.GlobalDbName)
 
-	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" + schema.BlockViewByRoundInLatest, kivik.Options{
+	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" +schema.BlockViewByRoundInLatest, kivik.Options{
 		"include_docs": true,
 		"descending": true,
 		"limit": 1,
@@ -268,11 +268,11 @@ func (s Store) GetLatestBlock(ctx context.Context, traceID string, log *zap.Suga
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
-		return Block{}, errors.Wrap(err, schema.GlobalDbName + " database check fails")
+		return Block{}, errors.Wrap(err, schema.GlobalDbName+ " database check fails")
 	}
 	db := s.couchClient.DB(schema.GlobalDbName)
 
-	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" + schema.BlockViewByRoundInLatest, kivik.Options{
+	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" +schema.BlockViewByRoundInLatest, kivik.Options{
 		"include_docs": true,
 		"descending": true,
 		"limit": 1,
@@ -373,7 +373,7 @@ func (s Store) GetBlocksPagination(ctx context.Context, traceID string, log *zap
 	//	"limit": limit,
 	//	"skip": lastBlockNum - limit,
 	//})
-	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" + schema.BlockViewByRoundInLatest, options)
+	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" +schema.BlockViewByRoundInLatest, options)
 	if err != nil {
 		return nil, 0, 0, errors.Wrap(err, "Fetch data error")
 	}
