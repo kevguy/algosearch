@@ -153,7 +153,7 @@ func (p *BlockSynchronizer) update() {
 				for _, acctID := range accountIDs {
 					accountInfo, err := app.GetAccount(context.Background(),"", p.log, p.algodClient, acctID)
 					if err != nil {
-						p.log.Errorw("blocksynchronizer", "status", "can't add/update new account(s)", "ERROR", err)
+						p.log.Errorw("blocksynchronizer", "status", "can't get account", "ERROR", err)
 					}
 					accountList = append(accountList, *accountInfo)
 					//p.accountStore.AddAccount(context.Background(), *accountInfo)
@@ -162,7 +162,7 @@ func (p *BlockSynchronizer) update() {
 				for _, appID := range applicationIDs {
 					appInfo, err := app.GetApplication(context.Background(),"", p.log, p.algodClient, appID)
 					if err != nil {
-						p.log.Errorw("blocksynchronizer", "status", "can't add/update new app(s)", "ERROR", err)
+						p.log.Errorw("blocksynchronizer", "status", "can't get app", "ERROR", err)
 					}
 					appList = append(appList, *appInfo)
 					//p.appStore.AddApplication(context.Background(), *appInfo)
@@ -171,7 +171,7 @@ func (p *BlockSynchronizer) update() {
 				for _, assetID := range assetIDs {
 					assetInfo, err := app.GetAsset(context.Background(),"", p.log, p.algodClient, assetID)
 					if err != nil {
-						p.log.Errorw("blocksynchronizer", "status", "can't add/update new asset(s)", "ERROR", err)
+						p.log.Errorw("blocksynchronizer", "status", "can't get asset", "ERROR", err)
 					}
 					assetList = append(assetList, *assetInfo)
 					//p.assetStore.AddAsset(context.Background(), *assetInfo)
@@ -180,9 +180,20 @@ func (p *BlockSynchronizer) update() {
 
 		}
 
-		p.accountStore.AddAccounts(context.Background(), accountList)
-		p.assetStore.AddAssets(context.Background(), assetList)
-		p.appStore.AddApplications(context.Background(), appList)
+		_, err = p.accountStore.AddAccounts(context.Background(), accountList)
+		if err != nil {
+			p.log.Errorw("blocksynchronizer", "status", "can't add/update account(s)", "ERROR", err)
+		}
+
+		_, err = p.assetStore.AddAssets(context.Background(), assetList)
+		if err != nil {
+			p.log.Errorw("blocksynchronizer", "status", "can't add/update asset(s)", "ERROR", err)
+		}
+
+		_, err = p.appStore.AddApplications(context.Background(), appList)
+		if err != nil {
+			p.log.Errorw("blocksynchronizer", "status", "can't add/update application(s)", "ERROR", err)
+		}
 
 		//for _, transaction := range newBlock.Transactions {
 		//	fmt.Println("Got transaction")
