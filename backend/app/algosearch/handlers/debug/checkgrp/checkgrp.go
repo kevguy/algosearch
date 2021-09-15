@@ -1,4 +1,5 @@
-package handlers
+// Package checkgrp maintains the group of handlers for health checking.
+package checkgrp
 
 import (
 	"context"
@@ -7,23 +8,25 @@ import (
 	"github.com/go-kivik/kivik/v4"
 	algodCore "github.com/kevguy/algosearch/backend/foundation/algod"
 	"github.com/kevguy/algosearch/backend/foundation/couchdb"
-	"go.uber.org/zap"
 	"net/http"
 	"os"
 	"time"
+
+	"go.uber.org/zap"
 )
 
-type checkGroup struct {
-	build		string
-	log			*zap.SugaredLogger
-	couchClient	*kivik.Client
-	algodClient	*algod.Client
+// Handlers manages the set of check endpoints.
+type Handlers struct {
+	Build string
+	Log   *zap.SugaredLogger
+	CouchClient  *kivik.Client
+	AlgodClient *algod.Client
 }
 
-// readiness checks if the database is ready and if not will return a 500 status.
+// Readiness checks if the database is ready and if not will return a 500 status.
 // Do not respond by just returning an error because further up in the call
 // stack it will interpret that as a non-trusted error.
-func (cg checkGroup) readiness(w http.ResponseWriter, r *http.Request) {
+func (h Handlers) Readiness(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), time.Second)
 	defer cancel()
 
@@ -31,13 +34,13 @@ func (cg checkGroup) readiness(w http.ResponseWriter, r *http.Request) {
 	statusCode := http.StatusOK
 
 	// Check CouchDB connection
-	if err := couchdb.StatusCheck(ctx, cg.couchClient); err != nil {
+	if err := couchdb.StatusCheck(ctx, h.CouchClient); err != nil {
 		status = "db not ready"
 		statusCode = http.StatusInternalServerError
 	}
 
 	// Check Algod connection
-	if err := algodCore.StatusCheck(ctx, cg.algodClient); err != nil {
+	if err := algodCore.StatusCheck(ctx, h.AlgodClient); err != nil {
 		status = "algod client not ready"
 		statusCode = http.StatusInternalServerError
 	}
@@ -49,17 +52,17 @@ func (cg checkGroup) readiness(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := response(w, statusCode, data); err != nil {
-		cg.log.Errorw("readiness", "ERROR", err)
+		h.Log.Errorw("readiness", "ERROR", err)
 	}
 
-	cg.log.Infow("readiness", "statusCode", statusCode, "method", r.Method, "path", r.URL.Path, "remoteaddr", r.RemoteAddr)
+	h.Log.Infow("readiness", "statusCode", statusCode, "method", r.Method, "path", r.URL.Path, "remoteaddr", r.RemoteAddr)
 }
 
-// liveness returns simple status info if the service is alive. If the
+// Liveness returns simple status info if the service is alive. If the
 // app is deployed to a Kubernetes cluster, it will also return pod, node, and
 // namespace details via the Downward API. The Kubernetes environment variables
 // need to be set within your Pod/Deployment manifest.
-func (cg checkGroup) liveness(w http.ResponseWriter, r *http.Request) {
+func (h Handlers) Liveness(w http.ResponseWriter, r *http.Request) {
 	host, err := os.Hostname()
 	if err != nil {
 		host = "unavailable"
@@ -75,7 +78,7 @@ func (cg checkGroup) liveness(w http.ResponseWriter, r *http.Request) {
 		Namespace string `json:"namespace,omitempty"`
 	}{
 		Status:    "up",
-		Build:     cg.build,
+		Build:     h.Build,
 		Host:      host,
 		Pod:       os.Getenv("KUBERNETES_PODNAME"),
 		PodIP:     os.Getenv("KUBERNETES_NAMESPACE_POD_IP"),
@@ -85,10 +88,10 @@ func (cg checkGroup) liveness(w http.ResponseWriter, r *http.Request) {
 
 	statusCode := http.StatusOK
 	if err := response(w, statusCode, data); err != nil {
-		cg.log.Errorw("liveness", "ERROR", err)
+		h.Log.Errorw("liveness", "ERROR", err)
 	}
 
-	cg.log.Infow("liveness", "statusCode", statusCode, "method", r.Method, "path", r.URL.Path, "remoteaddr", r.RemoteAddr)
+	h.Log.Infow("liveness", "statusCode", statusCode, "method", r.Method, "path", r.URL.Path, "remoteaddr", r.RemoteAddr)
 }
 
 func response(w http.ResponseWriter, statusCode int, data interface{}) error {

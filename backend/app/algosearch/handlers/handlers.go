@@ -4,11 +4,13 @@ package handlers
 
 import (
 	"context"
-	"encoding/json"
 	"expvar"
 	"github.com/algorand/go-algorand-sdk/client/v2/algod"
 	"github.com/algorand/go-algorand-sdk/client/v2/indexer"
 	"github.com/go-kivik/kivik/v4"
+	"github.com/kevguy/algosearch/backend/app/algosearch/handlers/apidoc/swaggergrp"
+	"github.com/kevguy/algosearch/backend/app/algosearch/handlers/debug/samplegrp"
+	"github.com/kevguy/algosearch/backend/app/algosearch/handlers/debug/checkgrp"
 	"github.com/kevguy/algosearch/backend/business/data/store/block"
 	"github.com/kevguy/algosearch/backend/business/data/store/transaction"
 	"github.com/kevguy/algosearch/backend/business/sys/auth"
@@ -17,7 +19,6 @@ import (
 	"net/http/pprof"
 	"os"
 
-	"github.com/kevguy/algosearch/backend/business/sys/metrics"
 	"github.com/kevguy/algosearch/backend/business/web/mid"
 	"github.com/kevguy/algosearch/backend/foundation/web"
 )
@@ -56,16 +57,18 @@ func DebugStandardLibraryMux() *http.ServeMux {
 // debug application routes for the service. This bypassing the use of the
 // DefaultServerMux. Using the DefaultServerMux would be a security risk since
 // a dependency could inject a handler into our service without us knowing it.
-func DebugMux(build string, log *zap.SugaredLogger) http.Handler {
+func DebugMux(build string, log *zap.SugaredLogger, couchClient *kivik.Client, algodClient *algod.Client) http.Handler {
 	mux := DebugStandardLibraryMux()
 
 	// Register debug check endpoints.
-	cg := checkGroup{
-		build: build,
-		log:   log,
+	cgh := checkgrp.Handlers{
+		Build: build,
+		Log:   log,
+		CouchClient: couchClient,
+		AlgodClient: algodClient,
 	}
-	mux.HandleFunc("/debug/readiness", cg.readiness)
-	mux.HandleFunc("/debug/liveness", cg.liveness)
+	mux.HandleFunc("/debug/readiness", cgh.Readiness)
+	mux.HandleFunc("/debug/liveness", cgh.Liveness)
 
 	return mux
 }
@@ -73,8 +76,9 @@ func DebugMux(build string, log *zap.SugaredLogger) http.Handler {
 // APIMuxConfig contains all the mandatory systems required by handlers.
 type APIMuxConfig struct {
 	Shutdown chan os.Signal
+	APIProtocol		string
+	APIHost			string
 	Log				*zap.SugaredLogger
-	Metrics			*metrics.Metrics
 	Auth			*auth.Auth
 	AlgodClient		*algod.Client
 	IndexerClient	*indexer.Client
@@ -93,46 +97,20 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) http.Handler {
 		cfg.Shutdown,
 		mid.Logger(cfg.Log),
 		mid.Errors(cfg.Log),
-		mid.Metrics(cfg.Metrics),
+		mid.Metrics(),
 		mid.Panics(),
 	)
 
-	h := func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-		status := struct {
-			Status string
-		}{
-			Status: "OK",
-		}
-		json.NewEncoder(w).Encode(status)
+	// Register the swagger assets.
+	// For the endpoint /swagger/*,
+	// files will be served inside the swagger folder
+	fs := http.FileServer(http.Dir("swagger"))
+	fs = http.StripPrefix("/swagger/", fs)
+	f := func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+		fs.ServeHTTP(w, r)
 		return nil
 	}
-
-	app.Handle(http.MethodGet, "/", h)
-	app.Handle(http.MethodGet, "/test", h)
-
-	// Register round endpoints
-	rG := roundGroup{
-		log:         cfg.Log,
-		store:       block.NewStore(cfg.Log, cfg.CouchClient),
-		algodClient: cfg.AlgodClient,
-	}
-	app.Handle(http.MethodGet, "/v1/algod/current-round", rG.getCurrentRoundFromAPI)
-	app.Handle(http.MethodGet, "/v1/algod/rounds/:num", rG.getRoundFromAPI)
-	app.Handle(http.MethodGet, "/v1/current-round", rG.getLatestSyncedRound)
-	app.Handle(http.MethodGet, "/v1/earliest-round", rG.getEarliestSyncedRound)
-	app.Handle(http.MethodGet, "/v1/round/:num", rG.getRound)
-	app.Handle(http.MethodGet, "/v1/rounds", rG.getRoundsPagination)
-
-	// Register transaction endpoints
-	tG := transactionGroup{
-		log:         cfg.Log,
-		store:       transaction.NewStore(cfg.Log, cfg.CouchClient),
-		algodClient: cfg.AlgodClient,
-	}
-	app.Handle(http.MethodGet, "/v1/current-txn", tG.getLatestSyncedTransaction)
-	app.Handle(http.MethodGet, "/v1/earliest-txn", tG.getEarliestSyncedTransaction)
-	app.Handle(http.MethodGet, "/v1/transaction/:num", tG.getTransaction)
-	app.Handle(http.MethodGet, "/v1/transactions", tG.getTransactionsPagination)
+	app.Handle(http.MethodGet, "", "/swagger/*", f)
 
 	// Accept CORS 'OPTIONS' preflight requests if config has been provided.
 	// Don't forget to apply the CORS middleware to the routes that need it.
@@ -141,8 +119,54 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) http.Handler {
 		h := func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 			return nil
 		}
-		app.Handle(http.MethodOptions, "/*", h)
+		app.Handle(http.MethodOptions, "", "/*", h)
 	}
 
+	// Load the routes for the different versions of the API.
+	v1(app, cfg)
+
 	return app
+}
+
+// v1 binds all the version 1 routes.
+func v1(app *web.App, cfg APIMuxConfig) {
+	const version = "v1"
+
+	// Register sample endpoints
+	samg := samplegrp.Handlers{}
+	app.Handle(http.MethodGet, "", "/", samg.SendOK)
+	app.Handle(http.MethodGet, "", "/test", samg.SendOK)
+	app.Handle(http.MethodGet, "", "/test-error", samg.SendError)
+
+	// Register the index page for the website.
+	sg, err := swaggergrp.NewIndex(cfg.APIProtocol, cfg.APIHost, "cal-engine-swagger")
+	if err != nil {
+		cfg.Log.Errorf("loading index template: %v", err)
+		//return nil, errors.Wrap(err, "loading index template")
+	}
+	app.Handle(http.MethodGet, "", "/api/doc", sg.ServeDoc)
+
+	// Register round endpoints
+	rG := roundGroup{
+		log:         cfg.Log,
+		store:       block.NewStore(cfg.Log, cfg.CouchClient),
+		algodClient: cfg.AlgodClient,
+	}
+	app.Handle(http.MethodGet, version, "/algod/current-round", rG.getCurrentRoundFromAPI)
+	app.Handle(http.MethodGet, version, "/algod/rounds/:num", rG.getRoundFromAPI)
+	app.Handle(http.MethodGet, version, "/current-round", rG.getLatestSyncedRound)
+	app.Handle(http.MethodGet, version, "/earliest-round", rG.getEarliestSyncedRound)
+	app.Handle(http.MethodGet, version, "/round/:num", rG.getRound)
+	app.Handle(http.MethodGet, version, "/rounds", rG.getRoundsPagination)
+
+	// Register transaction endpoints
+	tG := transactionGroup{
+		log:         cfg.Log,
+		store:       transaction.NewStore(cfg.Log, cfg.CouchClient),
+		algodClient: cfg.AlgodClient,
+	}
+	app.Handle(http.MethodGet, version, "/current-txn", tG.getLatestSyncedTransaction)
+	app.Handle(http.MethodGet, version, "/earliest-txn", tG.getEarliestSyncedTransaction)
+	app.Handle(http.MethodGet, version, "/transaction/:num", tG.getTransaction)
+	app.Handle(http.MethodGet, version, "/transactions", tG.getTransactionsPagination)
 }

@@ -5,6 +5,7 @@ go 1.16
 require (
 	github.com/algorand/go-algorand-sdk v1.9.2
 	github.com/ardanlabs/conf v1.4.0
+	github.com/ardanlabs/conf/v2 v2.1.1
 	github.com/dimfeld/httptreemux/v5 v5.3.0
 	github.com/go-kivik/couchdb/v4 v4.0.0-20210606123901-7c3aefbfa34c
 	github.com/go-kivik/kivik/v4 v4.0.0-20210606210530-2cf07af3502e

@@ -118,10 +118,6 @@ func (rG roundGroup) getEarliestSyncedRound(ctx context.Context, w http.Response
 // It returns the number of pages, number of blocks til the end and the list of blocks of interest
 // as the response.
 func (rG roundGroup) getRoundsPagination(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	v, err := web.GetValues(ctx)
-	if err != nil {
-		return web.NewShutdownError("web value missing from context")
-	}
 
 	// limit
 	limitQueries := web.Query(r, "limit")
@@ -166,7 +162,7 @@ func (rG roundGroup) getRoundsPagination(ctx context.Context, w http.ResponseWri
 		return validate.NewRequestError(fmt.Errorf("invalid 'sort' format: %s", orderQueries[0]), http.StatusBadRequest)
 	}
 
-	result, numOfPages, numOfBlks, err := rG.store.GetBlocksPagination(ctx, v.TraceID, rG.log, int64(latestBlk), order, int64(page), int64(limit))
+	result, numOfPages, numOfBlks, err := rG.store.GetBlocksPagination(ctx, int64(latestBlk), order, int64(page), int64(limit))
 	if err != nil {
 		return errors.Wrap(err, "Error fetching pagination results")
 	}

@@ -67,10 +67,6 @@ func (tG transactionGroup) getEarliestSyncedTransaction(ctx context.Context, w h
 }
 
 func (tG transactionGroup) getTransactionsPagination(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	v, err := web.GetValues(ctx)
-	if err != nil {
-		return web.NewShutdownError("web value missing from context")
-	}
 
 	// limit
 	limitQueries := web.Query(r, "limit")
@@ -112,7 +108,7 @@ func (tG transactionGroup) getTransactionsPagination(ctx context.Context, w http
 		return validate.NewRequestError(fmt.Errorf("invalid 'sort' format: %s", orderQueries[0]), http.StatusBadRequest)
 	}
 
-	result, numOfPages, numOfTxns, err := tG.store.GetTransactionsPagination(ctx, v.TraceID, tG.log, latestTxn, order, int64(page), int64(limit))
+	result, numOfPages, numOfTxns, err := tG.store.GetTransactionsPagination(ctx, latestTxn, order, int64(page), int64(limit))
 	if err != nil {
 		return errors.Wrap(err, "Error fetching pagination results")
 	}

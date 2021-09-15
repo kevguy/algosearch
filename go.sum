@@ -29,6 +29,8 @@ github.com/algorand/go-codec/codec v1.1.7 h1:EFOyWf5duxbh2ru+AW1YDgmZ+MRVgqklELS
 github.com/algorand/go-codec/codec v1.1.7/go.mod h1:xahKG+YDWbJCG+5M1Qkh1X+Qec4IlDVfWMeRTWYABz4=
 github.com/ardanlabs/conf v1.4.0 h1:Nzi1Z5TBlwdNNYTSjfm26NL3C8kbVCZhEnJ7kiyONdY=
 github.com/ardanlabs/conf v1.4.0/go.mod h1:ILsMo9dMqYzCxDjDXTiwMI0IgxOJd0MOiucbQY2wlJw=
+github.com/ardanlabs/conf/v2 v2.1.1 h1:QSsDPsGiRQ6o8iNrLoZFFoKbQcnBEEXKANVsri1bDEY=
+github.com/ardanlabs/conf/v2 v2.1.1/go.mod h1:m37ZKdW9jwMUEhGX36jRNt8VzSQ/HVmSziLZH2p33nY=
 github.com/armon/circbuf v0.0.0-20150827004946-bbbad097214e/go.mod h1:3U/XgcO3hCbHZ8TKRvWD2dDTCfh9M9ya+I9JpbB7O8o=
 github.com/armon/go-metrics v0.0.0-20180917152333-f0300d1749da/go.mod h1:Q73ZrmVTwzkszR9V5SSuryQ31EELlFMUz1kKyl939pY=
 github.com/armon/go-radix v0.0.0-20180808171621-7fddfc383310/go.mod h1:ufUuZ+zHj4x4TnLV4JWEpy2hxWSpsRywHrMgIH9cCH8=

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"expvar" // Calls init function.
 	"fmt"
 	"github.com/kevguy/algosearch/backend/app/algosearch/blocksynchronizer"
@@ -17,11 +18,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/ardanlabs/conf"
+	"github.com/ardanlabs/conf/v2"
 	"github.com/kevguy/algosearch/backend/app/algosearch/handlers"
-	"github.com/kevguy/algosearch/backend/business/sys/metrics"
 	"github.com/kevguy/algosearch/backend/foundation/logger"
-	"github.com/pkg/errors"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/zipkin"
@@ -34,10 +33,6 @@ import (
 
 /*
 Need to figure out timeouts for http service.
-Consider the use of Uber/Zap for logging.
-You might want to reset your DB_HOST env var during test tear down.
-Service should start even without a DB running yet.
-symbols in profiles: https://github.com/golang/go/issues/23376 / https://github.com/google/pprof/pull/366
 */
 
 // build is the git version of this program. It is set using build flags in the makefile.
@@ -56,6 +51,7 @@ func main() {
 	// Perform the startup and shutdown sequence.
 	if err := run(log); err != nil {
 		log.Errorw("startup", "ERROR", err)
+		log.Sync()
 		os.Exit(1)
 	}
 }
@@ -63,13 +59,12 @@ func main() {
 func run(log *zap.SugaredLogger) error {
 
 	// =========================================================================
-	// CPU Quota
+	// GOMAXPROCS
 
-	// Make sure the program is using the correct
-	// number of threads if a CPU quota is set.
+	// Set the correct number of threads for the service
+	// based on what is available either by the machine or quotas.
 	if _, err := maxprocs.Set(); err != nil {
-		log.Errorw("startup", zap.Error(err))
-		os.Exit(1)
+		return fmt.Errorf("maxprocs: %w", err)
 	}
 	log.Infow("startup", "GOMAXPROCS", runtime.GOMAXPROCS(0))
 
@@ -111,27 +106,16 @@ func run(log *zap.SugaredLogger) error {
 		}
 	}{
 		Version: conf.Version{
-			SVN:  build,
+			Build:  build,
 			Desc: "copyright information here",
 		},
 	}
 
 	const prefix = "ALGOSEARCH"
-	if err := conf.Parse(os.Args[1:], prefix, &cfg); err != nil {
-		switch err {
-		case conf.ErrHelpWanted:
-			usage, err := conf.Usage(prefix, &cfg)
-			if err != nil {
-				return fmt.Errorf("generating config usage: %w", err)
-			}
-			fmt.Println(usage)
-			return nil
-		case conf.ErrVersionWanted:
-			version, err := conf.VersionString(prefix, &cfg)
-			if err != nil {
-				return fmt.Errorf("generating config version: %w", err)
-			}
-			fmt.Println(version)
+	help, err := conf.Parse(prefix, &cfg)
+	if err != nil {
+		if errors.Is(err, conf.ErrHelpWanted) {
+			fmt.Println(help)
 			return nil
 		}
 		return fmt.Errorf("parsing config: %w", err)
@@ -147,7 +131,6 @@ func run(log *zap.SugaredLogger) error {
 	// =========================================================================
 	// App Starting
 
-	expvar.NewString("build").Set(build)
 	log.Infow("starting service", "version", build)
 	defer log.Infow("shutdown complete")
 
@@ -156,6 +139,8 @@ func run(log *zap.SugaredLogger) error {
 		return fmt.Errorf("generating config for output: %w", err)
 	}
 	log.Infow("startup", "config", out)
+
+	expvar.NewString("build").Set(build)
 
 	// =========================================================================
 	// Initialize authentication support
@@ -178,63 +163,17 @@ func run(log *zap.SugaredLogger) error {
 	// =========================================================================
 	// Start Tracing Support
 
-	// WARNING: The current Init settings are using defaults which may not be
-	// compatible with your project. Please review the documentation for
-	// opentelemetry.
-
 	log.Infow("startup", "status", "initializing OT/Zipkin tracing support")
 
-	exporter, err := zipkin.New(
+	traceProvider, err := startTracing(
+		cfg.Zipkin.ServiceName,
 		cfg.Zipkin.ReporterURI,
-		// zipkin.WithLogger(zap.NewStdLog(log)),
+		cfg.Zipkin.Probability,
 	)
 	if err != nil {
-		return fmt.Errorf("creating new exporter: %w", err)
+		return fmt.Errorf("starting tracing: %w", err)
 	}
-
-	traceProvider := trace.NewTracerProvider(
-		trace.WithSampler(trace.TraceIDRatioBased(cfg.Zipkin.Probability)),
-		trace.WithBatcher(exporter,
-			trace.WithMaxExportBatchSize(trace.DefaultMaxExportBatchSize),
-			trace.WithBatchTimeout(trace.DefaultBatchTimeout),
-			trace.WithMaxExportBatchSize(trace.DefaultMaxExportBatchSize),
-		),
-		trace.WithResource(
-			resource.NewWithAttributes(
-				semconv.SchemaURL,
-				semconv.ServiceNameKey.String(cfg.Zipkin.ServiceName),
-				attribute.String("exporter", "zipkin"),
-			),
-		),
-	)
-
-	// I can only get this working properly using the singleton :(
-	otel.SetTracerProvider(traceProvider)
 	defer traceProvider.Shutdown(context.Background())
-
-	// =========================================================================
-	// Start Debug Service
-	//
-	// /debug/pprof - Added to the default mux by importing the net/http/pprof package.
-	// /debug/vars - Added to the default mux by importing the expvar package.
-	//
-	// Not concerned with shutting this down when the application is shutdown.
-
-	log.Infow("startup", "status", "debug router started", "host", cfg.Web.DebugHost)
-
-	// The Debug function returns a mux to listen and serve on for all the debug
-	// related endpoints. This include the standard library endpoints.
-
-	// Construct the mux for the debug calls.
-	debugMux := handlers.DebugMux(build, log)
-
-	// Start the service listening for debug requests.
-	// Not concerned with shutting this down with load shedding.
-	go func() {
-		if err := http.ListenAndServe(cfg.Web.DebugHost, debugMux); err != nil {
-			log.Errorw("shutdown", "status", "debug router closed", "host", cfg.Web.DebugHost, "ERROR", err)
-		}
-	}()
 
 	// =========================================================================
 	// Start Algorand Algod Client
@@ -248,7 +187,7 @@ func run(log *zap.SugaredLogger) error {
 		KmdToken: cfg.Algorand.KmdToken,
 	})
 	if err != nil {
-		return errors.Wrap(err, "connecting to algorand node")
+		return fmt.Errorf("connecting to algorand node: %w", err)
 	}
 	defer func() {
 		log.Infow("shutdown", "status", "stopping algorand algod client support", "host", cfg.Algorand.AlgodAddr)
@@ -265,7 +204,7 @@ func run(log *zap.SugaredLogger) error {
 		IndexerToken: cfg.Algorand.IndexerToken,
 	})
 	if err != nil {
-		return errors.Wrap(err, "connecting to algorand node")
+		return fmt.Errorf("connecting to algorand indexer: %w", err)
 	}
 	defer func() {
 		log.Infow("shutdown", "status", "stopping algorand indexer client support", "host", cfg.Algorand.IndexerAddr)
@@ -286,8 +225,29 @@ func run(log *zap.SugaredLogger) error {
 
 	db, err := couchdb.Open(couchConfig)
 	if err != nil {
-		return errors.Wrap(err, "connect to couchdb database")
+		return fmt.Errorf("connecting to couchdb database: %w", err)
 	}
+
+	// =========================================================================
+	// Start Debug Service
+
+	log.Infow("startup", "status", "debug router started", "host", cfg.Web.DebugHost)
+
+	// The Debug function returns a mux to listen and serve on for all the debug
+	// related endpoints. This include the standard library endpoints.
+
+	// Construct the mux for the debug calls.
+	debugMux := handlers.DebugMux(build, log, db, algodClient)
+
+	// Start the service listening for debug requests.
+	// Not concerned with shutting this down with load shedding.
+	go func() {
+		if err := http.ListenAndServe(cfg.Web.DebugHost, debugMux); err != nil {
+			log.Errorw("shutdown", "status", "debug router closed", "host", cfg.Web.DebugHost, "ERROR", err)
+		}
+	}()
+
+
 
 	// =========================================================================
 	// Start API Service
@@ -303,7 +263,6 @@ func run(log *zap.SugaredLogger) error {
 	apiMux := handlers.APIMux(handlers.APIMuxConfig{
 		Shutdown:    shutdown,
 		Log:         log,
-		Metrics:     metrics.New(),
 		Auth:     auth,
 		AlgodClient: algodClient,
 		IndexerClient: indexerClient,
@@ -335,7 +294,7 @@ func run(log *zap.SugaredLogger) error {
 	// Start the publisher to collect/publish metrics.
 	blocksync, err := blocksynchronizer.New(log, 2*time.Second, algodClient, couchConfig)
 	if err != nil {
-		return errors.Wrap(err, "starting publisher")
+		return fmt.Errorf("starting publisher: %w", err)
 	}
 	defer blocksync.Stop()
 
@@ -364,4 +323,42 @@ func run(log *zap.SugaredLogger) error {
 	}
 
 	return nil
+}
+
+// =============================================================================
+
+// startTracing configure open telemetery to be used with zipkin.
+func startTracing(serviceName string, reporterURI string, probability float64) (*trace.TracerProvider, error) {
+
+	// WARNING: The current settings are using defaults which may not be
+	// compatible with your project. Please review the documentation for
+	// opentelemetry.
+
+	exporter, err := zipkin.New(
+		reporterURI,
+		// zipkin.WithLogger(zap.NewStdLog(log)),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("creating new exporter: %w", err)
+	}
+
+	traceProvider := trace.NewTracerProvider(
+		trace.WithSampler(trace.TraceIDRatioBased(probability)),
+		trace.WithBatcher(exporter,
+			trace.WithMaxExportBatchSize(trace.DefaultMaxExportBatchSize),
+			trace.WithBatchTimeout(trace.DefaultBatchTimeout),
+			trace.WithMaxExportBatchSize(trace.DefaultMaxExportBatchSize),
+		),
+		trace.WithResource(
+			resource.NewWithAttributes(
+				semconv.SchemaURL,
+				semconv.ServiceNameKey.String(serviceName),
+				attribute.String("exporter", "zipkin"),
+			),
+		),
+	)
+
+	// I can only get this working properly using the singleton :(
+	otel.SetTracerProvider(traceProvider)
+	return traceProvider, nil
 }
