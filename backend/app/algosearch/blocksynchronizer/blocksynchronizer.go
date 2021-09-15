@@ -4,8 +4,11 @@ import (
 	"context"
 	"fmt"
 	"github.com/algorand/go-algorand-sdk/client/v2/algod"
-	"github.com/algorand/go-algorand-sdk/types"
+	"github.com/algorand/go-algorand-sdk/client/v2/common/models"
 	app "github.com/kevguy/algosearch/backend/business/algod"
+	"github.com/kevguy/algosearch/backend/business/couchdata/account"
+	"github.com/kevguy/algosearch/backend/business/couchdata/application"
+	"github.com/kevguy/algosearch/backend/business/couchdata/asset"
 	"github.com/kevguy/algosearch/backend/business/couchdata/block"
 	"github.com/kevguy/algosearch/backend/business/couchdata/transaction"
 	"github.com/kevguy/algosearch/backend/foundation/couchdb"
@@ -25,6 +28,9 @@ type BlockSynchronizer struct {
 	algodClient 		*algod.Client
 	blockStore 			*block.Store
 	transactionStore	*transaction.Store
+	accountStore		*account.Store
+	assetStore			*asset.Store
+	appStore			*application.Store
 }
 
 // New creates a BlockSynchronizer for retrieving block data and saving it to CouchDB.
@@ -46,6 +52,15 @@ func New(log *zap.SugaredLogger, interval time.Duration, algodClient *algod.Clie
 
 	transactionStore := transaction.NewStore(log, db)
 	p.transactionStore = &transactionStore
+
+	accountStore := account.NewStore(log, db)
+	p.accountStore = &accountStore
+
+	assetStore := asset.NewStore(log, db)
+	p.assetStore = &assetStore
+
+	appStore := application.NewStore(log, db)
+	p.appStore = &appStore
 
 	p.wg.Add(1)
 	go func() {
@@ -118,6 +133,10 @@ func (p *BlockSynchronizer) update() {
 		}
 		p.log.Infof("\t- Added block %s with rev %s to CouchDB Block table\n", blockDocId, blockDocRev)
 
+		var accountList []models.Account
+		var assetList []models.Asset
+		var appList []models.Application
+
 		if len(newBlock.Transactions) > 0 {
 			_, err = p.transactionStore.AddTransactions(context.Background(), newBlock.Transactions)
 			if err != nil {
@@ -125,27 +144,46 @@ func (p *BlockSynchronizer) update() {
 			}
 			p.log.Infof("\t\t- Added %d transactions with block %s to CouchDB Transaction table\n", len(newBlock.Transactions), newBlock.BlockHash)
 
-
 			for _, txn := range newBlock.Transactions {
 
-				switch types.TxType(txn.Type) {
-				case types.PaymentTx:
-					//txn.PaymentTransaction
-				case types.KeyRegistrationTx:
-					//txn.KeyregTransaction
-				case types.AssetConfigTx:
-					//txn.AssetConfigTransaction
-				case types.AssetTransferTx:
-					//txn.AssetTransferTransaction
-				case types.AssetFreezeTx:
-					//txn.AssetFreezeTransaction
-				case types.ApplicationCallTx:
-					//txn.ApplicationTransaction
+				accountIDs := app.ExtractAccountAddrsFromTxn(txn)
+				applicationIDs := app.ExtractApplicationIdsFromTxn(txn)
+				assetIDs := app.ExtractAssetIdsFromTxn(txn)
+
+				for _, acctID := range accountIDs {
+					accountInfo, err := app.GetAccount(context.Background(),"", p.log, p.algodClient, acctID)
+					if err != nil {
+						p.log.Errorw("blocksynchronizer", "status", "can't add/update new account(s)", "ERROR", err)
+					}
+					accountList = append(accountList, *accountInfo)
+					//p.accountStore.AddAccount(context.Background(), *accountInfo)
 				}
 
+				for _, appID := range applicationIDs {
+					appInfo, err := app.GetApplication(context.Background(),"", p.log, p.algodClient, appID)
+					if err != nil {
+						p.log.Errorw("blocksynchronizer", "status", "can't add/update new app(s)", "ERROR", err)
+					}
+					appList = append(appList, *appInfo)
+					//p.appStore.AddApplication(context.Background(), *appInfo)
+				}
+
+				for _, assetID := range assetIDs {
+					assetInfo, err := app.GetAsset(context.Background(),"", p.log, p.algodClient, assetID)
+					if err != nil {
+						p.log.Errorw("blocksynchronizer", "status", "can't add/update new asset(s)", "ERROR", err)
+					}
+					assetList = append(assetList, *assetInfo)
+					//p.assetStore.AddAsset(context.Background(), *assetInfo)
+				}
 			}
 
 		}
+
+		p.accountStore.AddAccounts(context.Background(), accountList)
+		p.assetStore.AddAssets(context.Background(), assetList)
+		p.appStore.AddApplications(context.Background(), appList)
+
 		//for _, transaction := range newBlock.Transactions {
 		//	fmt.Println("Got transaction")
 		//	fmt.Printf("%v\n", transaction)
