@@ -49,12 +49,17 @@ get-current-round:
 # Run the cal-engine with all the defaults, except the private keys
 it-rain:
 # 	go run app/cal-engine/main.go --auth-keys-folder=./keys-dir
-	go run backend/app/algosearch/main.go
+	go run backend/app/algosearch/main.go | go run backend/app/logfmt/main.go
+
+reset-local-couchdb: stop-local-couchdb start-local-couchdb
+
+start-local-couchdb: run-local-couchdb migrate-couch
 
 migrate-couch:
 	go run backend/app/algo-admin/main.go migrate
 
-start-local-couchdb:
+run-local-couchdb:
+	# sudo rm -rf db-data
 	# Create a folder called db-data
 	mkdir -p db-data
 	echo $(pwd)/db-data
@@ -64,6 +69,7 @@ start-local-couchdb:
 stop-local-couchdb:
 	docker stop algosearch-couchdb
 	docker rm algosearch-couchdb
+	sudo rm -rf db-data
 
 # ==============================================================================
 # Monitoring

@@ -82,8 +82,8 @@ func (s Store) AddApplications(ctx context.Context, applications []models.Applic
 	db := s.couchClient.DB(schema.GlobalDbName)
 
 	applications_ := make([]interface{}, len(applications))
-	fmt.Println("Here are teh applications")
-	fmt.Printf("%v\n", applications)
+	//fmt.Println("Here are teh applications")
+	//fmt.Printf("%v\n", applications)
 
 	// https://stackoverflow.com/questions/55755929/go-convert-interface-to-map
 	// https://stackoverflow.com/questions/44094325/add-data-to-interface-in-struct

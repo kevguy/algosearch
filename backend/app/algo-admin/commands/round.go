@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"fmt"
 	app "github.com/kevguy/algosearch/backend/business/algod"
 	"github.com/kevguy/algosearch/backend/foundation/algod"
 	"github.com/pkg/errors"
@@ -20,10 +21,10 @@ func GetRoundCmd(cfg algod.Config, blockNum uint64) error {
 
 	rawBlock, err := app.GetRoundInRawBytes(ctx, client, blockNum)
 	if err != nil {
-		return errors.Wrap(err, "getting current round from Algorand Node")
+		return fmt.Errorf("getting rount %d from Algorand Node %w", blockNum, err)
 	}
 	if err := app.PrintBlockInfoFromRawBytes(rawBlock); err != nil {
-		return errors.Wrap(err, "process current round raw block")
+		return fmt.Errorf("process round %d raw block from Algorand Node %w", blockNum, err)
 	}
 
 	return nil

@@ -331,13 +331,13 @@ func isBlank(lsig types.LogicSig) bool {
 ////////////////////////////////////////////////////
 
 // https://github.com/algorand/indexer/blob/5ad47734a19f0ff319c7ae852053f45bfc226475/api/converter_utils.go#L146
-func sigToTransactionSig(sig types.Signature) *[]byte {
+func sigToTransactionSig(sig types.Signature) []byte {
 	if sig == (types.Signature{}) {
 		return nil
 	}
 
 	tsig := sig[:]
-	return &tsig
+	return tsig
 }
 
 // https://github.com/algorand/indexer/blob/5ad47734a19f0ff319c7ae852053f45bfc226475/api/converter_utils.go#L155
@@ -348,10 +348,11 @@ func msigToTransactionMsig(msig types.MultisigSig) *models.TransactionSignatureM
 
 	subsigs := make([]models.TransactionSignatureMultisigSubsignature, 0)
 	for _, subsig := range msig.Subsigs {
+		signature := sigToTransactionSig(subsig.Sig)
 		subsigs = append(subsigs, models.TransactionSignatureMultisigSubsignature{
 			//PublicKey: bytePtr(subsig.Key[:]),
 			PublicKey: subsig.Key,
-			Signature: *sigToTransactionSig(subsig.Sig),
+			Signature: signature,
 		})
 	}
 
@@ -380,7 +381,7 @@ func lsigToTransactionLsig(lsig types.LogicSig) *models.TransactionSignatureLogi
 		Args:				lsig.Args,
 		Logic: 				lsig.Logic,
 		MultisigSignature:	*msigToTransactionMsig(lsig.Msig),
-		Signature:			*sigToTransactionSig(lsig.Sig),
+		Signature:			sigToTransactionSig(lsig.Sig),
 	}
 	return &ret
 }
@@ -470,7 +471,7 @@ func ProcessTransactionInBlock(txn types.SignedTxnInBlock, blockInfo types.Block
 		sig.Multisig = *multiSig
 	}
 	if sigsig != nil {
-		sig.Sig = *sigsig
+		sig.Sig = sigsig
 	}
 
 	//sig := models.TransactionSignature{

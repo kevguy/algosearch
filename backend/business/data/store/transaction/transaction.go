@@ -84,8 +84,8 @@ func (s Store) AddTransactions(ctx context.Context, transactions []models.Transa
 	db := s.couchClient.DB(schema.GlobalDbName)
 
 	transactions_ := make([]interface{}, len(transactions))
-	fmt.Println("Here are teh transactions")
-	fmt.Printf("%v\n", transactions)
+	//fmt.Println("Here are teh transactions")
+	//fmt.Printf("%v\n", transactions)
 
 	// https://stackoverflow.com/questions/55755929/go-convert-interface-to-map
 	// https://stackoverflow.com/questions/44094325/add-data-to-interface-in-struct

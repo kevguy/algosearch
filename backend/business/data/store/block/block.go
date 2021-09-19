@@ -59,7 +59,7 @@ func (s Store) AddBlock(ctx context.Context, block NewBlock) (string, string, er
 	fmt.Println(doc.Round)
 	rev, err := db.Put(ctx, doc.BlockHash, doc)
 	if err != nil {
-		return "", "", errors.Wrap(err, schema.GlobalDbName+ " database can't insert block number " + string(block.Round))
+		return "", "", errors.Wrapf(err, schema.GlobalDbName+ " database can't insert block number %d", block.Round)
 	}
 	//return strconv.FormatUint(block.Round, 10), rev, nil
 	return block.BlockHash, rev, nil

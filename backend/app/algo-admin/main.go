@@ -53,11 +53,17 @@ func run(log *zap.SugaredLogger) error {
 			Host       string `conf:"default:127.0.0.1:5984"`
 		}
 		Algorand struct {
-			AlgodAddr	string `conf:"default:http://localhost:4001"`
-			AlgodToken	string `conf:"default:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"`
-			KmdAddr		string `conf:"default:http://localhost:7833"`
-			KmdToken	string `conf:"default:a"`
-			IndexerAddr 	string `conf:"default:http://localhost:8980"`
+			//AlgodAddr	string `conf:"default:http://localhost:4001"`
+			//AlgodToken	string `conf:"default:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"`
+			//KmdAddr		string `conf:"default:http://localhost:7833"`
+			//KmdToken	string `conf:"default:a"`
+			//IndexerAddr 	string `conf:"default:http://localhost:8980"`
+			//IndexerToken	string `conf:"default:empty"`
+			AlgodAddr		string `conf:"default:http://89.39.110.254:4001"`
+			AlgodToken		string `conf:"default:a2d2ac864300588718c6c05ff241a14fad99d30a19806356f3b9c8008559c4c1"`
+			KmdAddr			string `conf:""`
+			KmdToken		string `conf:""`
+			IndexerAddr 	string `conf:""`
 			IndexerToken	string `conf:"default:empty"`
 		}
 	}

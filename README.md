@@ -230,3 +230,8 @@ When we query our view, we get back a list of all documents sorted by date. Each
 
 
 Rmb to support Group Transactions, this seems hard tbh.
+
+
+References:
+- https://developer.algorand.org/docs/reference/node/config/
+- https://developer.algorand.org/tutorials/betanet-sandbox/#1-running-betanet-for-the-first-time

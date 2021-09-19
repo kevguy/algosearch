@@ -1,7 +1,9 @@
 package blocksynchronizer
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/algorand/go-algorand-sdk/client/v2/algod"
 	"github.com/algorand/go-algorand-sdk/client/v2/common/models"
@@ -14,6 +16,7 @@ import (
 	"github.com/kevguy/algosearch/backend/foundation/couchdb"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
+	"log"
 	"sync"
 	"time"
 )
@@ -93,16 +96,19 @@ func (p *BlockSynchronizer) update() {
 	if err != nil {
 		p.log.Errorw("blocksynchronizer", "status", "get last synced round number", "ERROR", err)
 	}
+	// 111983 is amazing, it has a shit ton of transactions
+	//lastSyncedBlockNum = 111980
 
 	currentRoundNum, err := app.GetCurrentRoundNum(context.Background(), p.algodClient)
 	if err != nil {
 		p.log.Errorw("blocksynchronizer", "status", "get current round num", "ERROR", err)
 	}
+	p.log.Infof("Current Round Number is %d", currentRoundNum)
 
-	p.log.Infow("updating latest round here", "last synced round", lastSyncedBlockNum)
+	p.log.Infow("Updating latest round here", "last synced round", lastSyncedBlockNum)
 
 	if (currentRoundNum - lastSyncedBlockNum) > 1 {
-		fmt.Printf("Trying to get round number: %d\n", lastSyncedBlockNum + 1)
+		p.log.Infof("Trying to get round number: %d\n", lastSyncedBlockNum + 1)
 
 		getRoundSuccessful := false
 		var rawBlock []byte
@@ -114,6 +120,8 @@ func (p *BlockSynchronizer) update() {
 				lastSyncedBlockNum += 1
 			} else {
 				getRoundSuccessful = true
+				p.log.Infof("Block data for round #%d retrieved.", lastSyncedBlockNum + 1)
+				//app.PrintBlockInfoFromRawBytes(rawBlock)
 			}
 		}
 
@@ -125,13 +133,27 @@ func (p *BlockSynchronizer) update() {
 		if err != nil {
 			p.log.Errorw("blocksynchronizer", "status", "convert raw bytes to block data", "ERROR", err)
 		}
+		//p.log.Infof("Block data for round %d: %v\n", newBlock.Round, newBlock)
+		p.log.Infof("Block data for round %d after processing:", newBlock.Round)
+		payloadStr, err := json.Marshal(newBlock.Block)
+		if err != nil {
+			p.log.Errorw("blocksynchronizer", "status", "marshal new block bytes to block data", "ERROR", err)
+		}
+
+		var prettyJSON bytes.Buffer
+		err = json.Indent(&prettyJSON, payloadStr, "", "\t")
+		if err != nil {
+			log.Println("JSON parse error: ", err)
+		}
+		fmt.Println("Pretty pretty print json!!:", string(prettyJSON.Bytes()))
+		//indexer.PrintBlockInfoFromJsonBlock(newBlock.Block)
 
 		//docID, rev, err := field.BlockStore.AddBlock(ctx, newBlock)
 		blockDocId, blockDocRev, err := p.blockStore.AddBlock(context.Background(), newBlock)
 		if err != nil {
 			p.log.Errorw("blocksynchronizer", "status", "can't add new block", "ERROR", err)
 		}
-		p.log.Infof("\t- Added block %s with rev %s to CouchDB Block table\n", blockDocId, blockDocRev)
+		p.log.Infof("Added block %s with rev %s to CouchDB Block table", blockDocId, blockDocRev)
 
 		var accountList []models.Account
 		var assetList []models.Asset
@@ -142,7 +164,7 @@ func (p *BlockSynchronizer) update() {
 			if err != nil {
 				p.log.Errorw("blocksynchronizer", "status", "can't add new transaction(s)", "ERROR", err)
 			}
-			p.log.Infof("\t\t- Added %d transactions with block %s to CouchDB Transaction table\n", len(newBlock.Transactions), newBlock.BlockHash)
+			p.log.Infof("Added %d transactions with block %s to CouchDB Transaction table", len(newBlock.Transactions), newBlock.BlockHash)
 
 			for _, txn := range newBlock.Transactions {
 
@@ -155,6 +177,7 @@ func (p *BlockSynchronizer) update() {
 					if err != nil {
 						p.log.Errorw("blocksynchronizer", "status", "can't get account", "ERROR", err)
 					}
+					p.log.Infof("Retrieved Account info: %v", *accountInfo)
 					accountList = append(accountList, *accountInfo)
 				}
 
@@ -163,6 +186,7 @@ func (p *BlockSynchronizer) update() {
 					if err != nil {
 						p.log.Errorw("blocksynchronizer", "status", "can't get app", "ERROR", err)
 					}
+					p.log.Infof("Retrieved Application info: %v", *appInfo)
 					appList = append(appList, *appInfo)
 				}
 
@@ -171,24 +195,31 @@ func (p *BlockSynchronizer) update() {
 					if err != nil {
 						p.log.Errorw("blocksynchronizer", "status", "can't get asset", "ERROR", err)
 					}
+					p.log.Infof("Retrieved Asset info: %v", *assetInfo)
 					assetList = append(assetList, *assetInfo)
 				}
 			}
 		}
 
-		_, err = p.accountStore.AddAccounts(context.Background(), accountList)
-		if err != nil {
-			p.log.Errorw("blocksynchronizer", "status", "can't add/update account(s)", "ERROR", err)
+		if len(accountList) > 0 {
+			_, err = p.accountStore.AddAccounts(context.Background(), accountList)
+			if err != nil {
+				p.log.Errorw("blocksynchronizer", "status", "can't add/update account(s)", "ERROR", err)
+			}
 		}
 
-		_, err = p.assetStore.AddAssets(context.Background(), assetList)
-		if err != nil {
-			p.log.Errorw("blocksynchronizer", "status", "can't add/update asset(s)", "ERROR", err)
+		if len(assetList) > 0 {
+			_, err = p.assetStore.AddAssets(context.Background(), assetList)
+			if err != nil {
+				p.log.Errorw("blocksynchronizer", "status", "can't add/update asset(s)", "ERROR", err)
+			}
 		}
 
-		_, err = p.appStore.AddApplications(context.Background(), appList)
-		if err != nil {
-			p.log.Errorw("blocksynchronizer", "status", "can't add/update application(s)", "ERROR", err)
+		if len(appList) > 0 {
+			_, err = p.appStore.AddApplications(context.Background(), appList)
+			if err != nil {
+				p.log.Errorw("blocksynchronizer", "status", "can't add/update application(s)", "ERROR", err)
+			}
 		}
 
 		//for _, transaction := range newBlock.Transactions {

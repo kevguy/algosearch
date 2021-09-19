@@ -82,8 +82,8 @@ func (s Store) AddAssets(ctx context.Context, assets []models.Asset) (bool, erro
 	db := s.couchClient.DB(schema.GlobalDbName)
 
 	assets_ := make([]interface{}, len(assets))
-	fmt.Println("Here are teh assets")
-	fmt.Printf("%v\n", assets)
+	//fmt.Println("Here are teh assets")
+	//fmt.Printf("%v\n", assets)
 
 	// https://stackoverflow.com/questions/55755929/go-convert-interface-to-map
 	// https://stackoverflow.com/questions/44094325/add-data-to-interface-in-struct

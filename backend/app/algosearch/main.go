@@ -18,6 +18,7 @@ import (
 	"syscall"
 	"time"
 
+	_indexer "github.com/algorand/go-algorand-sdk/client/v2/indexer"
 	"github.com/ardanlabs/conf/v2"
 	"github.com/kevguy/algosearch/backend/app/algosearch/handlers"
 	"github.com/kevguy/algosearch/backend/foundation/logger"
@@ -92,11 +93,17 @@ func run(log *zap.SugaredLogger) error {
 			Host       string `conf:"default:127.0.0.1:5984"`
 		}
 		Algorand struct {
-			AlgodAddr		string `conf:"default:http://localhost:4001"`
-			AlgodToken		string `conf:"default:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"`
-			KmdAddr			string `conf:"default:http://localhost:7833"`
-			KmdToken		string `conf:"default:a"`
-			IndexerAddr 	string `conf:"default:http://localhost:8980"`
+			//AlgodAddr		string `conf:"default:http://localhost:4001"`
+			//AlgodToken		string `conf:"default:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"`
+			//KmdAddr			string `conf:"default:http://localhost:7833"`
+			//KmdToken		string `conf:"default:a"`
+			//IndexerAddr 	string `conf:"default:http://localhost:8980"`
+			//IndexerToken	string `conf:"default:empty"`
+			AlgodAddr		string `conf:"default:http://89.39.110.254:4001"`
+			AlgodToken		string `conf:"default:a2d2ac864300588718c6c05ff241a14fad99d30a19806356f3b9c8008559c4c1"`
+			KmdAddr			string `conf:""`
+			KmdToken		string `conf:""`
+			IndexerAddr 	string `conf:""`
 			IndexerToken	string `conf:"default:empty"`
 		}
 		Zipkin struct {
@@ -197,19 +204,22 @@ func run(log *zap.SugaredLogger) error {
 	// =========================================================================
 	// Start Algorand Indexer Client
 
-	log.Infow("startup", "status", "initializing algorand indexer client support", "host", cfg.Algorand.AlgodAddr)
+	var indexerClient *_indexer.Client = nil
+	if cfg.Algorand.IndexerAddr != "" {
+		log.Infow("startup", "status", "initializing algorand indexer client support", "host", cfg.Algorand.AlgodAddr)
 
-	indexerClient, err := indexer.Open(indexer.Config{
-		IndexerAddr: cfg.Algorand.IndexerAddr,
-		IndexerToken: cfg.Algorand.IndexerToken,
-	})
-	if err != nil {
-		return fmt.Errorf("connecting to algorand indexer: %w", err)
+		indexerClient, err = indexer.Open(indexer.Config{
+			IndexerAddr: cfg.Algorand.IndexerAddr,
+			IndexerToken: cfg.Algorand.IndexerToken,
+		})
+		if err != nil {
+			return fmt.Errorf("connecting to algorand indexer: %w", err)
+		}
+		defer func() {
+			log.Infow("shutdown", "status", "stopping algorand indexer client support", "host", cfg.Algorand.IndexerAddr)
+			//algodClient.Close()
+		}()
 	}
-	defer func() {
-		log.Infow("shutdown", "status", "stopping algorand indexer client support", "host", cfg.Algorand.IndexerAddr)
-		//algodClient.Close()
-	}()
 
 	// =========================================================================
 	// Start CouchDB Client
