@@ -15,10 +15,12 @@ const (
 	BlockDDoc                = "_design/block"
 	BlockViewByRoundInLatest = "blockByLatest"
 
-	TransactionDDoc             = "_design/txn"
-	TransactionViewByIdInLatest = "txnByLatest"
-	TransactionViewByIdInCount	= "txnByCount"
-	TransactionViewByAccount	= "txnByAcct"
+	TransactionDDoc             	= "_design/txn"
+	TransactionViewByIdInLatest 	= "txnByLatest"
+	TransactionViewByIdInCount		= "txnByCount"
+	TransactionViewByAccount		= "txnByAcct"
+	TransactionViewByAsset			= "txnByAsset"
+	TransactionViewByApplication	= "txnByApp"
 
 	AccountDDoc             = "_design/acct"
 	AccountViewByIdInLatest = "acctByLatest"
@@ -128,6 +130,28 @@ func InsertTransactionViewsForGlobalDB(ctx context.Context, client *kivik.Client
 							emit([doc._id, 0], doc);
 						} else if (doc.doc_type === 'txn') {
 							doc.associated_accounts.forEach(acct => {
+								emit([acct, 1, doc._id], doc);
+							})
+						}
+					}`,
+				},
+				TransactionViewByAsset: map[string]interface{} {
+					"map": `function(doc) {
+						if (doc.doc_type === 'asset') {
+							emit([doc._id, 0], doc);
+						} else if (doc.doc_type === 'txn') {
+							doc.associated_assets.forEach(acct => {
+								emit([acct, 1, doc._id], doc);
+							})
+						}
+					}`,
+				},
+				TransactionViewByApplication: map[string]interface{} {
+					"map": `function(doc) {
+						if (doc.doc_type === 'app') {
+							emit([doc._id, 0], doc);
+						} else if (doc.doc_type === 'txn') {
+							doc.associated_applications.forEach(acct => {
 								emit([acct, 1, doc._id], doc);
 							})
 						}
