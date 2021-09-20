@@ -15,12 +15,15 @@ const (
 	BlockDDoc                = "_design/block"
 	BlockViewByRoundInLatest = "blockByLatest"
 
-	TransactionDDoc             	= "_design/txn"
-	TransactionViewByIdInLatest 	= "txnByLatest"
-	TransactionViewByIdInCount		= "txnByCount"
-	TransactionViewByAccount		= "txnByAcct"
-	TransactionViewByAsset			= "txnByAsset"
-	TransactionViewByApplication	= "txnByApp"
+	TransactionDDoc             		= "_design/txn"
+	TransactionViewByIdInLatest 		= "txnByLatest"
+	TransactionViewByIdInCount			= "txnByCount"
+	TransactionViewByAccount			= "txnByAcct"
+	TransactionViewByAccountCount		= "txnByAcctCount"
+	TransactionViewByAsset				= "txnByAsset"
+	TransactionViewByAssetCount			= "txnByAssetCount"
+	TransactionViewByApplication		= "txnByApp"
+	TransactionViewByApplicationCount	= "txnByAppCount"
 
 	AccountDDoc             = "_design/acct"
 	AccountViewByIdInLatest = "acctByLatest"
@@ -135,15 +138,40 @@ func InsertTransactionViewsForGlobalDB(ctx context.Context, client *kivik.Client
 						}
 					}`,
 				},
+				// https://stackoverflow.com/questions/13216640/couchdb-getting-number-of-keys-in-given-key-range
+				TransactionViewByAccountCount: map[string]interface{} {
+					"map": `function(doc) {
+						if (doc.doc_type === 'txn') {
+							doc.associated_accounts.forEach(acct => {
+								emit([acct, doc._id], 1);
+							})
+						}
+					}`,
+					"reduce": `function(keys, values, rereduce) {
+						return sum(values);
+					}`,
+				},
 				TransactionViewByAsset: map[string]interface{} {
 					"map": `function(doc) {
 						if (doc.doc_type === 'asset') {
 							emit([doc._id, 0], doc);
 						} else if (doc.doc_type === 'txn') {
-							doc.associated_assets.forEach(acct => {
-								emit([acct, 1, doc._id], doc);
+							doc.associated_assets.forEach(asset => {
+								emit([asset, 1, doc._id], doc);
 							})
 						}
+					}`,
+				},
+				TransactionViewByAssetCount: map[string]interface{} {
+					"map": `function(doc) {
+						if (doc.doc_type === 'txn') {
+							doc.associated_assets.forEach(asset => {
+								emit([asset, doc._id], 1);
+							})
+						}
+					}`,
+					"reduce": `function(keys, values, rereduce) {
+						return sum(values);
 					}`,
 				},
 				TransactionViewByApplication: map[string]interface{} {
@@ -151,10 +179,22 @@ func InsertTransactionViewsForGlobalDB(ctx context.Context, client *kivik.Client
 						if (doc.doc_type === 'app') {
 							emit([doc._id, 0], doc);
 						} else if (doc.doc_type === 'txn') {
-							doc.associated_applications.forEach(acct => {
-								emit([acct, 1, doc._id], doc);
+							doc.associated_applications.forEach(app => {
+								emit([app, 1, doc._id], doc);
 							})
 						}
+					}`,
+				},
+				TransactionViewByApplicationCount: map[string]interface{} {
+					"map": `function(doc) {
+						if (doc.doc_type === 'txn') {
+							doc.associated_applications.forEach(app => {
+								emit([app, doc._id], 1);
+							})
+						}
+					}`,
+					"reduce": `function(keys, values, rereduce) {
+						return sum(values);
 					}`,
 				},
 			},
