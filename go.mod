@@ -1,10 +1,9 @@
 module github.com/kevguy/algosearch
 
-go 1.16
+go 1.17
 
 require (
 	github.com/algorand/go-algorand-sdk v1.9.2
-	github.com/ardanlabs/conf v1.4.0
 	github.com/ardanlabs/conf/v2 v2.1.1
 	github.com/dimfeld/httptreemux/v5 v5.3.0
 	github.com/go-kivik/couchdb/v4 v4.0.0-20210606123901-7c3aefbfa34c
@@ -16,11 +15,29 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/nsf/jsondiff v0.0.0-20200515183724-f29ed568f4ce
 	github.com/pkg/errors v0.9.1
-	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.22.0
-	go.opentelemetry.io/otel v1.0.0-RC2
-	go.opentelemetry.io/otel/exporters/zipkin v1.0.0-RC2
-	go.opentelemetry.io/otel/sdk v1.0.0-RC2
-	go.opentelemetry.io/otel/trace v1.0.0-RC2
+	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.23.0
+	go.opentelemetry.io/otel v1.0.0-RC3
+	go.opentelemetry.io/otel/exporters/zipkin v1.0.0-RC3
+	go.opentelemetry.io/otel/sdk v1.0.0-RC3
+	go.opentelemetry.io/otel/trace v1.0.0-RC3
 	go.uber.org/automaxprocs v1.4.0
-	go.uber.org/zap v1.19.0
+	go.uber.org/zap v1.19.1
+)
+
+require (
+	github.com/algorand/go-codec/codec v1.1.7 // indirect
+	github.com/felixge/httpsnoop v1.0.2 // indirect
+	github.com/google/go-querystring v1.0.0 // indirect
+	github.com/leodido/go-urn v1.2.1 // indirect
+	github.com/openzipkin/zipkin-go v0.2.5 // indirect
+	go.opentelemetry.io/contrib v0.23.0 // indirect
+	go.opentelemetry.io/otel/internal/metric v0.23.0 // indirect
+	go.opentelemetry.io/otel/metric v0.23.0 // indirect
+	go.uber.org/atomic v1.7.0 // indirect
+	go.uber.org/multierr v1.6.0 // indirect
+	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97 // indirect
+	golang.org/x/net v0.0.0-20210405180319-a5a99cb37ef4 // indirect
+	golang.org/x/sys v0.0.0-20210806184541-e5e7981a1069 // indirect
+	golang.org/x/text v0.3.6 // indirect
+	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 )

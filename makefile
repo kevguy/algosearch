@@ -51,14 +51,14 @@ it-rain:
 # 	go run app/cal-engine/main.go --auth-keys-folder=./keys-dir
 	go run backend/app/algosearch/main.go | go run backend/app/logfmt/main.go
 
-reset-local-couchdb: stop-local-couchdb start-local-couchdb
+restart-couch: stop-couch start-couch
 
-start-local-couchdb: run-local-couchdb migrate-couch
+start-couch: run-couch migrate-couch
 
 migrate-couch:
 	go run backend/app/algo-admin/main.go migrate
 
-run-local-couchdb:
+run-couch:
 	# sudo rm -rf db-data
 	# Create a folder called db-data
 	mkdir -p db-data
@@ -66,7 +66,7 @@ run-local-couchdb:
 	#docker run -e COUCHDB_USER=admin -e COUCHDB_PASSWORD=password -p 5984:5984 --name my-couchdb -v $(pwd)/db-data:/opt/couchdb/data -d couchdb
 	docker run -e COUCHDB_USER=admin -e COUCHDB_PASSWORD=password -p 5984:5984 --name algosearch-couchdb -v $(shell pwd)/db-data:/opt/couchdb/data -d couchdb
 
-stop-local-couchdb:
+stop-couch:
 	docker stop algosearch-couchdb
 	docker rm algosearch-couchdb
 	sudo rm -rf db-data

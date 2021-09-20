@@ -12,7 +12,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/ardanlabs/conf"
+	"github.com/ardanlabs/conf/v2"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
@@ -67,7 +67,7 @@ func run(log *zap.SugaredLogger) error {
 			IndexerToken	string `conf:"default:empty"`
 		}
 	}
-	cfg.Version.SVN = build
+	cfg.Version.Build = build
 	cfg.Version.Desc = "copyright information here"
 
 
@@ -79,21 +79,10 @@ func run(log *zap.SugaredLogger) error {
 	}
 
 	const prefix = "ALGOSEARCH"
-	if err := conf.Parse(os.Args[1:], prefix, &cfg); err != nil {
-		switch err {
-		case conf.ErrHelpWanted:
-			usage, err := conf.Usage(prefix, &cfg)
-			if err != nil {
-				return fmt.Errorf("generating config usage: %w", err)
-			}
-			fmt.Println(usage)
-			return nil
-		case conf.ErrVersionWanted:
-			version, err := conf.VersionString(prefix, &cfg)
-			if err != nil {
-				return fmt.Errorf("generating config version: %w", err)
-			}
-			fmt.Println(version)
+	help, err := conf.Parse(prefix, &cfg)
+	if err != nil {
+		if errors.Is(err, conf.ErrHelpWanted) {
+			fmt.Println(help)
 			return nil
 		}
 		return fmt.Errorf("parsing config: %w", err)

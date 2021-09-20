@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	_ "net/http/pprof"
@@ -10,7 +11,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/ardanlabs/conf"
+	"github.com/ardanlabs/conf/v2"
 	"github.com/kevguy/algosearch/backend/app/algosearch/handlers"
 	"github.com/kevguy/algosearch/backend/app/sidecar/metrics/collector"
 	"github.com/kevguy/algosearch/backend/app/sidecar/metrics/publisher"
@@ -74,27 +75,16 @@ func run(log *zap.SugaredLogger) error {
 		}
 	}{
 		Version: conf.Version{
-			SVN:  build,
+			Build:  build,
 			Desc: "copyright information here",
 		},
 	}
 
 	const prefix = "METRICS"
-	if err := conf.Parse(os.Args[1:], prefix, &cfg); err != nil {
-		switch err {
-		case conf.ErrHelpWanted:
-			usage, err := conf.Usage(prefix, &cfg)
-			if err != nil {
-				return fmt.Errorf("generating config usage: %w", err)
-			}
-			fmt.Println(usage)
-			return nil
-		case conf.ErrVersionWanted:
-			version, err := conf.VersionString(prefix, &cfg)
-			if err != nil {
-				return fmt.Errorf("generating config version: %w", err)
-			}
-			fmt.Println(version)
+	help, err := conf.Parse(prefix, &cfg)
+	if err != nil {
+		if errors.Is(err, conf.ErrHelpWanted) {
+			fmt.Println(help)
 			return nil
 		}
 		return fmt.Errorf("parsing config: %w", err)
