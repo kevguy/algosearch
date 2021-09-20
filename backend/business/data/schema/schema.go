@@ -18,6 +18,7 @@ const (
 	TransactionDDoc             = "_design/txn"
 	TransactionViewByIdInLatest = "txnByLatest"
 	TransactionViewByIdInCount	= "txnByCount"
+	TransactionViewByAccount	= "txnByAcct"
 
 	AccountDDoc             = "_design/acct"
 	AccountViewByIdInLatest = "acctByLatest"
@@ -121,6 +122,17 @@ func InsertTransactionViewsForGlobalDB(ctx context.Context, client *kivik.Client
 					}`,
 					"reduce": "_sum",
 				},
+				TransactionViewByAccount: map[string]interface{} {
+					"map": `function(doc) {
+						if (doc.doc_type === 'acct') {
+							emit([doc._id, 0], doc);
+						} else if (doc.doc_type === 'txn') {
+							doc.associated_accounts.forEach(acct => {
+								emit([acct, 1, doc._id], doc);
+							})
+						}
+					}`,
+				},
 			},
 		})
 		if err != nil {
@@ -152,14 +164,14 @@ func InsertAcctViewsForGlobalDB(ctx context.Context, client *kivik.Client, dbNam
 				"map": `function(doc) { 
 					if (doc.doc_type === 'acct') {
 						// emit(doc.id, {_id: doc.id});
-						emit(doc.id, null);
+						emit(doc._id, null);
 					}
 				}`,
 			},
 			AccountViewByIdInCount: map[string]interface{}{
 				"map": `function(doc) {
 					if (doc.doc_type === 'acct') {
-						emit(doc.id, 1);
+						emit(doc._id, 1);
 					}
 				}`,
 				"reduce": "_sum",
