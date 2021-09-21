@@ -2,6 +2,7 @@ package transaction
 
 import (
 	"context"
+	"fmt"
 	"github.com/go-kivik/kivik/v4"
 	"github.com/kevguy/algosearch/backend/business/data/schema"
 	"github.com/kevguy/algosearch/backend/foundation/web"
@@ -10,21 +11,17 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 )
 
-// https://stackoverflow.com/questions/11284383/couchdb-count-unique-document-field
-// https://stackoverflow.com/questions/12944294/using-a-couchdb-view-can-i-count-groups-and-filter-by-key-range-at-the-same-tim
-func (s Store) GetTransactionCountBtnKeys(ctx context.Context, startKey, endKey string) (int64, error) {
+func (s Store) GetAcctTransactionCount(ctx context.Context, acctID string) (int64, error) {
 
 	ctx, span := otel.GetTracerProvider().
 		Tracer("").
-		Start(ctx, "transaction.GetTransactionCountBtnKeys")
-	span.SetAttributes(attribute.String("startKey", startKey))
-	span.SetAttributes(attribute.String("endKey", endKey))
+		Start(ctx, "transaction.GetAcctTransactionCount")
+	span.SetAttributes(attribute.String("acctID", acctID))
 	defer span.End()
 
-	s.log.Infow("transaction.GetTransactionCountBtnKeys",
+	s.log.Infow("transaction.GetAcctTransactionCount",
 		"traceid", web.GetTraceID(ctx),
-		"startKey", startKey,
-		"endKey", endKey)
+		"acctID", acctID)
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
@@ -32,9 +29,9 @@ func (s Store) GetTransactionCountBtnKeys(ctx context.Context, startKey, endKey 
 	}
 	db := s.couchClient.DB(schema.GlobalDbName)
 
-	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" +schema.TransactionViewByIdInCount, kivik.Options{
-		"start_key": startKey,
-		"end_key": endKey,
+	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" + schema.TransactionViewByAccountCount, kivik.Options{
+		"start_key": fmt.Sprintf("\"[%s, 1]\"", acctID),
+		"end_key": fmt.Sprintf("\"[%s, 2]\"", acctID),
 	})
 	if err != nil {
 		return 0, errors.Wrap(err, "Fetch data error")
@@ -55,12 +52,53 @@ func (s Store) GetTransactionCountBtnKeys(ctx context.Context, startKey, endKey 
 	return payload.Value, nil
 }
 
-func (s Store) GetTransactionsPagination(ctx context.Context, latestTransactionId, order string, pageNo, limit int64) ([]Transaction, int64, int64, error) {
+func (s Store) GetAcctTransactionCountBtnKeys(ctx context.Context, acctID, startKey, endKey string) (int64, error) {
 
 	ctx, span := otel.GetTracerProvider().
 		Tracer("").
-		Start(ctx, "block.GetBlocksPagination")
+		Start(ctx, "transaction.GetAcctTransactionCount")
+	span.SetAttributes(attribute.String("acctID", acctID))
+	defer span.End()
+
+	s.log.Infow("transaction.GetAcctTransactionCount",
+		"traceid", web.GetTraceID(ctx),
+		"acctID", acctID)
+
+	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
+	if err != nil || !exist {
+		return 0, errors.Wrap(err, schema.GlobalDbName+ " database check fails")
+	}
+	db := s.couchClient.DB(schema.GlobalDbName)
+
+	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" + schema.TransactionViewByAccountCount, kivik.Options{
+		"start_key": fmt.Sprintf("\"[%s, 1, %s]\"", acctID, startKey),
+		"end_key": fmt.Sprintf("\"[%s, 1, %s]\"", acctID, endKey),
+	})
+	if err != nil {
+		return 0, errors.Wrap(err, "Fetch data error")
+	}
+
+	type Payload struct {
+		Key *string `json:"key"`
+		Value int64 `json:"value"`
+	}
+
+	var payload Payload
+	for rows.Next() {
+		if err := rows.ScanDoc(&payload); err != nil {
+			return 0, errors.Wrap(err, "Can't find anything")
+		}
+	}
+
+	return payload.Value, nil
+}
+
+func (s Store) GetAcctTransactionsPagination(ctx context.Context, acctId, latestTransactionId, order string, pageNo, limit int64) ([]Transaction, int64, int64, error) {
+	ctx, span := otel.GetTracerProvider().
+		Tracer("").
+		Start(ctx, "transaction.GetAcctTransactionsPagination")
 	span.SetAttributes(attribute.String("latestTransactionId", latestTransactionId))
+	span.SetAttributes(attribute.String("acctId", acctId))
 	span.SetAttributes(attribute.Int64("pageNo", pageNo))
 	span.SetAttributes(attribute.Int64("limit", limit))
 	defer span.End()
@@ -68,18 +106,19 @@ func (s Store) GetTransactionsPagination(ctx context.Context, latestTransactionI
 	s.log.Infow("transaction.GetTransactionsPagination",
 		"traceid", web.GetTraceID(ctx),
 		"latestTranasctionId", latestTransactionId,
+		"acctId", acctId,
 		"pageNo", pageNo,
 		"limit", limit)
 
 	// Get the earliest transaction id
-	earliestTxnId, err := s.GetEarliestTransactionId(ctx)
+	earliestTxnId, err := s.GetEarliestAcctTransactionId(ctx, acctId)
 	if err != nil {
-		return nil, 0, 0, errors.Wrap(err, ": Get earliest synced transaction id")
+		return nil, 0, 0, errors.Wrap(err, ": Get earliest synced account transaction id")
 	}
 
-	numOfTransactions, err := s.GetTransactionCountBtnKeys(ctx, earliestTxnId, latestTransactionId)
+	numOfTransactions, err := s.GetAcctTransactionCountBtnKeys(ctx, acctId, earliestTxnId, latestTransactionId)
 	if err != nil {
-		return nil, 0, 0, errors.Wrap(err, ": Get transaction count between keys")
+		return nil, 0, 0, errors.Wrap(err, ": Get account transaction count between keys")
 	}
 
 	// We can skip database check cuz GetEarliestTransactionId already did it
@@ -104,7 +143,7 @@ func (s Store) GetTransactionsPagination(ctx context.Context, latestTransactionI
 		options["descending"] = true
 
 		// Start with latest block number
-		options["start_key"] = latestTransactionId
+		options["start_key"] = fmt.Sprintf("\"[%s, 1, %s]\"", acctId, latestTransactionId)
 
 		// Use page number to calculate number of items to skip
 		skip := (pageNo - 1) * limit
@@ -131,7 +170,7 @@ func (s Store) GetTransactionsPagination(ctx context.Context, latestTransactionI
 		}
 	}
 
-	rows, err := db.Query(ctx, schema.TransactionDDoc, "_view/" +schema.TransactionViewByIdInLatest, options)
+	rows, err := db.Query(ctx, schema.TransactionDDoc, "_view/" +schema.TransactionViewByAccount, options)
 	if err != nil {
 		return nil, 0, 0, errors.Wrap(err, "Fetch data error")
 	}

@@ -59,3 +59,85 @@ func (s Store) GetTransactionsByAcct(ctx context.Context, acctID string, order s
 
 	return fetchedTransactions, nil
 }
+
+func (s Store) GetEarliestAcctTransactionId(ctx context.Context, acctID string) (string, error) {
+
+	ctx, span := otel.GetTracerProvider().
+		Tracer("").
+		Start(ctx, "transaction.GetEarliestAcctTransactionId")
+	//span.SetAttributes(attribute.String("query", q))
+	defer span.End()
+
+	s.log.Infow("transaction.GetEarliestAcctTransactionId", "traceid", web.GetTraceID(ctx))
+
+	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
+	if err != nil || !exist {
+		return "", errors.Wrap(err, schema.GlobalDbName+ " database check fails")
+	}
+	db := s.couchClient.DB(schema.GlobalDbName)
+
+	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" +schema.TransactionViewByAccount, kivik.Options{
+		"include_docs": true,
+		"start_key": fmt.Sprintf("\"[%s, 1]\"", acctID),
+		"end_key": fmt.Sprintf("\"[%s, 2]\"", acctID),
+		"descending": false,
+		"limit": 1,
+	})
+	if err != nil {
+		return "", errors.Wrap(err, "Fetch data error")
+	}
+
+	if rows.Err() != nil {
+		return "", errors.Wrap(err, "rows error, Can't find anything")
+	}
+
+	rows.Next()
+	var doc Transaction
+	if err := rows.ScanDoc(&doc); err != nil {
+		// No docs can be found
+		return "", errors.Wrap(err, "Can't find anything")
+	}
+
+	return doc.Id, nil
+}
+
+func (s Store) GetLatestAcctTransactionId(ctx context.Context, acctID string) (string, error) {
+
+	ctx, span := otel.GetTracerProvider().
+		Tracer("").
+		Start(ctx, "transaction.GetEarliestAcctTransactionId")
+	//span.SetAttributes(attribute.String("query", q))
+	defer span.End()
+
+	s.log.Infow("transaction.GetEarliestAcctTransactionId", "traceid", web.GetTraceID(ctx))
+
+	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
+	if err != nil || !exist {
+		return "", errors.Wrap(err, schema.GlobalDbName+ " database check fails")
+	}
+	db := s.couchClient.DB(schema.GlobalDbName)
+
+	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" +schema.TransactionViewByAccount, kivik.Options{
+		"include_docs": true,
+		"start_key": fmt.Sprintf("\"[%s, 1]\"", acctID),
+		"end_key": fmt.Sprintf("\"[%s, 2]\"", acctID),
+		"descending": true,
+		"limit": 1,
+	})
+	if err != nil {
+		return "", errors.Wrap(err, "Fetch data error")
+	}
+
+	if rows.Err() != nil {
+		return "", errors.Wrap(err, "rows error, Can't find anything")
+	}
+
+	rows.Next()
+	var doc Transaction
+	if err := rows.ScanDoc(&doc); err != nil {
+		// No docs can be found
+		return "", errors.Wrap(err, "Can't find anything")
+	}
+
+	return doc.Id, nil
+}
