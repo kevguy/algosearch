@@ -147,7 +147,7 @@ func (s Store) GetBlockByNum(ctx context.Context, traceID string, log *zap.Sugar
 	}
 	db := s.couchClient.DB(schema.GlobalDbName)
 
-	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" +schema.BlockViewByRoundInLatest, kivik.Options{
+	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" +schema.BlockViewByRoundNo, kivik.Options{
 		"include_docs": true,
 		"key": blockNum,
 		"limit": 1,
@@ -187,7 +187,7 @@ func (s Store) GetEarliestSyncedRoundNumber(ctx context.Context) (uint64, error)
 	}
 	db := s.couchClient.DB(schema.GlobalDbName)
 
-	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" +schema.BlockViewByRoundInLatest, kivik.Options{
+	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" +schema.BlockViewByRoundNo, kivik.Options{
 		"include_docs": true,
 		"descending": false,
 		"limit": 1,
@@ -246,7 +246,7 @@ func (s Store) GetLastSyncedRoundNumber(ctx context.Context) (uint64, error) {
 	}
 	db := s.couchClient.DB(schema.GlobalDbName)
 
-	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" +schema.BlockViewByRoundInLatest, kivik.Options{
+	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" +schema.BlockViewByRoundNo, kivik.Options{
 		"include_docs": true,
 		"descending": true,
 		"limit": 1,
@@ -287,7 +287,7 @@ func (s Store) GetLatestBlock(ctx context.Context, traceID string, log *zap.Suga
 	}
 	db := s.couchClient.DB(schema.GlobalDbName)
 
-	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" +schema.BlockViewByRoundInLatest, kivik.Options{
+	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" +schema.BlockViewByRoundNo, kivik.Options{
 		"include_docs": true,
 		"descending": true,
 		"limit": 1,
@@ -394,7 +394,7 @@ func (s Store) GetBlocksPagination(ctx context.Context, latestBlockNum int64, or
 	//	"limit": limit,
 	//	"skip": lastBlockNum - limit,
 	//})
-	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" +schema.BlockViewByRoundInLatest, options)
+	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" +schema.BlockViewByRoundNo, options)
 	if err != nil {
 		return nil, 0, 0, errors.Wrap(err, "Fetch data error")
 	}

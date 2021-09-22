@@ -32,7 +32,7 @@ func (s Store) GetTransactionCountBtnKeys(ctx context.Context, startKey, endKey 
 	}
 	db := s.couchClient.DB(schema.GlobalDbName)
 
-	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" +schema.TransactionViewByIdInCount, kivik.Options{
+	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" +schema.TransactionViewByIdCount, kivik.Options{
 		"start_key": startKey,
 		"end_key": endKey,
 	})
@@ -131,7 +131,7 @@ func (s Store) GetTransactionsPagination(ctx context.Context, latestTransactionI
 		}
 	}
 
-	rows, err := db.Query(ctx, schema.TransactionDDoc, "_view/" +schema.TransactionViewByIdInLatest, options)
+	rows, err := db.Query(ctx, schema.TransactionDDoc, "_view/" +schema.TransactionViewInLatest, options)
 	if err != nil {
 		return nil, 0, 0, errors.Wrap(err, "Fetch data error")
 	}

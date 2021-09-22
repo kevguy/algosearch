@@ -90,7 +90,8 @@ func run(log *zap.SugaredLogger) error {
 			Protocol   string `conf:"default:http"`
 			User       string `conf:"default:admin"`
 			Password   string `conf:"default:password,mask"`
-			Host       string `conf:"default:127.0.0.1:5984"`
+			//Host       string `conf:"default:127.0.0.1:5984"`
+			Host       string `conf:"default:89.39.110.254:5984"`
 		}
 		Algorand struct {
 			//AlgodAddr		string `conf:"default:http://localhost:4001"`
@@ -302,7 +303,7 @@ func run(log *zap.SugaredLogger) error {
 
 
 	// Start the publisher to collect/publish metrics.
-	blocksync, err := blocksynchronizer.New(log, 2*time.Second, algodClient, couchConfig)
+	blocksync, err := blocksynchronizer.New(log, 100*time.Millisecond, algodClient, couchConfig)
 	if err != nil {
 		return fmt.Errorf("starting publisher: %w", err)
 	}

@@ -12,13 +12,14 @@ import (
 const (
 	GlobalDbName = "algo_global"
 
-	BlockDDoc                = "_design/block"
-	BlockViewByRoundInLatest = "blockByLatest"
+	BlockDDoc          = "_design/block"
+	BlockViewByRoundNo = "blockByRoundNo"
 
-	TransactionDDoc             		= "_design/txn"
-	TransactionViewByIdInLatest 		= "txnByLatest"
-	TransactionViewByIdInCount			= "txnByCount"
-	TransactionViewByAccount			= "txnByAcct"
+	TransactionDDoc            = "_design/txn"
+	TransactionViewInLatest    = "txnInLatest"
+	TransactionViewById      = "txnById"
+	TransactionViewByIdCount = "txnByIdCount"
+	TransactionViewByAccount = "txnByAcct"
 	TransactionViewByAccountCount		= "txnByAcctCount"
 	TransactionViewByAsset				= "txnByAsset"
 	TransactionViewByAssetCount			= "txnByAssetCount"
@@ -67,7 +68,7 @@ func InsertBlockViewsForGlobalDB(ctx context.Context, client *kivik.Client, dbNa
 	}
 	db := client.DB(dbName)
 
-	_, err = db.Query(ctx, BlockDDoc, "_view/" +BlockViewByRoundInLatest)
+	_, err = db.Query(ctx, BlockDDoc, "_view/" +BlockViewByRoundNo)
 	//if err != nil {
 	//	return errors.Wrap(err, dbName + " database and query by timestamp view failed to be queried")
 	//}
@@ -76,7 +77,7 @@ func InsertBlockViewsForGlobalDB(ctx context.Context, client *kivik.Client, dbNa
 			"_id": BlockDDoc,
 			"views": map[string]interface{}{
 				// https://docs.couchdb.org/en/main/ddocs/views/joins.html
-				BlockViewByRoundInLatest: map[string]interface{}{
+				BlockViewByRoundNo: map[string]interface{}{
 					"map": `function(doc) { 
 						if (doc.doc_type === 'block')  {
 							// emit(doc.round, {_id: doc.BlockHash});
@@ -103,7 +104,7 @@ func InsertTransactionViewsForGlobalDB(ctx context.Context, client *kivik.Client
 	}
 	db := client.DB(dbName)
 
-	_, err = db.Query(ctx, TransactionDDoc, "_view/" +TransactionViewByIdInLatest)
+	_, err = db.Query(ctx, TransactionDDoc, "_view/" +TransactionViewInLatest)
 	//if err != nil {
 	//	return errors.Wrap(err, dbName + " database and query by timestamp view failed to be queried")
 	//}
@@ -111,7 +112,15 @@ func InsertTransactionViewsForGlobalDB(ctx context.Context, client *kivik.Client
 		_, err = db.Put(context.TODO(), TransactionDDoc, map[string]interface{}{
 			"_id": TransactionDDoc,
 			"views": map[string]interface{}{
-				TransactionViewByIdInLatest: map[string]interface{}{
+				TransactionViewInLatest: map[string]interface{}{
+					"map": `function(doc) { 
+						if (doc.doc_type === 'txn') {
+							// emit(doc.id, {_id: doc.id});
+							emit([doc["round-time"], doc.id], null);
+						}
+					}`,
+				},
+				TransactionViewById: map[string]interface{}{
 					"map": `function(doc) { 
 						if (doc.doc_type === 'txn') {
 							// emit(doc.id, {_id: doc.id});
@@ -119,7 +128,7 @@ func InsertTransactionViewsForGlobalDB(ctx context.Context, client *kivik.Client
 						}
 					}`,
 				},
-				TransactionViewByIdInCount: map[string]interface{}{
+				TransactionViewByIdCount: map[string]interface{}{
 					"map": `function(doc) {
 						if (doc.doc_type === 'txn') {
 							emit(doc.id, 1);
@@ -133,7 +142,7 @@ func InsertTransactionViewsForGlobalDB(ctx context.Context, client *kivik.Client
 							emit([doc._id, 0], doc);
 						} else if (doc.doc_type === 'txn') {
 							doc.associated_accounts.forEach(acct => {
-								emit([acct, 1, doc._id], doc);
+								emit([acct, 1, doc["round-time"], doc._id], null);
 							})
 						}
 					}`,
@@ -157,7 +166,7 @@ func InsertTransactionViewsForGlobalDB(ctx context.Context, client *kivik.Client
 							emit([doc._id, 0], doc);
 						} else if (doc.doc_type === 'txn') {
 							doc.associated_assets.forEach(asset => {
-								emit([asset, 1, doc._id], doc);
+								emit([asset, 1, doc["round-time"], doc._id], null);
 							})
 						}
 					}`,
@@ -180,7 +189,7 @@ func InsertTransactionViewsForGlobalDB(ctx context.Context, client *kivik.Client
 							emit([doc._id, 0], doc);
 						} else if (doc.doc_type === 'txn') {
 							doc.associated_applications.forEach(app => {
-								emit([app, 1, doc._id], doc);
+								emit([app, 1, doc["round-time"], doc._id], null);
 							})
 						}
 					}`,
