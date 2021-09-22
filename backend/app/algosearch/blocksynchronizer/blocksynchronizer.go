@@ -233,3 +233,141 @@ func (p *BlockSynchronizer) update() {
 		//}
 	}
 }
+
+
+func GetAndInsertBlockData(
+	log					*zap.SugaredLogger,
+	algodClient			*algod.Client,
+	blockStore 			*block.Store,
+	transactionStore	*transaction.Store,
+	accountStore		*account.Store,
+	assetStore			*asset.Store,
+	appStore			*application.Store,
+	blockNum			uint64) error {
+	log.Infof("Trying to get round number: %d\n", blockNum + 1)
+
+	getRoundSuccessful := false
+	var rawBlock []byte
+	var err error
+	for !getRoundSuccessful {
+		rawBlock, err = app.GetRoundInRawBytes(context.Background(), algodClient, blockNum + 1)
+		if err != nil {
+			log.Errorw("blocksynchronizer", "status", "get round in raw bytes", "ERROR", err)
+			// Assuming it's not just block data not available, jump to the next round
+			blockNum += 1
+		} else {
+			getRoundSuccessful = true
+			log.Infof("Block data for round #%d retrieved.", blockNum + 1)
+			//app.PrintBlockInfoFromRawBytes(rawBlock)
+		}
+	}
+
+	//fmt.Printf("raw block: %v\n", rawBlock)
+	//fmt.Printf("last synced num: %d\n", lastSyncedBlockNum + 1)
+	log.Infof("Adding Round #%d\n", blockNum + 1)
+
+	newBlock, err := app.ConvertBlockRawBytes(context.Background(), rawBlock)
+	if err != nil {
+		log.Errorw("blocksynchronizer", "status", "convert raw bytes to block data", "ERROR", err)
+		return err
+	}
+	//p.log.Infof("Block data for round %d: %v\n", newBlock.Round, newBlock)
+	log.Infof("Block data for round %d after processing:", newBlock.Round)
+	payloadStr, err := json.Marshal(newBlock.Block)
+	if err != nil {
+		log.Errorw("blocksynchronizer", "status", "marshal new block bytes to block data", "ERROR", err)
+		return err
+	}
+
+	var prettyJSON bytes.Buffer
+	err = json.Indent(&prettyJSON, payloadStr, "", "\t")
+	if err != nil {
+		fmt.Println("JSON parse error: ", err)
+	}
+	fmt.Println("Pretty pretty print json!!:", string(prettyJSON.Bytes()))
+	//indexer.PrintBlockInfoFromJsonBlock(newBlock.Block)
+
+	//docID, rev, err := field.BlockStore.AddBlock(ctx, newBlock)
+	blockDocId, blockDocRev, err := blockStore.AddBlock(context.Background(), newBlock)
+	if err != nil {
+		log.Errorw("blocksynchronizer", "status", "can't add new block", "ERROR", err)
+		return err
+	}
+	log.Infof("Added block %s with rev %s to CouchDB Block table", blockDocId, blockDocRev)
+
+	var accountList []models.Account
+	var assetList []models.Asset
+	var appList []models.Application
+
+	if len(newBlock.Transactions) > 0 {
+		_, err = transactionStore.AddTransactions(context.Background(), newBlock.Transactions)
+		if err != nil {
+			log.Errorw("blocksynchronizer", "status", "can't add new transaction(s)", "ERROR", err)
+			return err
+		}
+		log.Infof("Added %d transactions with block %s to CouchDB Transaction table", len(newBlock.Transactions), newBlock.BlockHash)
+
+		for _, txn := range newBlock.Transactions {
+
+			accountIDs := app.ExtractAccountAddrsFromTxn(txn)
+			applicationIDs := app.ExtractApplicationIdsFromTxn(txn)
+			assetIDs := app.ExtractAssetIdsFromTxn(txn)
+
+			for _, acctID := range accountIDs {
+				accountInfo, err := app.GetAccount(context.Background(),"", log, algodClient, acctID)
+				if err != nil {
+					log.Errorw("blocksynchronizer", "status", "can't get account", "ERROR", err)
+					return err
+				}
+				log.Infof("Retrieved Account info: %v", *accountInfo)
+				accountList = append(accountList, *accountInfo)
+			}
+
+			for _, appID := range applicationIDs {
+				appInfo, err := app.GetApplication(context.Background(),"", log, algodClient, appID)
+				if err != nil {
+					log.Errorw("blocksynchronizer", "status", "can't get app", "ERROR", err)
+					return err
+				}
+				log.Infof("Retrieved Application info: %v", *appInfo)
+				appList = append(appList, *appInfo)
+			}
+
+			for _, assetID := range assetIDs {
+				assetInfo, err := app.GetAsset(context.Background(),"", log, algodClient, assetID)
+				if err != nil {
+					log.Errorw("blocksynchronizer", "status", "can't get asset", "ERROR", err)
+					return err
+				}
+				log.Infof("Retrieved Asset info: %v", *assetInfo)
+				assetList = append(assetList, *assetInfo)
+			}
+		}
+	}
+
+	if len(accountList) > 0 {
+		_, err = accountStore.AddAccounts(context.Background(), accountList)
+		if err != nil {
+			log.Errorw("blocksynchronizer", "status", "can't add/update account(s)", "ERROR", err)
+			return err
+		}
+	}
+
+	if len(assetList) > 0 {
+		_, err = assetStore.AddAssets(context.Background(), assetList)
+		if err != nil {
+			log.Errorw("blocksynchronizer", "status", "can't add/update asset(s)", "ERROR", err)
+			return err
+		}
+	}
+
+	if len(appList) > 0 {
+		_, err = appStore.AddApplications(context.Background(), appList)
+		if err != nil {
+			log.Errorw("blocksynchronizer", "status", "can't add/update application(s)", "ERROR", err)
+			return err
+		}
+	}
+
+	return nil
+}

@@ -50,7 +50,8 @@ func run(log *zap.SugaredLogger) error {
 			Protocol   string `conf:"default:http"`
 			User       string `conf:"default:admin"`
 			Password   string `conf:"default:password,mask"`
-			Host       string `conf:"default:127.0.0.1:5984"`
+			//Host       string `conf:"default:127.0.0.1:5984"`
+			Host		string `conf:"default:89.39.110.254:5984"`
 		}
 		Algorand struct {
 			//AlgodAddr	string `conf:"default:http://localhost:4001"`
@@ -239,6 +240,19 @@ func run(log *zap.SugaredLogger) error {
 		order := cfg.Args.Num(4)
 		if err := commands.GetTransactionsPaginationCmd(traceID, log, couchConfig, latestTxnId, int64(noOfItems), int64(pageNo), order); err != nil {
 			return fmt.Errorf("add round from db: %w", err)
+		}
+
+	case "get-and-insert-blocks":
+		startBlockStr := cfg.Args.Num(1)
+		startBlock, err := strconv.Atoi(startBlockStr)
+		endBlockStr := cfg.Args.Num(2)
+		endBlock, err := strconv.Atoi(endBlockStr)
+
+		if err != nil {
+			return fmt.Errorf("num arg format wrong: %w", err)
+		}
+		if err := commands.GetAndInsertBlockCmd(log, algorandConfig, couchConfig, uint64(startBlock), uint64(endBlock)); err != nil {
+			return fmt.Errorf("num arg format wrong: %w", err)
 		}
 
 	case "migrate":
