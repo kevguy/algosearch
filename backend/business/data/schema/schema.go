@@ -140,7 +140,8 @@ func InsertTransactionViewsForGlobalDB(ctx context.Context, client *kivik.Client
 				TransactionViewByIdCount: map[string]interface{}{
 					"map": `function(doc) {
 						if (doc.doc_type === 'txn') {
-							emit(doc.id, 1);
+							// emit(doc.id, 1);
+							emit([doc["round-time"], doc.id], 1);
 						}
 					}`,
 					"reduce": "_sum",

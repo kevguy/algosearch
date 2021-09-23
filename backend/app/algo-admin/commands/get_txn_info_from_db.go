@@ -27,13 +27,13 @@ func GetTransactionInfoFromDbCmd(log *zap.SugaredLogger, couchCfg couchdb.Config
 	}
 	fmt.Printf("Earliest Transaction ID: %s\n", earliestID)
 
-	latestID, err := transactionStore.GetEarliestTransactionId(ctx)
+	latestID, err := transactionStore.GetLatestTransactionId(ctx)
 	if err != nil {
 		return fmt.Errorf("getting the latest Transaction ID: %w", err)
 	}
 	fmt.Printf("Latest Transaction ID: %s\n", latestID)
 
-	count, err := transactionStore.GetTransactionCountBtnKeys(ctx, earliestID, latestID)
+	count, err := transactionStore.GetTransactionCountBtnKeys(ctx, latestID, earliestID)
 	if err != nil {
 		return fmt.Errorf("getting the transaction count: %w", err)
 	}

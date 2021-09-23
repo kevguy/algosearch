@@ -32,7 +32,7 @@ func (s Store) GetTransactionCountBtnKeys(ctx context.Context, startKey, endKey 
 	}
 	db := s.couchClient.DB(schema.GlobalDbName)
 
-	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" +schema.TransactionViewByIdCount, kivik.Options{
+	rows, err := db.Query(ctx, schema.TransactionDDoc, "_view/" +schema.TransactionViewByIdCount, kivik.Options{
 		"start_key": startKey,
 		"end_key": endKey,
 	})

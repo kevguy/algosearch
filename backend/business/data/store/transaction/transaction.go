@@ -167,7 +167,7 @@ func (s Store) GetEarliestTransactionId(ctx context.Context) (string, error) {
 	}
 	db := s.couchClient.DB(schema.GlobalDbName)
 
-	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" +schema.TransactionViewInLatest, kivik.Options{
+	rows, err := db.Query(ctx, schema.TransactionDDoc, "_view/" +schema.TransactionViewInLatest, kivik.Options{
 		"include_docs": true,
 		"descending": false,
 		"limit": 1,
@@ -206,7 +206,7 @@ func (s Store) GetLatestTransactionId(ctx context.Context) (string, error) {
 	}
 	db := s.couchClient.DB(schema.GlobalDbName)
 
-	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" +schema.TransactionViewInLatest, kivik.Options{
+	rows, err := db.Query(ctx, schema.TransactionDDoc, "_view/" +schema.TransactionViewInLatest, kivik.Options{
 		"include_docs": true,
 		"descending": true,
 		"limit": 1,
