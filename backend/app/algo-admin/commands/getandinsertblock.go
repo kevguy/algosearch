@@ -47,7 +47,8 @@ func GetAndInsertBlockCmd(log *zap.SugaredLogger, cfg algod.Config, couchCfg cou
 			&assetStore,
 			&appStore,
 			i); err != nil {
-			return err
+			//return err
+			log.Errorf("Failed to add Block Number %d\n", i)
 		}
 		log.Infof("Added Block Number %d\n", i)
 	}

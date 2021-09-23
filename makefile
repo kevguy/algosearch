@@ -71,6 +71,9 @@ stop-couch:
 	docker rm algosearch-couchdb
 	sudo rm -rf db-data
 
+fuck-this:
+	go run ./backend/app/algo-admin/main.go get-and-insert-blocks 11 10000
+
 # ==============================================================================
 # Monitoring
 

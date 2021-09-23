@@ -244,27 +244,27 @@ func GetAndInsertBlockData(
 	assetStore			*asset.Store,
 	appStore			*application.Store,
 	blockNum			uint64) error {
-	log.Infof("Trying to get round number: %d\n", blockNum + 1)
+	log.Infof("Trying to get round number: %d\n", blockNum)
 
 	getRoundSuccessful := false
 	var rawBlock []byte
 	var err error
 	for !getRoundSuccessful {
-		rawBlock, err = app.GetRoundInRawBytes(context.Background(), algodClient, blockNum + 1)
+		rawBlock, err = app.GetRoundInRawBytes(context.Background(), algodClient, blockNum)
 		if err != nil {
 			log.Errorw("blocksynchronizer", "status", "get round in raw bytes", "ERROR", err)
 			// Assuming it's not just block data not available, jump to the next round
 			blockNum += 1
 		} else {
 			getRoundSuccessful = true
-			log.Infof("Block data for round #%d retrieved.", blockNum + 1)
+			log.Infof("Block data for round #%d retrieved.", blockNum)
 			//app.PrintBlockInfoFromRawBytes(rawBlock)
 		}
 	}
 
 	//fmt.Printf("raw block: %v\n", rawBlock)
 	//fmt.Printf("last synced num: %d\n", lastSyncedBlockNum + 1)
-	log.Infof("Adding Round #%d\n", blockNum + 1)
+	log.Infof("Adding Round #%d\n", blockNum)
 
 	newBlock, err := app.ConvertBlockRawBytes(context.Background(), rawBlock)
 	if err != nil {

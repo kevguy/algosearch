@@ -14,6 +14,7 @@ const (
 
 	BlockDDoc          = "_design/block"
 	BlockViewByRoundNo = "blockByRoundNo"
+	BlockViewByRoundCount = "blockByRoundNoCount"
 
 	TransactionDDoc            = "_design/txn"
 	TransactionViewInLatest    = "txnInLatest"
@@ -84,6 +85,14 @@ func InsertBlockViewsForGlobalDB(ctx context.Context, client *kivik.Client, dbNa
 							emit(doc.round, null);
 						}
 					}`,
+				},
+				BlockViewByRoundCount: map[string]interface{}{
+					"map": `function(doc) {
+						if (doc.doc_type === 'block') {
+							emit(doc.round, 1);
+						}
+					}`,
+					"reduce": "_sum",
 				},
 			},
 		})

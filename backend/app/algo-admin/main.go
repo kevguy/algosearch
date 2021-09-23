@@ -255,12 +255,18 @@ func run(log *zap.SugaredLogger) error {
 			return fmt.Errorf("num arg format wrong: %w", err)
 		}
 
+	case "get-txn-info-from-db":
+		if err := commands.GetTransactionInfoFromDbCmd(log, couchConfig); err != nil {
+			return fmt.Errorf("get transactions from db: %w", err)
+		}
+
 	case "migrate":
 		if err := commands.Migrate(couchConfig); err != nil {
 			return fmt.Errorf("migrating database: %w", err)
 		}
 
 	default:
+		fmt.Println("get-txn-info-from-db: get general information about the transactions from the database")
 		fmt.Println("add-current-round: add the current round to the database")
 		fmt.Println("add-round: add a round to the database")
 		fmt.Println("get-current-round: get the current round and print it nicely")
