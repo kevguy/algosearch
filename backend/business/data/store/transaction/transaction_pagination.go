@@ -2,28 +2,30 @@ package transaction
 
 import (
 	"context"
+	"fmt"
 	"github.com/go-kivik/kivik/v4"
 	"github.com/kevguy/algosearch/backend/business/data/schema"
 	"github.com/kevguy/algosearch/backend/foundation/web"
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"strconv"
 )
 
 
-func (s Store) GetTransactionsPagination(ctx context.Context, latestTransactionId, order string, pageNo, limit int64) ([]Transaction, int64, int64, error) {
+func (s Store) GetTransactionsPagination(ctx context.Context, startTransactionId, order string, pageNo, limit int64) ([]Transaction, int64, int64, error) {
 
 	ctx, span := otel.GetTracerProvider().
 		Tracer("").
-		Start(ctx, "block.GetBlocksPagination")
-	span.SetAttributes(attribute.String("latestTransactionId", latestTransactionId))
+		Start(ctx, "transaction.GetTransactionsPagination")
+	span.SetAttributes(attribute.String("startTransactionId", startTransactionId))
 	span.SetAttributes(attribute.Int64("pageNo", pageNo))
 	span.SetAttributes(attribute.Int64("limit", limit))
 	defer span.End()
 
 	s.log.Infow("transaction.GetTransactionsPagination",
 		"traceid", web.GetTraceID(ctx),
-		"latestTranasctionId", latestTransactionId,
+		"startTransactionId", startTransactionId,
 		"pageNo", pageNo,
 		"limit", limit)
 
@@ -32,11 +34,35 @@ func (s Store) GetTransactionsPagination(ctx context.Context, latestTransactionI
 	if err != nil {
 		return nil, 0, 0, errors.Wrap(err, ": Get earliest synced transaction id")
 	}
+	//earliestTxn, err := s.GetTransaction(ctx, earliestTxnId)
+	//if err != nil {
+	//	return nil, 0, 0, fmt.Errorf("fetch earliest transaction error: %w", err)
+	//}
+	//earliestRoundTime := earliestTxn.RoundTime
 
-	numOfTransactions, err := s.GetTransactionCountBtnKeys(ctx, earliestTxnId, latestTransactionId)
+	// Get the latest transaction id
+	latestTxnId, err := s.GetLatestTransactionId(ctx)
+	if err != nil {
+		return nil, 0, 0, errors.Wrap(err, ": Get latest synced transaction id")
+	}
+	latestTxn, err := s.GetTransaction(ctx, latestTxnId)
+	if err != nil {
+		return nil, 0, 0, fmt.Errorf("fetch latest transaction error: %w", err)
+	}
+	latestRoundTime := latestTxn.RoundTime
+
+	// Get the start transaction id
+	//startTxn, err := s.GetTransaction(ctx, startTransactionId)
+	//if err != nil {
+	//	return nil, 0, 0, fmt.Errorf("fetch start transaction error: %w", err)
+	//}
+	//startRoundTime := startTxn.RoundTime
+	numOfTransactions, err := s.GetTransactionCountBtnKeys(ctx, earliestTxnId, latestTxnId)
 	if err != nil {
 		return nil, 0, 0, errors.Wrap(err, ": Get transaction count between keys")
 	}
+	s.log.Infow("transaction.GetTransactionsPagination",
+		"numOfTransactions", numOfTransactions)
 
 	// We can skip database check cuz GetEarliestTransactionId already did it
 	db := s.couchClient.DB(schema.GlobalDbName)
@@ -44,6 +70,10 @@ func (s Store) GetTransactionsPagination(ctx context.Context, latestTransactionI
 	var numOfPages int64 = numOfTransactions / limit
 	if numOfTransactions % limit > 0 {
 		numOfPages += 1
+	}
+
+	if pageNo < 1 || pageNo > numOfPages {
+		return nil, 0, 0, errors.Wrapf(err, "page number is less than 1 or exceeds page limit: %d", numOfPages)
 	}
 
 	if pageNo < 1 || pageNo > numOfPages {
@@ -59,8 +89,8 @@ func (s Store) GetTransactionsPagination(ctx context.Context, latestTransactionI
 		// Descending order
 		options["descending"] = true
 
-		// Start with latest block number
-		options["start_key"] = latestTransactionId
+		// Start with latest block number we managed to find for the time being
+		options["start_key"] = []string{strconv.FormatUint(latestRoundTime, 10), latestTxnId}
 
 		// Use page number to calculate number of items to skip
 		skip := (pageNo - 1) * limit
@@ -76,17 +106,27 @@ func (s Store) GetTransactionsPagination(ctx context.Context, latestTransactionI
 		// Ascending order
 		options["descending"] = false
 
+		//Start with earliest block number found
+		//options["start_key"] = []string{strconv.FormatUint(latestRoundTime, 10), latestTxnId}
+
 		// Calculate the number of records to skip
 		skip := (pageNo - 1) * limit
 		options["skip"] = skip
 
-		if (numOfTransactions - skip) > limit {
+		if (numOfTransactions - skip) < limit {
 			options["limit"] =  numOfTransactions - skip
 		} else {
 			options["limit"] = limit
 		}
 	}
 
+	s.log.Infof("transaction.GetTransactionsPagination: staritng to query")
+	s.log.Infow("transaction.GetTransactionsPagination",
+		"include_docs", options["include_docs"],
+		"limit", options["limit"],
+		"descending", options["descending"],
+		"start_key", options["start_key"],
+		"skip", options["skip"])
 	rows, err := db.Query(ctx, schema.TransactionDDoc, "_view/" +schema.TransactionViewInLatest, options)
 	if err != nil {
 		return nil, 0, 0, errors.Wrap(err, "Fetch data error")

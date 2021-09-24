@@ -257,7 +257,27 @@ func run(log *zap.SugaredLogger) error {
 
 	case "get-txn-info-from-db":
 		if err := commands.GetTransactionInfoFromDbCmd(log, couchConfig); err != nil {
-			return fmt.Errorf("get transactions from db: %w", err)
+			return fmt.Errorf("get transactions info from db: %w", err)
+		}
+
+	case "get-txns-from-db":
+		limitStr := cfg.Args.Num(1)
+		limit, err := strconv.Atoi(limitStr)
+		if err != nil {
+			return fmt.Errorf("limit arg format wrong: %w", err)
+		}
+		pageNoStr := cfg.Args.Num(2)
+		pageNo, err := strconv.Atoi(pageNoStr)
+		if err != nil {
+			return fmt.Errorf("pageNo arg format wrong: %w", err)
+		}
+		order := cfg.Args.Num(3)
+		if order != "asc" && order != "desc" {
+			return fmt.Errorf("order arg format wrong")
+		}
+
+		if err := commands.GetTransactionsFromDbWithPaginationCmd(log, couchConfig, int64(pageNo), int64(limit), order); err != nil {
+			return fmt.Errorf("get transactions data from db %w", err)
 		}
 
 	case "migrate":
