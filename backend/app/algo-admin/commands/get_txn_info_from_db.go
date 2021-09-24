@@ -9,6 +9,8 @@ import (
 	"time"
 )
 
+// GetTransactionInfoFromDbCmd gets general transaction info from database, inc. earliest and latest transaction IDs
+// and number of transactions
 func GetTransactionInfoFromDbCmd(log *zap.SugaredLogger, couchCfg couchdb.Config) error {
 
 	// http://89.39.110.254:5984/algo_global/_design/txn/_view/txnByIdCount?

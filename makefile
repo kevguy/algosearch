@@ -26,6 +26,8 @@ export PROJECT = ardan-starter-kit
 # ==============================================================================
 # Mine
 
+# Get general transaction info from database, inc. earliest and latest transaction IDs
+# and number of transactions
 get-txn-info-from-db:
 	go run ./backend/app/algo-admin/main.go get-txn-info-from-db | go run backend/app/logfmt/main.go
 
