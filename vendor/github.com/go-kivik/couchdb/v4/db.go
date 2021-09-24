@@ -57,6 +57,8 @@ func (d *db) path(path string) string {
 	if err != nil {
 		panic("THIS IS A BUG: d.path failed: " + err.Error())
 	}
+	fmt.Println("hihihihihihihihihihi")
+	fmt.Println(url.String())
 	return url.String()
 }
 

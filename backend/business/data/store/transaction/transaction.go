@@ -3,7 +3,6 @@ package transaction
 
 import (
 	"context"
-	"fmt"
 	"github.com/algorand/go-algorand-sdk/client/v2/common/models"
 	"github.com/go-kivik/kivik/v4"
 	app "github.com/kevguy/algosearch/backend/business/algod"
@@ -135,18 +134,21 @@ func (s Store) GetTransaction(ctx context.Context, transactionID string) (models
 	}
 	db := s.couchClient.DB(schema.GlobalDbName)
 
-	docId := fmt.Sprintf("%s.%s", DocType, transactionID)
-	row := db.Get(ctx, docId)
+	//docId := fmt.Sprintf("%s.%s", DocType, transactionID)
+	//row := db.Get(ctx, docId)
+	//docId := fmt.Sprintf("%s.%s", DocType, transactionID)
+	row := db.Get(ctx, transactionID)
 	if row == nil {
 		return models.Transaction{}, errors.Wrap(err, schema.GlobalDbName+ " get data empty")
 	}
 
 	var transaction Transaction
-	fmt.Printf("%v\n", row)
+	//fmt.Printf("%v\n", row)
 	err = row.ScanDoc(&transaction)
 	if err != nil {
 		return models.Transaction{}, errors.Wrap(err, schema.GlobalDbName+ "cannot unpack data from row")
 	}
+	//fmt.Println(transaction)
 
 	return transaction.Transaction, nil
 }

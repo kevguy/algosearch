@@ -247,6 +247,8 @@ func (c *Client) DoReq(ctx context.Context, method, path string, opts *Options) 
 			defer opts.Body.Close() // nolint: errcheck
 		}
 	}
+	fmt.Println("shitshitshitshitshitshitshitshitshit")
+	fmt.Println(path)
 	req, err := c.NewRequest(ctx, method, path, body)
 	if err != nil {
 		return nil, err
@@ -263,6 +265,8 @@ func (c *Client) DoReq(ctx context.Context, method, path string, opts *Options) 
 		trace.httpRequest(req)
 		trace.httpRequestBody(req)
 	}
+	
+	fmt.Println(req.URL)
 
 	response, err := c.Do(req)
 	if trace != nil {

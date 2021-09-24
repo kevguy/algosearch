@@ -125,7 +125,7 @@ func InsertTransactionViewsForGlobalDB(ctx context.Context, client *kivik.Client
 					"map": `function(doc) { 
 						if (doc.doc_type === 'txn') {
 							// emit(doc.id, {_id: doc.id});
-							emit([doc["round-time"], doc.id], null);
+							emit([` + "`" + `${doc["round-time"]}` + "`" + `, doc.id], null);
 						}
 					}`,
 				},
@@ -137,11 +137,12 @@ func InsertTransactionViewsForGlobalDB(ctx context.Context, client *kivik.Client
 						}
 					}`,
 				},
+				// https://stackoverflow.com/questions/11284383/couchdb-count-unique-document-field
 				TransactionViewByIdCount: map[string]interface{}{
 					"map": `function(doc) {
 						if (doc.doc_type === 'txn') {
 							// emit(doc.id, 1);
-							emit([doc["round-time"], doc.id], 1);
+							emit([` + "`" + `${doc["round-time"]}` + "`" + `, doc.id], 1);
 						}
 					}`,
 					"reduce": "_sum",
@@ -152,7 +153,7 @@ func InsertTransactionViewsForGlobalDB(ctx context.Context, client *kivik.Client
 							emit([doc._id, 0], doc);
 						} else if (doc.doc_type === 'txn') {
 							doc.associated_accounts.forEach(acct => {
-								emit([acct, 1, doc["round-time"], doc._id], null);
+								emit([acct, 1, ` + "`" + `${doc["round-time"]}` + "`" + `, doc.id], null);
 							})
 						}
 					}`,
@@ -176,7 +177,7 @@ func InsertTransactionViewsForGlobalDB(ctx context.Context, client *kivik.Client
 							emit([doc._id, 0], doc);
 						} else if (doc.doc_type === 'txn') {
 							doc.associated_assets.forEach(asset => {
-								emit([asset, 1, doc["round-time"], doc._id], null);
+								emit([asset, 1, ` + "`" + `${doc["round-time"]}` + "`" + `, doc.id], null);
 							})
 						}
 					}`,
@@ -199,7 +200,7 @@ func InsertTransactionViewsForGlobalDB(ctx context.Context, client *kivik.Client
 							emit([doc._id, 0], doc);
 						} else if (doc.doc_type === 'txn') {
 							doc.associated_applications.forEach(app => {
-								emit([app, 1, doc["round-time"], doc._id], null);
+								emit([app, 1, ` + "`" + `${doc["round-time"]}` + "`" + `, doc.id], null);
 							})
 						}
 					}`,

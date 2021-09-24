@@ -16,7 +16,7 @@ func GetTransactionInfoFromDbCmd(log *zap.SugaredLogger, couchCfg couchdb.Config
 		return fmt.Errorf("connect to couchdb database: %w", err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
 	defer cancel()
 
 	transactionStore := transaction.NewStore(log, db)
@@ -33,7 +33,8 @@ func GetTransactionInfoFromDbCmd(log *zap.SugaredLogger, couchCfg couchdb.Config
 	}
 	fmt.Printf("Latest Transaction ID: %s\n", latestID)
 
-	count, err := transactionStore.GetTransactionCountBtnKeys(ctx, latestID, earliestID)
+	//count, err := transactionStore.GetTransactionCountBtnKeys(ctx, latestID, earliestID)
+	count, err := transactionStore.GetTransactionCountBtnKeys(ctx, earliestID, latestID)
 	if err != nil {
 		return fmt.Errorf("getting the transaction count: %w", err)
 	}
