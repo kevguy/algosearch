@@ -50,11 +50,11 @@ func (s Store) getEarliestLatestAcctTransaction(ctx context.Context, acctID stri
 
 	ctx, span := otel.GetTracerProvider().
 		Tracer("").
-		Start(ctx, "transaction.GetLatestAcctTransaction")
+		Start(ctx, "transaction.getEarliestLatestAcctTransaction")
 	span.SetAttributes(attribute.String("acctID", acctID))
 	defer span.End()
 
-	s.log.Infow("transaction.GetLatestAcctTransaction",
+	s.log.Infow("transaction.getEarliestLatestAcctTransaction",
 		"traceid", web.GetTraceID(ctx),
 		"acctID", acctID)
 

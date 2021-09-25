@@ -280,6 +280,15 @@ func run(log *zap.SugaredLogger) error {
 			return fmt.Errorf("get transactions data from db %w", err)
 		}
 
+	case "get-txns-by-acct-from-db":
+		acctID := cfg.Args.Num(1)
+		if acctID == "" {
+			return fmt.Errorf("acctID should not be empty")
+		}
+		if err := commands.GetTransactionsByAcctFromDbCmd(log, couchConfig, acctID); err != nil {
+			return fmt.Errorf("get transactions info by account %s from db: %w", acctID, err)
+		}
+
 	case "migrate":
 		if err := commands.Migrate(couchConfig); err != nil {
 			return fmt.Errorf("migrating database: %w", err)

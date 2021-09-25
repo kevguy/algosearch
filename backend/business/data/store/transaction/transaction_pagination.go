@@ -2,7 +2,6 @@ package transaction
 
 import (
 	"context"
-	"fmt"
 	"github.com/go-kivik/kivik/v4"
 	"github.com/kevguy/algosearch/backend/business/data/schema"
 	"github.com/kevguy/algosearch/backend/foundation/web"
@@ -30,25 +29,19 @@ func (s Store) GetTransactionsPagination(ctx context.Context, startTransactionId
 		"limit", limit)
 
 	// Get the earliest transaction id
-	earliestTxnId, err := s.GetEarliestTransactionId(ctx)
+	earliestTxn, err := s.GetEarliestTransaction(ctx)
 	if err != nil {
 		return nil, 0, 0, errors.Wrap(err, ": Get earliest synced transaction id")
 	}
-	//earliestTxn, err := s.GetTransaction(ctx, earliestTxnId)
-	//if err != nil {
-	//	return nil, 0, 0, fmt.Errorf("fetch earliest transaction error: %w", err)
-	//}
+	earliestTxnId := earliestTxn.ID
 	//earliestRoundTime := earliestTxn.RoundTime
 
 	// Get the latest transaction id
-	latestTxnId, err := s.GetLatestTransactionId(ctx)
+	latestTxn, err := s.GetLatestTransaction(ctx)
 	if err != nil {
 		return nil, 0, 0, errors.Wrap(err, ": Get latest synced transaction id")
 	}
-	latestTxn, err := s.GetTransaction(ctx, latestTxnId)
-	if err != nil {
-		return nil, 0, 0, fmt.Errorf("fetch latest transaction error: %w", err)
-	}
+	latestTxnId := latestTxn.ID
 	latestRoundTime := latestTxn.RoundTime
 
 	// Get the start transaction id

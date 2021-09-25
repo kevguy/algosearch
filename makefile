@@ -31,6 +31,9 @@ export PROJECT = ardan-starter-kit
 get-txn-info-from-db:
 	go run ./backend/app/algo-admin/main.go get-txn-info-from-db | go run backend/app/logfmt/main.go
 
+try-get-txns-by-acct-from-db:
+	go run backend/app/algo-admin/main.go get-txns-by-acct-from-db 2255PMXS65R54KKH5FQVV5UQZSAQCYL5U3OWQ2E5IZGOLK5XVTAVKNRPPQ | go run backend/app/logfmt/main.go
+
 # https://github.com/ThiagoBarradas/woocommerce-docker/issues/2
 start-wp:
 	docker run --name woocommerce -p80:80 -d thiagobarradas/woocommerce:3.5.3-wp5.0.2-php7.2

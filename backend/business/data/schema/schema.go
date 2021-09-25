@@ -150,7 +150,7 @@ func InsertTransactionViewsForGlobalDB(ctx context.Context, client *kivik.Client
 				TransactionViewByAccount: map[string]interface{} {
 					"map": `function(doc) {
 						if (doc.doc_type === 'acct') {
-							emit([doc._id, 0], doc);
+							emit([doc._id, 0], null);
 						} else if (doc.doc_type === 'txn') {
 							doc.associated_accounts.forEach(acct => {
 								emit([acct, 1, ` + "`" + `${doc["round-time"]}` + "`" + `, doc.id], null);
@@ -174,7 +174,7 @@ func InsertTransactionViewsForGlobalDB(ctx context.Context, client *kivik.Client
 				TransactionViewByAsset: map[string]interface{} {
 					"map": `function(doc) {
 						if (doc.doc_type === 'asset') {
-							emit([doc._id, 0], doc);
+							emit([doc._id, 0], null);
 						} else if (doc.doc_type === 'txn') {
 							doc.associated_assets.forEach(asset => {
 								emit([asset, 1, ` + "`" + `${doc["round-time"]}` + "`" + `, doc.id], null);
@@ -197,7 +197,7 @@ func InsertTransactionViewsForGlobalDB(ctx context.Context, client *kivik.Client
 				TransactionViewByApplication: map[string]interface{} {
 					"map": `function(doc) {
 						if (doc.doc_type === 'app') {
-							emit([doc._id, 0], doc);
+							emit([doc._id, 0], null);
 						} else if (doc.doc_type === 'txn') {
 							doc.associated_applications.forEach(app => {
 								emit([app, 1, ` + "`" + `${doc["round-time"]}` + "`" + `, doc.id], null);
