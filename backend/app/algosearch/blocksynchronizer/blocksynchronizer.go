@@ -317,7 +317,7 @@ func GetAndInsertBlockData(
 				accountInfo, err := app.GetAccount(context.Background(),"", log, algodClient, acctID)
 				if err != nil {
 					log.Errorw("blocksynchronizer", "status", "can't get account", "ERROR", err)
-					return err
+					//return err
 				}
 				log.Infof("Retrieved Account info: %v", *accountInfo)
 				accountList = append(accountList, *accountInfo)
@@ -327,7 +327,7 @@ func GetAndInsertBlockData(
 				appInfo, err := app.GetApplication(context.Background(),"", log, algodClient, appID)
 				if err != nil {
 					log.Errorw("blocksynchronizer", "status", "can't get app", "ERROR", err)
-					return err
+					//return err
 				}
 				log.Infof("Retrieved Application info: %v", *appInfo)
 				appList = append(appList, *appInfo)
@@ -337,7 +337,7 @@ func GetAndInsertBlockData(
 				assetInfo, err := app.GetAsset(context.Background(),"", log, algodClient, assetID)
 				if err != nil {
 					log.Errorw("blocksynchronizer", "status", "can't get asset", "ERROR", err)
-					return err
+					//return err
 				}
 				log.Infof("Retrieved Asset info: %v", *assetInfo)
 				assetList = append(assetList, *assetInfo)
@@ -349,7 +349,7 @@ func GetAndInsertBlockData(
 		_, err = accountStore.AddAccounts(context.Background(), accountList)
 		if err != nil {
 			log.Errorw("blocksynchronizer", "status", "can't add/update account(s)", "ERROR", err)
-			return err
+			//return err
 		}
 	}
 
@@ -357,7 +357,7 @@ func GetAndInsertBlockData(
 		_, err = assetStore.AddAssets(context.Background(), assetList)
 		if err != nil {
 			log.Errorw("blocksynchronizer", "status", "can't add/update asset(s)", "ERROR", err)
-			return err
+			//return err
 		}
 	}
 
@@ -365,7 +365,7 @@ func GetAndInsertBlockData(
 		_, err = appStore.AddApplications(context.Background(), appList)
 		if err != nil {
 			log.Errorw("blocksynchronizer", "status", "can't add/update application(s)", "ERROR", err)
-			return err
+			//return err
 		}
 	}
 

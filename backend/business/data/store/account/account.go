@@ -80,8 +80,8 @@ func (s Store) AddAccounts(ctx context.Context, accounts []models.Account) (bool
 	db := s.couchClient.DB(schema.GlobalDbName)
 
 	accounts_ := make([]interface{}, len(accounts))
-	fmt.Println("Here are the accounts")
-	fmt.Printf("%v\n", accounts)
+	//fmt.Println("Here are the accounts")
+	//fmt.Printf("%v\n", accounts)
 
 	// https://stackoverflow.com/questions/55755929/go-convert-interface-to-map
 	// https://stackoverflow.com/questions/44094325/add-data-to-interface-in-struct

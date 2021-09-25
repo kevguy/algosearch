@@ -138,7 +138,7 @@ func (s Store) GetAsset(ctx context.Context, assetID string) (models.Asset, erro
 	}
 
 	var asset Asset
-	fmt.Printf("%v\n", row)
+	//fmt.Printf("%v\n", row)
 	err = row.ScanDoc(&asset)
 	if err != nil {
 		return models.Asset{}, errors.Wrap(err, schema.GlobalDbName+ "cannot unpack data from row")
