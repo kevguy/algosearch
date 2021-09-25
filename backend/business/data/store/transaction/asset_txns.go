@@ -11,11 +11,11 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 )
 
-func (s Store) GetTransactionsByAsset(ctx context.Context, assetID uint64, order string) ([]Transaction, error) {
+func (s Store) GetTransactionsByAsset(ctx context.Context, assetID string, order string) ([]Transaction, error) {
 	ctx, span := otel.GetTracerProvider().
 		Tracer("").
-		Start(ctx, "transaction.GetTransactionsByAcct")
-	span.SetAttributes(attribute.Any("assetID", assetID))
+		Start(ctx, "transaction.GetTransactionsByAsset")
+	span.SetAttributes(attribute.String("assetID", assetID))
 	defer span.End()
 
 	s.log.Infow("transaction.GetTransactionsByAsset",
@@ -31,22 +31,37 @@ func (s Store) GetTransactionsByAsset(ctx context.Context, assetID uint64, order
 	options := kivik.Options{
 		"include_docs": true,
 		//"limit": limit,
-		"start_key": fmt.Sprintf("[\"i%d\"]", assetID),
-		"end_key": fmt.Sprintf("[\"%d\", 2]", assetID),
+		"reduce": false,
+		"inclusive_end": true,
+		//"start_key": []string{assetID, "1"},
+		//"end_key": []string{assetID, "2"},
 	}
+
+	if order == "asc" {
+		options["start_key"] = []string{assetID, "1"}
+		options["end_key"] = []string{assetID, "2"}
+		options["descending"] = false
+	} else {
+		// assuming it's "desc"
+		options["start_key"] = []string{assetID, "2"}
+		options["end_key"] = []string{assetID, "1"}
+		options["descending"] = true
+	}
+	fmt.Println(options["start_key"])
+	fmt.Println(options["end_key"])
 
 	rows, err := db.Query(ctx, schema.TransactionDDoc, "_view/" +schema.TransactionViewByAsset, options)
 	if err != nil {
 		return nil, errors.Wrap(err, "Fetch data error")
 	}
 
-	var fetchedTransactions = []Transaction{}
+	var fetchedTransactions []Transaction
 	var count = 0
 	for rows.Next() {
 		if count != 0 {
 			var transaction = Transaction{}
 			if err := rows.ScanDoc(&transaction); err != nil {
-				return nil, errors.Wrap(err, "unwrapping block")
+				return nil, errors.Wrap(err, "unwrasseting block")
 			}
 			fetchedTransactions = append(fetchedTransactions, transaction)
 		}

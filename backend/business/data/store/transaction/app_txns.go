@@ -11,16 +11,16 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 )
 
-func (s Store) GetTransactionsByApplication(ctx context.Context, applicationID uint64, order string) ([]Transaction, error) {
+func (s Store) GetTransactionsByApp(ctx context.Context, appID string, order string) ([]Transaction, error) {
 	ctx, span := otel.GetTracerProvider().
 		Tracer("").
-		Start(ctx, "transaction.GetTransactionsByApplication")
-	span.SetAttributes(attribute.Any("applicationID", applicationID))
+		Start(ctx, "transaction.GetTransactionsByApp")
+	span.SetAttributes(attribute.String("appID", appID))
 	defer span.End()
 
-	s.log.Infow("transaction.GetTransactionsByApplication",
+	s.log.Infow("transaction.GetTransactionsByApp",
 		"traceid", web.GetTraceID(ctx),
-		"applicationID", applicationID)
+		"appID", appID)
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
@@ -31,16 +31,31 @@ func (s Store) GetTransactionsByApplication(ctx context.Context, applicationID u
 	options := kivik.Options{
 		"include_docs": true,
 		//"limit": limit,
-		"start_key": fmt.Sprintf("[\"i%d\"]", applicationID),
-		"end_key": fmt.Sprintf("[\"%d\", 2]", applicationID),
+		"reduce": false,
+		"inclusive_end": true,
+		//"start_key": []string{appID, "1"},
+		//"end_key": []string{appID, "2"},
 	}
+
+	if order == "asc" {
+		options["start_key"] = []string{appID, "1"}
+		options["end_key"] = []string{appID, "2"}
+		options["descending"] = false
+	} else {
+		// assuming it's "desc"
+		options["start_key"] = []string{appID, "2"}
+		options["end_key"] = []string{appID, "1"}
+		options["descending"] = true
+	}
+	fmt.Println(options["start_key"])
+	fmt.Println(options["end_key"])
 
 	rows, err := db.Query(ctx, schema.TransactionDDoc, "_view/" +schema.TransactionViewByApplication, options)
 	if err != nil {
 		return nil, errors.Wrap(err, "Fetch data error")
 	}
 
-	var fetchedTransactions = []Transaction{}
+	var fetchedTransactions []Transaction
 	var count = 0
 	for rows.Next() {
 		if count != 0 {
