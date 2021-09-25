@@ -30,7 +30,7 @@ func GetTransactionsByAcctFromDbCmd(log *zap.SugaredLogger, couchCfg couchdb.Con
 
 	transactionStore := transaction.NewStore(log, db)
 
-	txns, err := transactionStore.GetTransactionsByAcct(ctx, acctID, "")
+	txns, err := transactionStore.GetTransactionsByAcct(ctx, acctID, "desc")
 	if err != nil {
 		return fmt.Errorf("getting transactions from account %s: %w", acctID, err)
 	}

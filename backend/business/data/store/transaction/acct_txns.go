@@ -33,8 +33,19 @@ func (s Store) GetTransactionsByAcct(ctx context.Context, acctID string, order s
 		//"limit": limit,
 		"reduce": false,
 		"inclusive_end": true,
-		"start_key": []string{acctID, "1"},
-		"end_key": []string{acctID, "2"},
+		//"start_key": []string{acctID, "1"},
+		//"end_key": []string{acctID, "2"},
+	}
+
+	if order == "asc" {
+		options["start_key"] = []string{acctID, "1"}
+		options["end_key"] = []string{acctID, "2"}
+		options["descending"] = false
+	} else {
+		// assuming it's "desc"
+		options["start_key"] = []string{acctID, "2"}
+		options["end_key"] = []string{acctID, "1"}
+		options["descending"] = true
 	}
 	fmt.Println(options["start_key"])
 	fmt.Println(options["end_key"])
