@@ -289,6 +289,30 @@ func run(log *zap.SugaredLogger) error {
 			return fmt.Errorf("get transactions info by account %s from db: %w", acctID, err)
 		}
 
+	case "get-txns-by-acct-pagination-from-db":
+		acctID := cfg.Args.Num(1)
+		if acctID == "" {
+			return fmt.Errorf("acctID should not be empty")
+		}
+		limitStr := cfg.Args.Num(2)
+		limit, err := strconv.Atoi(limitStr)
+		if err != nil {
+			return fmt.Errorf("limit arg format wrong: %w", err)
+		}
+		pageNoStr := cfg.Args.Num(3)
+		pageNo, err := strconv.Atoi(pageNoStr)
+		if err != nil {
+			return fmt.Errorf("pageNo arg format wrong: %w", err)
+		}
+		order := cfg.Args.Num(4)
+		if order != "asc" && order != "desc" {
+			return fmt.Errorf("order arg format wrong")
+		}
+
+		if err := commands.GetTransactionsByAcctFromDbWithPaginationCmd(log, couchConfig, acctID, int64(pageNo), int64(limit), order); err != nil {
+			return fmt.Errorf("get transactions data from db %w", err)
+		}
+
 	case "migrate":
 		if err := commands.Migrate(couchConfig); err != nil {
 			return fmt.Errorf("migrating database: %w", err)
