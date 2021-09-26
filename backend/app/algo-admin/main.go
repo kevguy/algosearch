@@ -255,6 +255,11 @@ func run(log *zap.SugaredLogger) error {
 			return fmt.Errorf("num arg format wrong: %w", err)
 		}
 
+	case "get-blocks-count-from-db":
+		if err := commands.GetBlocksCountFromDbCmd(log, couchConfig); err != nil {
+			return fmt.Errorf("get number of blocks from db: %w", err)
+		}
+
 	case "get-txn-info-from-db":
 		if err := commands.GetTransactionInfoFromDbCmd(log, couchConfig); err != nil {
 			return fmt.Errorf("get transactions info from db: %w", err)
