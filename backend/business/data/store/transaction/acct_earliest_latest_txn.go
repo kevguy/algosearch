@@ -67,13 +67,17 @@ func (s Store) getEarliestLatestAcctTransaction(ctx context.Context, acctID stri
 	options := kivik.Options{
 		"include_docs": true,
 		"limit": 1,
-		"start_key": fmt.Sprintf("\"[%s, 1]\"", acctID),
+		//"inclusive_end": true,
+		//"start_key": []string{acctID, "1"},
+		//"end_key": []string{acctID, "2"},
 	}
 
 	if earliest == true {
-		options["descending"] = true
-	} else {
+		options["start_key"] = []string{acctID, "1"}
 		options["descending"] = false
+	} else {
+		options["start_key"] = []string{acctID, "2"}
+		options["descending"] = true
 	}
 
 	rows, err := db.Query(ctx, schema.TransactionDDoc, "_view/" + schema.TransactionViewByAccount, options)

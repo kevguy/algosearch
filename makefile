@@ -32,7 +32,9 @@ get-txn-info-from-db:
 	go run ./backend/app/algo-admin/main.go get-txn-info-from-db | go run backend/app/logfmt/main.go
 
 try-get-txns-by-acct-from-db:
-	go run backend/app/algo-admin/main.go get-txns-by-acct-from-db 2255PMXS65R54KKH5FQVV5UQZSAQCYL5U3OWQ2E5IZGOLK5XVTAVKNRPPQ | go run backend/app/logfmt/main.go
+#	go run backend/app/algo-admin/main.go get-txns-by-acct-from-db 2255PMXS65R54KKH5FQVV5UQZSAQCYL5U3OWQ2E5IZGOLK5XVTAVKNRPPQ | go run backend/app/logfmt/main.go
+	go run backend/app/algo-admin/main.go get-txns-by-acct-from-db 22NA4OMQB46PO5MD22EXW5JAYNWAPQBFBYMM6OJSLAJJ23ZKQA6MPRZKG4 | go run backend/app/logfmt/main.go
+
 
 # https://github.com/ThiagoBarradas/woocommerce-docker/issues/2
 start-wp:

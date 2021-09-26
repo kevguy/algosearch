@@ -58,13 +58,11 @@ func (s Store) GetTransactionsByAcct(ctx context.Context, acctID string, order s
 	var fetchedTransactions []Transaction
 	var count = 0
 	for rows.Next() {
-		if count != 0 {
-			var transaction = Transaction{}
-			if err := rows.ScanDoc(&transaction); err != nil {
-				return nil, errors.Wrap(err, "unwrapping block")
-			}
-			fetchedTransactions = append(fetchedTransactions, transaction)
+		var transaction = Transaction{}
+		if err := rows.ScanDoc(&transaction); err != nil {
+			return nil, errors.Wrap(err, "unwrapping block")
 		}
+		fetchedTransactions = append(fetchedTransactions, transaction)
 		count += 1
 	}
 

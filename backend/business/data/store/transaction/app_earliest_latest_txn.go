@@ -71,9 +71,9 @@ func (s Store) getEarliestLatestAppTransaction(ctx context.Context, appID string
 	}
 
 	if earliest == true {
-		options["descending"] = true
-	} else {
 		options["descending"] = false
+	} else {
+		options["descending"] = true
 	}
 
 	rows, err := db.Query(ctx, schema.TransactionDDoc, "_view/" + schema.TransactionViewByApplication, options)

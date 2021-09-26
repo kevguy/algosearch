@@ -1,0 +1,25 @@
+package transaction
+
+import (
+	"context"
+	"github.com/kevguy/algosearch/backend/foundation/web"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+)
+
+func (s Store) GetTransactionsByAcctPagination(ctx context.Context, acctID, order string, pageNo, limit int64) ([]Transaction, int64, int64, error) {
+
+	ctx, span := otel.GetTracerProvider().
+		Tracer("").
+		Start(ctx, "transaction.GetTransactionsByAcctPagination")
+	span.SetAttributes(attribute.Int64("pageNo", pageNo))
+	span.SetAttributes(attribute.Int64("limit", limit))
+	defer span.End()
+
+	s.log.Infow("transaction.GetTransactionsByAcctPagination",
+		"traceid", web.GetTraceID(ctx),
+		"pageNo", pageNo,
+		"limit", limit)
+
+
+}
