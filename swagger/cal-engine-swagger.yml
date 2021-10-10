@@ -1,0 +1,224 @@
+openapi: 3.0.0
+servers:
+  - description: SwaggerHub API Auto Mocking
+    url: 'https://virtserver.swaggerhub.com/kevguy/cal-engine/1.0.0'
+  - description: Development
+    url: 'https://cal-engine-dev.choco-up.com'
+  - description: UAT
+    url: 'https://cal-engine-uat.choco-up.com'
+  - description: Production
+    url: 'https://cal-engine.choco-up.com'
+info:
+  version: 1.0.0
+  title: Cal Engine API
+  description: |
+    Kevin: Please ignore this, the yaml sounds useful so I'm too lazy to delete it...... for now.
+
+    This is an example of using OAuth2 Access Code Flow in a specification to
+    describe security to your API.
+
+    You can use the following command to retrieve the auth token:
+    ```
+    curl --location --request POST 'https://keycloak.dev.coherent.com.hk/auth/realms/coherent/protocol/openid-connect/token' \
+    --header 'Content-Type: application/x-www-form-urlencoded' \
+    --data-urlencode 'client_id=epos' \
+    --data-urlencode 'grant_type=password' \
+    --data-urlencode 'username=kevin.lai@coherent.com.hk' \
+    --data-urlencode 'password=Password!1234' | jq '.access_token'
+    ```
+security:
+  - bearerAuth: []
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    FundingQuoteSuccessResponse:
+      type: object
+      properties:
+        targeted_total_repayment:
+          type: integer
+          default: 273000
+        funding_amount_range:
+          type: array
+          items:
+            type: integer
+          default:
+            - 252777
+            - 237391
+        payback_months:
+          type: object
+          properties:
+            good:
+              type: integer
+              default: 7
+            base:
+              type: integer
+              default: 9
+            bad:
+              type: integer
+              default: 13
+    RevenueRequirementSuccessResponse:
+      type: object
+      properties:
+        required_total_repayment_range:
+          type: array
+          items:
+            type: number
+          default:
+            - 10800
+            - 11500
+        required_fee_amount_range:
+          type: array
+          items:
+            type: number
+          default:
+            - 800
+            - 1500
+        required_revenue_percentages:
+          type: object
+          properties:
+            good:
+              type: array
+              items:
+                type: number
+              default:
+                - 0.0059
+                - 0.0063
+            base:
+              type: array
+              items:
+                type: number
+              default:
+                - 0.006
+                - 0.0064
+            bad:
+              type: array
+              items:
+                type: number
+              default:
+                - 0.0059
+                - 0.0063
+    InternalServerErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          default: Internal Server Error
+    HealthCheckOkResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          default: ok
+        build:
+          type: string
+          default: a123456
+    HealthCheckInternalServerErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          default: db not ready
+
+paths:
+  /debug/readiness:
+    get:
+      security: []
+      summary: Health Check
+      description: This method is used to check if server working normally.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/HealthCheckOkResponse'
+              examples:
+                EverythingOK:
+                  description: Everything is working normally
+                  value: { "status": "ok", "build": "123456" }
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/HealthCheckInternalServerErrorResponse'
+              examples:
+                DbCheckFail:
+                  description: Server fails to connect to database.
+                  value: { "error": "db not ready" }
+                DbCacheCheckFail:
+                  description: Server fails to connect to database cache.
+                  value: { "error": "db cache not ready" }
+  /v1/offer/funding_quote:
+    parameters:
+      - in: query
+        name: monthly_revenue
+        required: true
+        schema:
+          type: integer
+          default: 200000
+        description: The monthly revenue of the company.
+    get:
+      security: []
+      summary: Funding Quote
+      description: This method is used to calculate the funding quote.
+      tags:
+        - Offer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/FundingQuoteSuccessResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/InternalServerErrorResponse'
+  /v1/offer/revenue_requirement:
+    parameters:
+      - in: query
+        name: monthly_revenue
+        required: true
+        schema:
+          type: integer
+          default: 200000
+        description: The monthly revenue of the company.
+      - in: query
+        name: requested_funding_amount
+        required: true
+        schema:
+          type: integer
+          default: 10000
+        description: The requested funding amount from the company.
+    get:
+      security: []
+      summary: Revenue Requirement
+      description: This method is used to calculate the revenue requirement.
+      tags:
+        - Offer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/RevenueRequirementSuccessResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/InternalServerErrorResponse'

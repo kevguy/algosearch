@@ -60,8 +60,6 @@ func (h Handlers) ServeDoc(ctx context.Context, w http.ResponseWriter, r *http.R
 		//"AuthToken":       ig.authToken,
 	}
 
-	fmt.Println(h.hostEndPoint)
-
 	if err := h.tmpl.Execute(&markup, vars); err != nil {
 		return errors.Wrap(err, "executing template")
 	}

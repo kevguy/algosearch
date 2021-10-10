@@ -1,0 +1,159 @@
+openapi: 3.0.0
+servers:
+  - description: SwaggerHub API Auto Mocking
+    url: 'https://virtserver.swaggerhub.com/kevguy/shopify-integration/1.0.0'
+  - description: Development
+    url: 'https://ga-integration-dev.choco-up.com'
+  - description: UAT
+    url: 'https://ga-integration-uat.choco-up.com'
+  - description: Production
+    url: 'https://ga-integration.choco-up.com'
+info:
+  version: 1.0.0
+  title: Google Analytics Integration Service API
+  description: |
+    Kevin: Please ignore this, the yaml sounds useful so I'm too lazy to delete it...... for now.
+
+    This is an example of using OAuth2 Access Code Flow in a specification to
+    describe security to your API.
+
+    You can use the following command to retrieve the auth token:
+    ```
+    curl --location --request POST 'https://keycloak.dev.coherent.com.hk/auth/realms/coherent/protocol/openid-connect/token' \
+    --header 'Content-Type: application/x-www-form-urlencoded' \
+    --data-urlencode 'client_id=epos' \
+    --data-urlencode 'grant_type=password' \
+    --data-urlencode 'username=kevin.lai@coherent.com.hk' \
+    --data-urlencode 'password=Password!1234' | jq '.access_token'
+    ```
+security:
+  - bearerAuth: []
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    HealthCheckOkResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          default: ok
+        build:
+          type: string
+          default: a123456
+    HealthCheckInternalServerErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          default: db not ready
+    InternalServerErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          default: Internal Server Error
+    BadRequestErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          default: Bad Request Error
+
+paths:
+  /debug/readiness:
+    get:
+      security: []
+      summary: Health Check
+      description: This method is used to check if server working normally.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/HealthCheckOkResponse'
+              examples:
+                EverythingOK:
+                  description: Everything is working normally
+                  value: { "status": "ok", "build": "123456" }
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/HealthCheckInternalServerErrorResponse'
+              examples:
+                DbCheckFail:
+                  description: Server fails to connect to database.
+                  value: { "error": "db not ready" }
+                DbCacheCheckFail:
+                  description: Server fails to connect to database cache.
+                  value: { "error": "db cache not ready" }
+  /v1/auth:
+    parameters:
+      - in: query
+        name: company_id
+        required: true
+        schema:
+          type: string
+        description: The Company ID
+    get:
+      security: []
+      summary: Google Analytics Auth URL
+      description: This method is used for Google Analytics to request for an authentication URL.
+      responses:
+        '301':
+          description: The auth url.
+          headers:
+            Location:
+              schema:
+                type: string
+                format: uri
+  /v1/authCallback:
+    parameters:
+      - in: query
+        name: state
+        required: true
+        schema:
+          type: string
+        description: This actually contains the Company ID
+      - in: query
+        name: code
+        required: true
+        schema:
+          type: string
+        description: The authorization code from Google Analytics.
+    get:
+      security: []
+      summary: Google Analytics Auth Callback URL
+      description: This method is used for Google Analytics to send the authorization code to the server so it can get an access token.
+      responses:
+        '200':
+          description: OK
+  /v1/sales/:company_id/:view_id:
+    parameters:
+      - in: path
+        name: company_id
+        required: true
+        schema:
+          type: string
+        description: The Company ID.
+      - in: path
+        name: view_id
+        required: true
+        schema:
+          type: string
+        description: The View ID in Google Analytics.
+    get:
+      security: []
+      summary: Google Analytics Sales Performance
+      description: This method is used for retrieving Sales Performance data from Google Analytics based upon the View ID given.
+      responses:
+        '200':
+          description: OK

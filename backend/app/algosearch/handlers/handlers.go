@@ -110,7 +110,7 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) http.Handler {
 		fs.ServeHTTP(w, r)
 		return nil
 	}
-	app.Handle(http.MethodGet, "", "/swagger/*", f)
+	app.Handle(http.MethodGet, "", "/swagger/*", f, mid.Cors("*"))
 
 	// Accept CORS 'OPTIONS' preflight requests if config has been provided.
 	// Don't forget to apply the CORS middleware to the routes that need it.

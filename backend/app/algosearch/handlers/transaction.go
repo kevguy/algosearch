@@ -43,7 +43,7 @@ func (tG transactionGroup) getLatestSyncedTransaction(ctx context.Context, w htt
 		return web.NewShutdownError("web value missing from context")
 	}
 
-	transactionData, err := tG.store.GetLatestTransactionId(ctx)
+	transactionData, err := tG.store.GetLatestTransaction(ctx)
 	if err != nil {
 		return errors.Wrapf(err, "unable to get latest synced transaction")
 	}
@@ -58,7 +58,7 @@ func (tG transactionGroup) getEarliestSyncedTransaction(ctx context.Context, w h
 		return web.NewShutdownError("web value missing from context")
 	}
 
-	transactionData, err := tG.store.GetEarliestTransactionId(ctx)
+	transactionData, err := tG.store.GetEarliestTransaction(ctx)
 	if err != nil {
 		return errors.Wrapf(err, "unable to get earliest synced transaction")
 	}

@@ -75,6 +75,8 @@ func run(log *zap.SugaredLogger) error {
 	cfg := struct {
 		conf.Version
 		Web struct {
+			DeployProtocol	string		  `conf:"default:http,help:the protocol the deployment of this service will be using"`
+			DeployHost		string		  `conf:"default:0.0.0.0:3000,help:the endpoint this service is deployed to"`
 			APIHost         string        `conf:"default:0.0.0.0:3000"`
 			DebugHost       string        `conf:"default:0.0.0.0:4000"`
 			ReadTimeout     time.Duration `conf:"default:5s"`
@@ -272,6 +274,8 @@ func run(log *zap.SugaredLogger) error {
 
 	// Construct the mux for the API calls.
 	apiMux := handlers.APIMux(handlers.APIMuxConfig{
+		APIProtocol:   cfg.Web.DeployProtocol,
+		APIHost:       cfg.Web.DeployHost,
 		Shutdown:    shutdown,
 		Log:         log,
 		Auth:     auth,

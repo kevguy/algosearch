@@ -92,6 +92,8 @@ func (p *BlockSynchronizer) Stop() {
 // update pulls the block data and saves it to CouchDB.
 func (p *BlockSynchronizer) update() {
 
+	return
+
 	lastSyncedBlockNum, err := p.blockStore.GetLastSyncedRoundNumber(context.Background())
 	if err != nil {
 		p.log.Errorw("blocksynchronizer", "status", "get last synced round number", "ERROR", err)
