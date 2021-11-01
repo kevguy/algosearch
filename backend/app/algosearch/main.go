@@ -244,7 +244,7 @@ func run(log *zap.SugaredLogger) error {
 	// =========================================================================
 	// Start Debug Service
 
-	log.Infow("startup", "status", "debug router started", "host", cfg.Web.DebugHost)
+	log.Infow("startup", "status", "debug v1 router started", "host", cfg.Web.DebugHost)
 
 	// The Debug function returns a mux to listen and serve on for all the debug
 	// related endpoints. This include the standard library endpoints.
@@ -256,16 +256,14 @@ func run(log *zap.SugaredLogger) error {
 	// Not concerned with shutting this down with load shedding.
 	go func() {
 		if err := http.ListenAndServe(cfg.Web.DebugHost, debugMux); err != nil {
-			log.Errorw("shutdown", "status", "debug router closed", "host", cfg.Web.DebugHost, "ERROR", err)
+			log.Errorw("shutdown", "status", "debug v1 router closed", "host", cfg.Web.DebugHost, "ERROR", err)
 		}
 	}()
-
-
 
 	// =========================================================================
 	// Start API Service
 
-	log.Infow("startup", "status", "initializing API support")
+	log.Infow("startup", "status", "initializing V1 API support")
 
 	// Make a channel to listen for an interrupt or terminate signal from the OS.
 	// Use a buffered channel because the signal package requires it.

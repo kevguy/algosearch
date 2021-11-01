@@ -5,6 +5,10 @@ package handlers
 import (
 	"context"
 	"expvar"
+	"net/http"
+	"net/http/pprof"
+	"os"
+
 	"github.com/algorand/go-algorand-sdk/client/v2/algod"
 	"github.com/algorand/go-algorand-sdk/client/v2/indexer"
 	"github.com/go-kivik/kivik/v4"
@@ -14,13 +18,10 @@ import (
 	"github.com/kevguy/algosearch/backend/business/data/store/block"
 	"github.com/kevguy/algosearch/backend/business/data/store/transaction"
 	"github.com/kevguy/algosearch/backend/business/sys/auth"
-	"go.uber.org/zap"
-	"net/http"
-	"net/http/pprof"
-	"os"
 
-	"github.com/kevguy/algosearch/backend/business/web/mid"
+	"github.com/kevguy/algosearch/backend/business/web/v1/mid"
 	"github.com/kevguy/algosearch/backend/foundation/web"
+	"go.uber.org/zap"
 )
 
 // Options represent optional parameters.
@@ -33,44 +34,6 @@ func WithCORS(origin string) func(opts *Options) {
 	return func(opts *Options) {
 		opts.corsOrigin = origin
 	}
-}
-
-// DebugStandardLibraryMux registers all the debug routes from the standard library
-// into a new mux bypassing the use of the DefaultServerMux. Using the
-// DefaultServerMux would be a security risk since a dependency could inject a
-// handler into our service without us knowing it.
-func DebugStandardLibraryMux() *http.ServeMux {
-	mux := http.NewServeMux()
-
-	// Register all the standard library debug endpoints.
-	mux.HandleFunc("/debug/pprof/", pprof.Index)
-	mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
-	mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
-	mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
-	mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
-	mux.Handle("/debug/vars", expvar.Handler())
-
-	return mux
-}
-
-// DebugMux registers all the debug standard library routes and then custom
-// debug application routes for the service. This bypassing the use of the
-// DefaultServerMux. Using the DefaultServerMux would be a security risk since
-// a dependency could inject a handler into our service without us knowing it.
-func DebugMux(build string, log *zap.SugaredLogger, couchClient *kivik.Client, algodClient *algod.Client) http.Handler {
-	mux := DebugStandardLibraryMux()
-
-	// Register debug check endpoints.
-	cgh := checkgrp.Handlers{
-		Build: build,
-		Log:   log,
-		CouchClient: couchClient,
-		AlgodClient: algodClient,
-	}
-	mux.HandleFunc("/debug/readiness", cgh.Readiness)
-	mux.HandleFunc("/debug/liveness", cgh.Liveness)
-
-	return mux
 }
 
 // APIMuxConfig contains all the mandatory systems required by handlers.
@@ -126,6 +89,44 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) http.Handler {
 	v1(app, cfg)
 
 	return app
+}
+
+// DebugStandardLibraryMux registers all the debug routes from the standard library
+// into a new mux bypassing the use of the DefaultServerMux. Using the
+// DefaultServerMux would be a security risk since a dependency could inject a
+// handler into our service without us knowing it.
+func DebugStandardLibraryMux() *http.ServeMux {
+	mux := http.NewServeMux()
+
+	// Register all the standard library debug endpoints.
+	mux.HandleFunc("/debug/pprof/", pprof.Index)
+	mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+	mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
+	mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+	mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
+	mux.Handle("/debug/vars", expvar.Handler())
+
+	return mux
+}
+
+// DebugMux registers all the debug standard library routes and then custom
+// debug application routes for the service. This bypassing the use of the
+// DefaultServerMux. Using the DefaultServerMux would be a security risk since
+// a dependency could inject a handler into our service without us knowing it.
+func DebugMux(build string, log *zap.SugaredLogger, couchClient *kivik.Client, algodClient *algod.Client) http.Handler {
+	mux := DebugStandardLibraryMux()
+
+	// Register debug check endpoints.
+	cgh := checkgrp.Handlers{
+		Build: build,
+		Log:   log,
+		CouchClient: couchClient,
+		AlgodClient: algodClient,
+	}
+	mux.HandleFunc("/debug/readiness", cgh.Readiness)
+	mux.HandleFunc("/debug/liveness", cgh.Liveness)
+
+	return mux
 }
 
 // v1 binds all the version 1 routes.

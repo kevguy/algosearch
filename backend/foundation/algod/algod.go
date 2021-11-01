@@ -2,8 +2,8 @@ package algod
 
 import (
 	"context"
+	"fmt"
 	"github.com/algorand/go-algorand-sdk/client/v2/algod"
-	"github.com/pkg/errors"
 	"time"
 )
 
@@ -21,7 +21,7 @@ func Open(cfg Config) (*algod.Client, error) {
 	// Create an algod client
 	algodClient, err := algod.MakeClient(cfg.AlgodAddr, cfg.AlgodToken)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to construct an algod client")
+		return nil, fmt.Errorf("failed to construct an algod client %w", err)
 	}
 
 	return algodClient, nil

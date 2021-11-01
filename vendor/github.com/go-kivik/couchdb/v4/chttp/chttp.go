@@ -263,8 +263,6 @@ func (c *Client) DoReq(ctx context.Context, method, path string, opts *Options) 
 		trace.httpRequest(req)
 		trace.httpRequestBody(req)
 	}
-	
-	fmt.Println(req.URL)
 
 	response, err := c.Do(req)
 	if trace != nil {

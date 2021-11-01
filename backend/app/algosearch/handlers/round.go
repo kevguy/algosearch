@@ -6,7 +6,7 @@ import (
 	"github.com/algorand/go-algorand-sdk/client/v2/algod"
 	algodBiz "github.com/kevguy/algosearch/backend/business/algod"
 	block2 "github.com/kevguy/algosearch/backend/business/data/store/block"
-	"github.com/kevguy/algosearch/backend/business/sys/validate"
+	v1web "github.com/kevguy/algosearch/backend/business/web/v1"
 	"github.com/kevguy/algosearch/backend/foundation/web"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
@@ -45,7 +45,7 @@ func (rG roundGroup) getRoundFromAPI(ctx context.Context, w http.ResponseWriter,
 	numStr := web.Param(r, "num")
 	num, err := strconv.Atoi(numStr)
 	if err != nil {
-		return validate.NewRequestError(fmt.Errorf("invalid num format: %s", numStr), http.StatusBadRequest)
+		return v1web.NewRequestError(fmt.Errorf("invalid num format: %s", numStr), http.StatusBadRequest)
 	}
 
 	blockData, err := algodBiz.GetRound(ctx, v.TraceID, rG.log, rG.algodClient, uint64(num))
@@ -66,7 +66,7 @@ func (rG roundGroup) getRound(ctx context.Context, w http.ResponseWriter, r *htt
 	numStr := web.Param(r, "num")
 	num, err := strconv.Atoi(numStr)
 	if err != nil {
-		return validate.NewRequestError(fmt.Errorf("invalid num format: %s", numStr), http.StatusBadRequest)
+		return v1web.NewRequestError(fmt.Errorf("invalid num format: %s", numStr), http.StatusBadRequest)
 	}
 
 	blockData, err := rG.store.GetBlockByNum(ctx, v.TraceID, rG.log, uint64(num))
@@ -122,31 +122,31 @@ func (rG roundGroup) getRoundsPagination(ctx context.Context, w http.ResponseWri
 	// limit
 	limitQueries := web.Query(r, "limit")
 	if len(limitQueries) == 0 {
-		return validate.NewRequestError(fmt.Errorf("missing query parameter: limit"), http.StatusBadRequest)
+		return v1web.NewRequestError(fmt.Errorf("missing query parameter: limit"), http.StatusBadRequest)
 	}
 	limit, err := strconv.Atoi(limitQueries[0])
 	if err != nil {
-		return validate.NewRequestError(fmt.Errorf("invalid 'limit' format: %s", limitQueries[0]), http.StatusBadRequest)
+		return v1web.NewRequestError(fmt.Errorf("invalid 'limit' format: %s", limitQueries[0]), http.StatusBadRequest)
 	}
 
 	// latest_blk
 	latestBlkQueries := web.Query(r, "latest_blk")
 	if len(latestBlkQueries) == 0 {
-		return validate.NewRequestError(fmt.Errorf("missing query parameter: latest_blk"), http.StatusBadRequest)
+		return v1web.NewRequestError(fmt.Errorf("missing query parameter: latest_blk"), http.StatusBadRequest)
 	}
 	latestBlk, err := strconv.Atoi(latestBlkQueries[0])
 	if err != nil {
-		return validate.NewRequestError(fmt.Errorf("invalid 'start' format: %s", latestBlkQueries[0]), http.StatusBadRequest)
+		return v1web.NewRequestError(fmt.Errorf("invalid 'start' format: %s", latestBlkQueries[0]), http.StatusBadRequest)
 	}
 
 	// page
 	pageQueries := web.Query(r, "page")
 	if len(pageQueries) == 0 {
-		return validate.NewRequestError(fmt.Errorf("missing query parameter: page"), http.StatusBadRequest)
+		return v1web.NewRequestError(fmt.Errorf("missing query parameter: page"), http.StatusBadRequest)
 	}
 	page, err := strconv.Atoi(pageQueries[0])
 	if err != nil {
-		return validate.NewRequestError(fmt.Errorf("invalid 'page' format: %s", latestBlkQueries[0]), http.StatusBadRequest)
+		return v1web.NewRequestError(fmt.Errorf("invalid 'page' format: %s", latestBlkQueries[0]), http.StatusBadRequest)
 	}
 
 	// order
@@ -159,7 +159,7 @@ func (rG roundGroup) getRoundsPagination(ctx context.Context, w http.ResponseWri
 		order = orderQueries[0]
 	}
 	if order != "asc" && order != "desc" {
-		return validate.NewRequestError(fmt.Errorf("invalid 'sort' format: %s", orderQueries[0]), http.StatusBadRequest)
+		return v1web.NewRequestError(fmt.Errorf("invalid 'sort' format: %s", orderQueries[0]), http.StatusBadRequest)
 	}
 
 	result, numOfPages, numOfBlks, err := rG.store.GetBlocksPagination(ctx, int64(latestBlk), order, int64(page), int64(limit))
