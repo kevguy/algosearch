@@ -131,15 +131,15 @@ func (s Store) GetBlockByHash(ctx context.Context, blockHash string) (Block, err
 }
 
 // GetBlockByNum gets a block from CouchDB based on round number.
-func (s Store) GetBlockByNum(ctx context.Context, traceID string, log *zap.SugaredLogger, blockNum uint64) (Block, error) {
+func (s Store) GetBlockByNum(ctx context.Context, blockNum uint64) (Block, error) {
 
-	ctx, span := otel.GetTracerProvider().
-		Tracer("").
-		Start(ctx, "block.GetBlockByNum")
-	span.SetAttributes(attribute.Any("block-num", blockNum))
-	defer span.End()
+	//ctx, span := otel.GetTracerProvider().
+	//	Tracer("").
+	//	Start(ctx, "block.GetBlockByNum")
+	//span.SetAttributes(attribute.Any("block-num", blockNum))
+	//defer span.End()
 
-	log.Infow("block.GetBlockByNum", "traceid", traceID, "blockNum", blockNum)
+	//s.log.Infow("block.GetBlockByNum", "traceid", traceID, "blockNum", blockNum)
 
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
@@ -270,9 +270,9 @@ func (s Store) GetLastSyncedRoundNumber(ctx context.Context) (uint64, error) {
 }
 
 // GetLatestBlock retrieves the block that is last synced to Couch.
-func (s Store) GetLatestBlock(ctx context.Context, traceID string, log *zap.SugaredLogger) (Block, error) {
+func (s Store) GetLatestBlock(ctx context.Context) (Block, error) {
 
-	log.Infow("block.GetLatestBlock", "traceid", traceID)
+	//log.Infow("block.GetLatestBlock", "traceid", traceID)
 
 	ctx, span := otel.GetTracerProvider().
 		Tracer("").
