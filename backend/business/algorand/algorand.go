@@ -5,10 +5,15 @@ import (
 	algodv2 "github.com/algorand/go-algorand-sdk/client/v2/algod"
 	"github.com/algorand/go-algorand-sdk/client/v2/common/models"
 	indexerv2 "github.com/algorand/go-algorand-sdk/client/v2/indexer"
+	"github.com/go-kivik/kivik/v4"
 	"github.com/kevguy/algosearch/backend/business/algod"
-	block2 "github.com/kevguy/algosearch/backend/business/data/store/block"
-	"github.com/kevguy/algosearch/backend/business/data/store/transaction"
-	"github.com/kevguy/algosearch/backend/business/indexer"
+	"github.com/kevguy/algosearch/backend/business/core/block"
+	"github.com/kevguy/algosearch/backend/business/core/indexer"
+	"github.com/kevguy/algosearch/backend/business/core/transaction"
+	blockDb "github.com/kevguy/algosearch/backend/business/core/block/db"
+
+	//block2 "github.com/kevguy/algosearch/backend/business/data/store/block"
+	//"github.com/kevguy/algosearch/backend/business/data/store/transaction"
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -17,19 +22,36 @@ import (
 
 type Agent struct {
 	log *zap.SugaredLogger
-	indexerClient *indexerv2.Client
+	//indexerClient *indexerv2.Client
 	algodClient *algodv2.Client
-	blockStore *block2.Store
-	transactionStore *transaction.Store
+
+	indexerCore		*indexer.Core
+	blockCore 		*block.Core
+	transactionCore *transaction.Core
 }
 
 // NewAgent constructs an Algorand for api access.
-func NewAgent(log *zap.SugaredLogger, indexerClient *indexerv2.Client, algodClient *algodv2.Client, blockStore *block2.Store) Agent {
+func NewAgent(log *zap.SugaredLogger,
+	indexerClient *indexerv2.Client,
+	algodClient *algodv2.Client,
+	couchClient *kivik.Client) Agent {
+
+	blockCore := block.NewCore(log, couchClient)
+	transactionCore := transaction.NewCore(log, couchClient)
+
+	var indexerCore *indexer.Core
+	if indexerClient != nil {
+		core := indexer.NewCore(log, indexerClient)
+		indexerCore = &core
+	}
+
 	return Agent{
 		log: log,
-		indexerClient: indexerClient,
 		algodClient: algodClient,
-		blockStore: blockStore,
+
+		indexerCore: indexerCore,
+		blockCore: &blockCore,
+		transactionCore: &transactionCore,
 	}
 }
 
@@ -38,7 +60,7 @@ func NewAgent(log *zap.SugaredLogger, indexerClient *indexerv2.Client, algodClie
 // it fetches the block data from Indexer and the additional data from Couch (this sounds
 // redundant, but this is written with mind of getting rid of Couch in future), if not then it tries
 // Algod, and finally only Couch.
-func (a Agent) GetRound(ctx context.Context, traceID string, log *zap.SugaredLogger, roundNum uint64) (*block2.NewBlock, error) {
+func (a Agent) GetRound(ctx context.Context, traceID string, log *zap.SugaredLogger, roundNum uint64) (*blockDb.NewBlock, error) {
 
 	ctx, span := otel.GetTracerProvider().Tracer("").Start(ctx, "algorand.GetRound")
 	span.SetAttributes(attribute.Int64("round", int64(roundNum)))
@@ -46,22 +68,22 @@ func (a Agent) GetRound(ctx context.Context, traceID string, log *zap.SugaredLog
 
 	log.Infow("algorand.GetRound", "traceid", traceID)
 
-	var blockData block2.NewBlock
+	var blockData blockDb.NewBlock
 	var err error
 
 	// Whatever we do, we still have to get data from Couch (for proposer and block hash, at least for the time being)
-	couchBlock, err := a.blockStore.GetBlockByNum(ctx, traceID, log, roundNum)
+	couchBlock, err := a.blockCore.GetBlockByNum(ctx, roundNum)
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to query couch for round %d", roundNum)
 	}
 
 	// Try Indexer
-	if a.indexerClient != nil {
+	if a.indexerCore != nil {
 		idxBlock, err := indexer.GetRound(ctx, traceID, log, a.indexerClient, roundNum)
 		if err != nil {
 			log.Errorf("unable to get block data from indexer for round %d\n", roundNum)
 		} else {
-			blockData = block2.NewBlock{
+			blockData = blockDb.NewBlock{
 				Block:     idxBlock,
 				Proposer:  couchBlock.Proposer,
 				BlockHash: couchBlock.BlockHash,
@@ -103,7 +125,7 @@ func (a Agent) GetTransaction(ctx context.Context, traceID string, log *zap.Suga
 	var err error
 
 	// Whatever we do, we still have to get data from Couch (for proposer and block hash, at least for the time being)
-	couchTransaction, err := a.transactionStore.GetTransaction(ctx, transactionID)
+	couchTransaction, err := a.transactionCore.GetTransaction(ctx, transactionID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to query couch for transaction %s", transactionID)
 	}
