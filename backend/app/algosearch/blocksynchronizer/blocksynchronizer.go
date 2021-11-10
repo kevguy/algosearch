@@ -8,11 +8,11 @@ import (
 	"github.com/algorand/go-algorand-sdk/client/v2/algod"
 	"github.com/algorand/go-algorand-sdk/client/v2/common/models"
 	app "github.com/kevguy/algosearch/backend/business/algod"
-	"github.com/kevguy/algosearch/backend/business/data/store/account"
-	"github.com/kevguy/algosearch/backend/business/data/store/application"
-	"github.com/kevguy/algosearch/backend/business/data/store/asset"
-	"github.com/kevguy/algosearch/backend/business/data/store/block"
-	"github.com/kevguy/algosearch/backend/business/data/store/transaction"
+	"github.com/kevguy/algosearch/backend/business/core/account"
+	"github.com/kevguy/algosearch/backend/business/core/application"
+	"github.com/kevguy/algosearch/backend/business/core/asset"
+	"github.com/kevguy/algosearch/backend/business/core/block"
+	"github.com/kevguy/algosearch/backend/business/core/transaction"
 	"github.com/kevguy/algosearch/backend/foundation/couchdb"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
@@ -24,16 +24,16 @@ import (
 // BlockSynchronizer provides the ability to retrieve block data
 // on an interval.
 type BlockSynchronizer struct {
-	log       			*zap.SugaredLogger
-	wg        			sync.WaitGroup
-	timer     			*time.Timer
-	shutdown  			chan struct{}
-	algodClient 		*algod.Client
-	blockStore 			*block.Store
-	transactionStore	*transaction.Store
-	accountStore		*account.Store
-	assetStore			*asset.Store
-	appStore			*application.Store
+	log             *zap.SugaredLogger
+	wg              sync.WaitGroup
+	timer           *time.Timer
+	shutdown        chan struct{}
+	algodClient     *algod.Client
+	blockCore       *block.Core
+	transactionCore *transaction.Core
+	accountCore     *account.Core
+	assetCore       *asset.Core
+	appCore         *application.Core
 }
 
 // New creates a BlockSynchronizer for retrieving block data and saving it to CouchDB.
@@ -50,20 +50,20 @@ func New(log *zap.SugaredLogger, interval time.Duration, algodClient *algod.Clie
 		return nil, errors.Wrap(err, "connect to couchdb database")
 	}
 
-	blockStore := block.NewStore(log, db)
-	p.blockStore = &blockStore
+	blockStore := block.NewCore(log, db)
+	p.blockCore = &blockStore
 
-	transactionStore := transaction.NewStore(log, db)
-	p.transactionStore = &transactionStore
+	transactionStore := transaction.NewCore(log, db)
+	p.transactionCore = &transactionStore
 
-	accountStore := account.NewStore(log, db)
-	p.accountStore = &accountStore
+	accountStore := account.NewCore(log, db)
+	p.accountCore = &accountStore
 
-	assetStore := asset.NewStore(log, db)
-	p.assetStore = &assetStore
+	assetStore := asset.NewCore(log, db)
+	p.assetCore = &assetStore
 
-	appStore := application.NewStore(log, db)
-	p.appStore = &appStore
+	appStore := application.NewCore(log, db)
+	p.appCore = &appStore
 
 	p.wg.Add(1)
 	go func() {
@@ -92,9 +92,7 @@ func (p *BlockSynchronizer) Stop() {
 // update pulls the block data and saves it to CouchDB.
 func (p *BlockSynchronizer) update() {
 
-	return
-
-	lastSyncedBlockNum, err := p.blockStore.GetLastSyncedRoundNumber(context.Background())
+	lastSyncedBlockNum, err := p.blockCore.GetLastSyncedRoundNumber(context.Background())
 	if err != nil {
 		p.log.Errorw("blocksynchronizer", "status", "get last synced round number", "ERROR", err)
 	}
@@ -151,7 +149,7 @@ func (p *BlockSynchronizer) update() {
 		//indexer.PrintBlockInfoFromJsonBlock(newBlock.Block)
 
 		//docID, rev, err := field.BlockStore.AddBlock(ctx, newBlock)
-		blockDocId, blockDocRev, err := p.blockStore.AddBlock(context.Background(), newBlock)
+		blockDocId, blockDocRev, err := p.blockCore.AddBlock(context.Background(), newBlock)
 		if err != nil {
 			p.log.Errorw("blocksynchronizer", "status", "can't add new block", "ERROR", err)
 		}
@@ -162,7 +160,7 @@ func (p *BlockSynchronizer) update() {
 		var appList []models.Application
 
 		if len(newBlock.Transactions) > 0 {
-			_, err = p.transactionStore.AddTransactions(context.Background(), newBlock.Transactions)
+			_, err = p.transactionCore.AddTransactions(context.Background(), newBlock.Transactions)
 			if err != nil {
 				p.log.Errorw("blocksynchronizer", "status", "can't add new transaction(s)", "ERROR", err)
 			}
@@ -204,21 +202,21 @@ func (p *BlockSynchronizer) update() {
 		}
 
 		if len(accountList) > 0 {
-			_, err = p.accountStore.AddAccounts(context.Background(), accountList)
+			_, err = p.accountCore.AddAccounts(context.Background(), accountList)
 			if err != nil {
 				p.log.Errorw("blocksynchronizer", "status", "can't add/update account(s)", "ERROR", err)
 			}
 		}
 
 		if len(assetList) > 0 {
-			_, err = p.assetStore.AddAssets(context.Background(), assetList)
+			_, err = p.assetCore.AddAssets(context.Background(), assetList)
 			if err != nil {
 				p.log.Errorw("blocksynchronizer", "status", "can't add/update asset(s)", "ERROR", err)
 			}
 		}
 
 		if len(appList) > 0 {
-			_, err = p.appStore.AddApplications(context.Background(), appList)
+			_, err = p.appCore.AddApplications(context.Background(), appList)
 			if err != nil {
 				p.log.Errorw("blocksynchronizer", "status", "can't add/update application(s)", "ERROR", err)
 			}
@@ -227,7 +225,7 @@ func (p *BlockSynchronizer) update() {
 		//for _, transaction := range newBlock.Transactions {
 		//	fmt.Println("Got transaction")
 		//	fmt.Printf("%v\n", transaction)
-		//	transactionDocId, transactionDocRev, err := p.transactionStore.AddTransaction(context.Background(), transaction)
+		//	transactionDocId, transactionDocRev, err := p.transactionCore.AddTransaction(context.Background(), transaction)
 		//	if err != nil {
 		//		p.log.Errorw("blocksynchronizer", "status", "can't add new transaction", "ERROR", err)
 		//	}
@@ -240,11 +238,11 @@ func (p *BlockSynchronizer) update() {
 func GetAndInsertBlockData(
 	log					*zap.SugaredLogger,
 	algodClient			*algod.Client,
-	blockStore 			*block.Store,
-	transactionStore	*transaction.Store,
-	accountStore		*account.Store,
-	assetStore			*asset.Store,
-	appStore			*application.Store,
+	blockCore *block.Core,
+	transactionCore *transaction.Core,
+	accountCore *account.Core,
+	assetCore *asset.Core,
+	appCore *application.Core,
 	blockNum			uint64) error {
 	log.Infof("Trying to get round number: %d\n", blockNum)
 
@@ -290,7 +288,7 @@ func GetAndInsertBlockData(
 	//indexer.PrintBlockInfoFromJsonBlock(newBlock.Block)
 
 	//docID, rev, err := field.BlockStore.AddBlock(ctx, newBlock)
-	blockDocId, blockDocRev, err := blockStore.AddBlock(context.Background(), newBlock)
+	blockDocId, blockDocRev, err := blockCore.AddBlock(context.Background(), newBlock)
 	if err != nil {
 		log.Errorw("blocksynchronizer", "status", "can't add new block", "ERROR", err)
 		return err
@@ -302,7 +300,7 @@ func GetAndInsertBlockData(
 	var appList []models.Application
 
 	if len(newBlock.Transactions) > 0 {
-		_, err = transactionStore.AddTransactions(context.Background(), newBlock.Transactions)
+		_, err = transactionCore.AddTransactions(context.Background(), newBlock.Transactions)
 		if err != nil {
 			log.Errorw("blocksynchronizer", "status", "can't add new transaction(s)", "ERROR", err)
 			return err
@@ -348,7 +346,7 @@ func GetAndInsertBlockData(
 	}
 
 	if len(accountList) > 0 {
-		_, err = accountStore.AddAccounts(context.Background(), accountList)
+		_, err = accountCore.AddAccounts(context.Background(), accountList)
 		if err != nil {
 			log.Errorw("blocksynchronizer", "status", "can't add/update account(s)", "ERROR", err)
 			//return err
@@ -356,7 +354,7 @@ func GetAndInsertBlockData(
 	}
 
 	if len(assetList) > 0 {
-		_, err = assetStore.AddAssets(context.Background(), assetList)
+		_, err = assetCore.AddAssets(context.Background(), assetList)
 		if err != nil {
 			log.Errorw("blocksynchronizer", "status", "can't add/update asset(s)", "ERROR", err)
 			//return err
@@ -364,7 +362,7 @@ func GetAndInsertBlockData(
 	}
 
 	if len(appList) > 0 {
-		_, err = appStore.AddApplications(context.Background(), appList)
+		_, err = appCore.AddApplications(context.Background(), appList)
 		if err != nil {
 			log.Errorw("blocksynchronizer", "status", "can't add/update application(s)", "ERROR", err)
 			//return err

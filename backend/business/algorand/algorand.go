@@ -12,8 +12,6 @@ import (
 	"github.com/kevguy/algosearch/backend/business/core/transaction"
 	blockDb "github.com/kevguy/algosearch/backend/business/core/block/db"
 
-	//block2 "github.com/kevguy/algosearch/backend/business/data/store/block"
-	//"github.com/kevguy/algosearch/backend/business/data/store/transaction"
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -79,7 +77,7 @@ func (a Agent) GetRound(ctx context.Context, traceID string, log *zap.SugaredLog
 
 	// Try Indexer
 	if a.indexerCore != nil {
-		idxBlock, err := indexer.GetRound(ctx, traceID, log, a.indexerClient, roundNum)
+		idxBlock, err := a.indexerCore.GetRound(ctx, traceID, roundNum)
 		if err != nil {
 			log.Errorf("unable to get block data from indexer for round %d\n", roundNum)
 		} else {
@@ -131,8 +129,8 @@ func (a Agent) GetTransaction(ctx context.Context, traceID string, log *zap.Suga
 	}
 
 	// Try Indexer
-	if a.indexerClient != nil {
-		idxBlock, err := indexer.GetTransaction(ctx, traceID, log, a.indexerClient, transactionID)
+	if a.indexerCore != nil {
+		idxTransaction, err := a.indexerCore.GetTransaction(ctx, traceID, transactionID)
 		if err != nil {
 			log.Errorf("unable to get transaction data from indexer for transaction ID %s\n", transactionID)
 		} else {
@@ -150,7 +148,7 @@ func (a Agent) GetTransaction(ctx context.Context, traceID string, log *zap.Suga
 			//	Transaction: idxBlock,
 			//}
 			//return &transactionData, nil
-			return &idxBlock, nil
+			return &idxTransaction, nil
 		}
 	}
 	return &couchTransaction, nil

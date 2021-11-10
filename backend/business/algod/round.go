@@ -6,7 +6,7 @@ import (
 	algodv2 "github.com/algorand/go-algorand-sdk/client/v2/algod"
 	"github.com/algorand/go-algorand-sdk/client/v2/common/models"
 	"github.com/algorand/go-algorand-sdk/encoding/msgpack"
-	"github.com/kevguy/algosearch/backend/business/data/store/block"
+	"github.com/kevguy/algosearch/backend/business/core/block/db"
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -15,7 +15,7 @@ import (
 )
 
 // GetRound retrieves a block from the Algod API based on the round number given
-func GetRound(ctx context.Context, traceID string, log *zap.SugaredLogger, algodClient *algodv2.Client, roundNum uint64) (*block.NewBlock, error) {
+func GetRound(ctx context.Context, traceID string, log *zap.SugaredLogger, algodClient *algodv2.Client, roundNum uint64) (*db.NewBlock, error) {
 
 	ctx, span := otel.GetTracerProvider().Tracer("").Start(ctx, "algod.GetRound")
 	span.SetAttributes(attribute.Int64("round", int64(roundNum)))
@@ -36,7 +36,7 @@ func GetRound(ctx context.Context, traceID string, log *zap.SugaredLogger, algod
 }
 
 // GetCurrentRound retrieves retrieves the current block from the Algod API
-func GetCurrentRound(ctx context.Context, traceID string, log *zap.SugaredLogger, algodClient *algodv2.Client) (*block.NewBlock, error) {
+func GetCurrentRound(ctx context.Context, traceID string, log *zap.SugaredLogger, algodClient *algodv2.Client) (*db.NewBlock, error) {
 
 	ctx, span := otel.GetTracerProvider().Tracer("").Start(ctx, "algod.GetCurrentRound")
 	defer span.End()
@@ -89,7 +89,7 @@ func GetRoundInRawBytes(ctx context.Context, algodClient *algodv2.Client, roundN
 }
 
 // ConvertBlockRawBytes processes the block in byte format and returns it in a struct.
-func ConvertBlockRawBytes(ctx context.Context, rawBlock []byte) (block.NewBlock, error) {
+func ConvertBlockRawBytes(ctx context.Context, rawBlock []byte) (db.NewBlock, error) {
 
 	ctx, span := otel.GetTracerProvider().Tracer("").Start(ctx, "algod.ConvertBlockRawBytes")
 	//span.SetAttributes(attribute.String("query", q))
@@ -98,7 +98,7 @@ func ConvertBlockRawBytes(ctx context.Context, rawBlock []byte) (block.NewBlock,
 	var response models.BlockResponse
 	err := msgpack.Decode(rawBlock, &response)
 	if err != nil {
-		return block.NewBlock{}, errors.Wrap(err, "parsing response")
+		return db.NewBlock{}, errors.Wrap(err, "parsing response")
 	}
 
 	//var blockInfo = block.NewBlock{response.Block, "", ""}
@@ -127,7 +127,7 @@ func ConvertBlockRawBytes(ctx context.Context, rawBlock []byte) (block.NewBlock,
 		UpgradePropose: blockInfo.UpgradePropose,
 	}
 
-	var newBlock = block.NewBlock{
+	var newBlock = db.NewBlock{
 		Block:     models.Block{
 			GenesisHash:       blockInfo.GenesisHash[:],
 			GenesisId:         blockInfo.GenesisID,

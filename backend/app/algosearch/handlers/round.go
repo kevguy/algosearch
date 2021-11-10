@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"github.com/algorand/go-algorand-sdk/client/v2/algod"
 	algodBiz "github.com/kevguy/algosearch/backend/business/algod"
-	block2 "github.com/kevguy/algosearch/backend/business/data/store/block"
+	"github.com/kevguy/algosearch/backend/business/core/block"
+	"github.com/kevguy/algosearch/backend/business/core/block/db"
 	v1web "github.com/kevguy/algosearch/backend/business/web/v1"
 	"github.com/kevguy/algosearch/backend/foundation/web"
 	"github.com/pkg/errors"
@@ -16,7 +17,7 @@ import (
 
 type roundGroup struct {
 	log         *zap.SugaredLogger
-	store       block2.Store
+	blockCore	block.Core
 	algodClient *algod.Client
 }
 
@@ -58,10 +59,10 @@ func (rG roundGroup) getRoundFromAPI(ctx context.Context, w http.ResponseWriter,
 
 // getRound retrieves a block from CouchDB based on the round number (num)
 func (rG roundGroup) getRound(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	v, err := web.GetValues(ctx)
-	if err != nil {
-		return web.NewShutdownError("web value missing from context")
-	}
+	//v, err := web.GetValues(ctx)
+	//if err != nil {
+	//	return web.NewShutdownError("web value missing from context")
+	//}
 
 	numStr := web.Param(r, "num")
 	num, err := strconv.Atoi(numStr)
@@ -69,7 +70,7 @@ func (rG roundGroup) getRound(ctx context.Context, w http.ResponseWriter, r *htt
 		return v1web.NewRequestError(fmt.Errorf("invalid num format: %s", numStr), http.StatusBadRequest)
 	}
 
-	blockData, err := rG.store.GetBlockByNum(ctx, v.TraceID, rG.log, uint64(num))
+	blockData, err := rG.blockCore.GetBlockByNum(ctx, uint64(num))
 	if err != nil {
 		return errors.Wrapf(err, "unable to get round %d", num)
 	}
@@ -80,12 +81,12 @@ func (rG roundGroup) getRound(ctx context.Context, w http.ResponseWriter, r *htt
 
 // getLatestSyncedRound retrieves the latest block from CouchDB.
 func (rG roundGroup) getLatestSyncedRound(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	v, err := web.GetValues(ctx)
-	if err != nil {
-		return web.NewShutdownError("web value missing from context")
-	}
+	//v, err := web.GetValues(ctx)
+	//if err != nil {
+	//	return web.NewShutdownError("web value missing from context")
+	//}
 
-	blockData, err := rG.store.GetLatestBlock(ctx, v.TraceID, rG.log)
+	blockData, err := rG.blockCore.GetLatestBlock(ctx)
 	if err != nil {
 		return errors.Wrapf(err, "unable to get latest synced round")
 	}
@@ -100,7 +101,7 @@ func (rG roundGroup) getEarliestSyncedRound(ctx context.Context, w http.Response
 		return web.NewShutdownError("web value missing from context")
 	}
 
-	blockData, err := rG.store.GetEarliestSyncedRoundNumber(ctx)
+	blockData, err := rG.blockCore.GetEarliestSyncedRoundNumber(ctx)
 	if err != nil {
 		return errors.Wrapf(err, "unable to get earliest synced round")
 	}
@@ -162,7 +163,7 @@ func (rG roundGroup) getRoundsPagination(ctx context.Context, w http.ResponseWri
 		return v1web.NewRequestError(fmt.Errorf("invalid 'sort' format: %s", orderQueries[0]), http.StatusBadRequest)
 	}
 
-	result, numOfPages, numOfBlks, err := rG.store.GetBlocksPagination(ctx, int64(latestBlk), order, int64(page), int64(limit))
+	result, numOfPages, numOfBlks, err := rG.blockCore.GetBlocksPagination(ctx, int64(latestBlk), order, int64(page), int64(limit))
 	if err != nil {
 		return errors.Wrap(err, "Error fetching pagination results")
 	}
@@ -170,7 +171,7 @@ func (rG roundGroup) getRoundsPagination(ctx context.Context, w http.ResponseWri
 	type Payload struct {
 		NumOfPages	int64 `json:"num_of_pages"`
 		NumOfBlks	int64   `json:"num_of_blks"`
-		Items []block2.Block `json:"items"`
+		Items []db.Block `json:"items"`
 	}
 
 	return web.Respond(ctx, w, Payload{

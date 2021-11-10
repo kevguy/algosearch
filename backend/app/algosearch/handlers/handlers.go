@@ -5,6 +5,8 @@ package handlers
 import (
 	"context"
 	"expvar"
+	block2 "github.com/kevguy/algosearch/backend/business/core/block"
+	transaction2 "github.com/kevguy/algosearch/backend/business/core/transaction"
 	"net/http"
 	"net/http/pprof"
 	"os"
@@ -15,8 +17,6 @@ import (
 	"github.com/kevguy/algosearch/backend/app/algosearch/handlers/apidoc/swaggergrp"
 	"github.com/kevguy/algosearch/backend/app/algosearch/handlers/debug/samplegrp"
 	"github.com/kevguy/algosearch/backend/app/algosearch/handlers/debug/checkgrp"
-	"github.com/kevguy/algosearch/backend/business/data/store/block"
-	"github.com/kevguy/algosearch/backend/business/data/store/transaction"
 	"github.com/kevguy/algosearch/backend/business/sys/auth"
 
 	"github.com/kevguy/algosearch/backend/business/web/v1/mid"
@@ -150,7 +150,7 @@ func v1(app *web.App, cfg APIMuxConfig) {
 	// Register round endpoints
 	rG := roundGroup{
 		log:         cfg.Log,
-		store:       block.NewStore(cfg.Log, cfg.CouchClient),
+		blockCore:	block2.NewCore(cfg.Log, cfg.CouchClient),
 		algodClient: cfg.AlgodClient,
 	}
 	app.Handle(http.MethodGet, version, "/algod/current-round", rG.getCurrentRoundFromAPI)
@@ -163,7 +163,7 @@ func v1(app *web.App, cfg APIMuxConfig) {
 	// Register transaction endpoints
 	tG := transactionGroup{
 		log:         cfg.Log,
-		store:       transaction.NewStore(cfg.Log, cfg.CouchClient),
+		transactionCore: transaction2.NewCore(cfg.Log, cfg.CouchClient),
 		algodClient: cfg.AlgodClient,
 	}
 	app.Handle(http.MethodGet, version, "/current-txn", tG.getLatestSyncedTransaction)
