@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	app "github.com/kevguy/algosearch/backend/business/algod"
-	"github.com/kevguy/algosearch/backend/business/data/store/block"
+	"github.com/kevguy/algosearch/backend/business/core/block"
 	"github.com/kevguy/algosearch/backend/foundation/algod"
 	"github.com/kevguy/algosearch/backend/foundation/couchdb"
 	"github.com/pkg/errors"
@@ -43,14 +43,14 @@ func AddCurrentRoundCmd(traceID string, log *zap.SugaredLogger, cfg algod.Config
 	defer db.Close(ctx)
 	defer cancel()
 
-	blockStore := block.NewStore(log, db)
+	blockCore := block.NewCore(log, db)
 
 	newBlock, err := app.ConvertBlockRawBytes(ctx, rawBlock)
 	if err != nil {
 		return errors.Wrap(err, "convert raw bytes to block data")
 	}
 
-	blockStore.AddBlock(ctx, newBlock)
+	blockCore.AddBlock(ctx, newBlock)
 	if err != nil {
 		return errors.Wrap(err, "can't add new block")
 	}

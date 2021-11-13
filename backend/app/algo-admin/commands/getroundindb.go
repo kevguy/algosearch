@@ -3,7 +3,7 @@ package commands
 import (
 	"context"
 	"fmt"
-	"github.com/kevguy/algosearch/backend/business/data/store/block"
+	"github.com/kevguy/algosearch/backend/business/core/block"
 	"github.com/kevguy/algosearch/backend/foundation/couchdb"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
@@ -22,9 +22,9 @@ func GetRoundInDbCmd(traceID string, log *zap.SugaredLogger, couchCfg couchdb.Co
 	defer db.Close(ctx)
 	defer cancel()
 
-	blockStore := block.NewStore(log, db)
+	blockCore := block.NewCore(log, db)
 
-	block, err := blockStore.GetBlockByHash(ctx, blockHash)
+	block, err := blockCore.GetBlockByHash(ctx, blockHash)
 	if err != nil {
 		return errors.Wrap(err, "get block")
 	}

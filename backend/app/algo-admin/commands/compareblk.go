@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	algodApp "github.com/kevguy/algosearch/backend/business/algod"
-	indexerApp "github.com/kevguy/algosearch/backend/business/indexer"
+	indexerApp "github.com/kevguy/algosearch/backend/business/core/indexer"
 	"github.com/kevguy/algosearch/backend/foundation/algod"
 	"github.com/kevguy/algosearch/backend/foundation/indexer"
 	"github.com/nsf/jsondiff"

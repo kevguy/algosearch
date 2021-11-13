@@ -3,11 +3,11 @@ package commands
 import (
 	"context"
 	"github.com/kevguy/algosearch/backend/app/algosearch/blocksynchronizer"
-	"github.com/kevguy/algosearch/backend/business/data/store/account"
-	"github.com/kevguy/algosearch/backend/business/data/store/application"
-	"github.com/kevguy/algosearch/backend/business/data/store/asset"
-	"github.com/kevguy/algosearch/backend/business/data/store/block"
-	"github.com/kevguy/algosearch/backend/business/data/store/transaction"
+	"github.com/kevguy/algosearch/backend/business/core/account"
+	"github.com/kevguy/algosearch/backend/business/core/application"
+	"github.com/kevguy/algosearch/backend/business/core/asset"
+	"github.com/kevguy/algosearch/backend/business/core/block"
+	"github.com/kevguy/algosearch/backend/business/core/transaction"
 	"github.com/kevguy/algosearch/backend/foundation/algod"
 	"github.com/kevguy/algosearch/backend/foundation/couchdb"
 	"github.com/pkg/errors"
@@ -31,21 +31,21 @@ func GetAndInsertBlockCmd(log *zap.SugaredLogger, cfg algod.Config, couchCfg cou
 	defer db.Close(ctx)
 	defer cancel()
 
-	blockStore := block.NewStore(log, db)
-	transactionStore := transaction.NewStore(log, db)
-	accountStore := account.NewStore(log, db)
-	assetStore := asset.NewStore(log, db)
-	appStore := application.NewStore(log, db)
+	blockCore := block.NewCore(log, db)
+	transactionCore := transaction.NewCore(log, db)
+	accountCore := account.NewCore(log, db)
+	assetCore := asset.NewCore(log, db)
+	appCore := application.NewCore(log, db)
 
 	for i := fromBlock; i <= toBlock; i++ {
 		if err := blocksynchronizer.GetAndInsertBlockData(
 			log,
 			client,
-			&blockStore,
-			&transactionStore,
-			&accountStore,
-			&assetStore,
-			&appStore,
+			&blockCore,
+			&transactionCore,
+			&accountCore,
+			&assetCore,
+			&appCore,
 			i); err != nil {
 			//return err
 			log.Errorf("Failed to add Block Number %d\n", i)

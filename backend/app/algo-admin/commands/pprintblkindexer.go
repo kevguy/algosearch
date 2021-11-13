@@ -5,7 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	app "github.com/kevguy/algosearch/backend/business/indexer"
+	app "github.com/kevguy/algosearch/backend/business/core/indexer"
 	"github.com/kevguy/algosearch/backend/foundation/indexer"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"

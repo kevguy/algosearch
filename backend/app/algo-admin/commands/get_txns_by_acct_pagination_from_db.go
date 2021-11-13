@@ -3,7 +3,7 @@ package commands
 import (
 	"context"
 	"fmt"
-	"github.com/kevguy/algosearch/backend/business/data/store/transaction"
+	"github.com/kevguy/algosearch/backend/business/core/transaction"
 	"github.com/kevguy/algosearch/backend/foundation/couchdb"
 	"go.uber.org/zap"
 	"time"
@@ -23,9 +23,9 @@ func GetTransactionsByAcctFromDbWithPaginationCmd(
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
 	defer cancel()
 
-	transactionStore := transaction.NewStore(log, db)
+	transactionCore := transaction.NewCore(log, db)
 
-	txns, noOfPages, noOfTxns, err := transactionStore.GetTransactionsByAcctPagination(ctx, acctID, order, pageNo, limit)
+	txns, noOfPages, noOfTxns, err := transactionCore.GetTransactionsByAcctPagination(ctx, acctID, order, pageNo, limit)
 	if err != nil {
 		return fmt.Errorf("getting transactions by pagination from db: %w", err)
 	}

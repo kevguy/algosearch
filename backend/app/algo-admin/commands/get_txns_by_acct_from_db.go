@@ -3,7 +3,7 @@ package commands
 import (
 	"context"
 	"fmt"
-	"github.com/kevguy/algosearch/backend/business/data/store/transaction"
+	"github.com/kevguy/algosearch/backend/business/core/transaction"
 	"github.com/kevguy/algosearch/backend/foundation/couchdb"
 	"go.uber.org/zap"
 	"time"
@@ -22,30 +22,30 @@ func GetTransactionsByAcctFromDbCmd(log *zap.SugaredLogger, couchCfg couchdb.Con
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
 	defer cancel()
 
-	transactionStore := transaction.NewStore(log, db)
+	transactionCore := transaction.NewCore(log, db)
 
 	log.Infof("Getting List of Transactions")
-	txns, err := transactionStore.GetTransactionsByAcct(ctx, acctID, order)
+	txns, err := transactionCore.GetTransactionsByAcct(ctx, acctID, order)
 	if err != nil {
 		return fmt.Errorf("getting transactions from account %s: %w", acctID, err)
 	}
 
 	log.Infof("Getting Earliest Transaction")
-	earliestTxn, err := transactionStore.GetEarliestAcctTransaction(ctx, acctID)
+	earliestTxn, err := transactionCore.GetEarliestAcctTransaction(ctx, acctID)
 	if err != nil {
 		return fmt.Errorf("getting earliest transaction from account %s: %w", acctID, err)
 	}
 	//fmt.Printf("Earliest Transaction is %s\n", earliestTxn.ID)
 
 	log.Infof("Getting Latest Transaction")
-	latestTxn, err := transactionStore.GetLatestAcctTransaction(ctx, acctID)
+	latestTxn, err := transactionCore.GetLatestAcctTransaction(ctx, acctID)
 	if err != nil {
 		return fmt.Errorf("getting latest transaction from account %s: %w", acctID, err)
 	}
 	//fmt.Printf("Latest Transaction is %s\n", latestTxn.ID)
 
 	log.Infof("Getting Transaction Count")
-	count, err := transactionStore.GetTransactionCountByAcct(ctx, acctID, earliestTxn.ID, latestTxn.ID)
+	count, err := transactionCore.GetTransactionCountByAcct(ctx, acctID, earliestTxn.ID, latestTxn.ID)
 	if err != nil {
 		return fmt.Errorf("getting transaction count from account %s: %w", acctID, err)
 	}

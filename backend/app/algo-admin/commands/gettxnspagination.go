@@ -3,7 +3,7 @@ package commands
 import (
 	"context"
 	"fmt"
-	"github.com/kevguy/algosearch/backend/business/data/store/transaction"
+	"github.com/kevguy/algosearch/backend/business/core/transaction"
 	"github.com/kevguy/algosearch/backend/foundation/couchdb"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
@@ -20,9 +20,9 @@ func GetTransactionsPaginationCmd(traceID string, log *zap.SugaredLogger, couchC
 	defer db.Close(ctx)
 	defer cancel()
 
-	transactionStore := transaction.NewStore(log, db)
+	transactionCore := transaction.NewCore(log, db)
 
-	txns, numOfPages, numOfTxns, err := transactionStore.GetTransactionsPagination(ctx, latestTxnId, order, pageNo, noOfItems)
+	txns, numOfPages, numOfTxns, err := transactionCore.GetTransactionsPagination(ctx, latestTxnId, order, pageNo, noOfItems)
 	fmt.Printf("Num of pages: %d", numOfPages)
 	fmt.Printf("Num of txns: %d", numOfTxns)
 	for _, item := range txns {

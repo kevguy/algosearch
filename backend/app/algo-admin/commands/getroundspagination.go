@@ -3,7 +3,7 @@ package commands
 import (
 	"context"
 	"fmt"
-	"github.com/kevguy/algosearch/backend/business/data/store/block"
+	"github.com/kevguy/algosearch/backend/business/core/block"
 	"github.com/kevguy/algosearch/backend/foundation/couchdb"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
@@ -20,9 +20,9 @@ func GetRoundsPaginationCmd(traceID string, log *zap.SugaredLogger, couchCfg cou
 	defer db.Close(ctx)
 	defer cancel()
 
-	blockStore := block.NewStore(log, db)
+	blockCore := block.NewCore(log, db)
 
-	blocks, numOfPages, numOfBlks, err := blockStore.GetBlocksPagination(ctx, latestBlockNum, order, pageNo, noOfItems)
+	blocks, numOfPages, numOfBlks, err := blockCore.GetBlocksPagination(ctx, latestBlockNum, order, pageNo, noOfItems)
 	fmt.Printf("Num of pages: %d", numOfPages)
 	fmt.Printf("Num of blocks: %d", numOfBlks)
 	for _, item := range blocks {

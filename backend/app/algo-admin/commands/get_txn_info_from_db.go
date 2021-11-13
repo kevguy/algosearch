@@ -3,7 +3,7 @@ package commands
 import (
 	"context"
 	"fmt"
-	"github.com/kevguy/algosearch/backend/business/data/store/transaction"
+	"github.com/kevguy/algosearch/backend/business/core/transaction"
 	"github.com/kevguy/algosearch/backend/foundation/couchdb"
 	"go.uber.org/zap"
 	"time"
@@ -29,21 +29,21 @@ func GetTransactionInfoFromDbCmd(log *zap.SugaredLogger, couchCfg couchdb.Config
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
 	defer cancel()
 
-	transactionStore := transaction.NewStore(log, db)
+	transactionCore := transaction.NewCore(log, db)
 
-	earliestTxn, err := transactionStore.GetEarliestTransaction(ctx)
+	earliestTxn, err := transactionCore.GetEarliestTransaction(ctx)
 	if err != nil {
 		return fmt.Errorf("getting the earliest Transaction ID: %w", err)
 	}
 	earliestID := earliestTxn.ID
 
-	latestTxn, err := transactionStore.GetLatestTransaction(ctx)
+	latestTxn, err := transactionCore.GetLatestTransaction(ctx)
 	if err != nil {
 		return fmt.Errorf("getting the latest Transaction ID: %w", err)
 	}
 	latestID := latestTxn.ID
 
-	count, err := transactionStore.GetTransactionCountBtnKeys(ctx, earliestID, latestID)
+	count, err := transactionCore.GetTransactionCountBtnKeys(ctx, earliestID, latestID)
 	if err != nil {
 		return fmt.Errorf("getting the transaction count: %w", err)
 	}
