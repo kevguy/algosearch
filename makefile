@@ -80,6 +80,11 @@ run-couch:
 	echo $(pwd)/db-data
 	#docker run -e COUCHDB_USER=admin -e COUCHDB_PASSWORD=password -p 5984:5984 --name my-couchdb -v $(pwd)/db-data:/opt/couchdb/data -d couchdb
 	docker run -e COUCHDB_USER=admin -e COUCHDB_PASSWORD=password -p 5984:5984 --name algosearch-couchdb -v $(shell pwd)/db-data:/opt/couchdb/data -d couchdb
+	# https://github.com/apache/couchdb-docker/issues/54
+	# curl -X PUT http://127.0.0.1:5984/_users
+	# > HOST="http://anna:secret@127.0.0.1:5984"
+    # > curl -X PUT $HOST/somedatabase
+    # {"ok":true}
 
 stop-couch:
 	docker stop algosearch-couchdb

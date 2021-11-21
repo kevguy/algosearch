@@ -15,8 +15,8 @@ import (
 	"github.com/algorand/go-algorand-sdk/client/v2/indexer"
 	"github.com/go-kivik/kivik/v4"
 	"github.com/kevguy/algosearch/backend/app/algosearch/handlers/apidoc/swaggergrp"
-	"github.com/kevguy/algosearch/backend/app/algosearch/handlers/debug/samplegrp"
 	"github.com/kevguy/algosearch/backend/app/algosearch/handlers/debug/checkgrp"
+	"github.com/kevguy/algosearch/backend/app/algosearch/handlers/debug/samplegrp"
 	"github.com/kevguy/algosearch/backend/business/sys/auth"
 
 	"github.com/kevguy/algosearch/backend/business/web/v1/mid"

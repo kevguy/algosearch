@@ -83,6 +83,7 @@ func run(log *zap.SugaredLogger) error {
 			WriteTimeout    time.Duration `conf:"default:10s"`
 			IdleTimeout     time.Duration `conf:"default:120s"`
 			ShutdownTimeout time.Duration `conf:"default:20s"`
+			EnableSync		bool		  `conf:"default:false,help:specifies if the API should auto-sync new blocks"`
 		}
 		Auth struct {
 			KeysFolder string `conf:"default:zarf/keys/"`
@@ -303,14 +304,14 @@ func run(log *zap.SugaredLogger) error {
 	}()
 
 
-
-	// Start the publisher to collect/publish metrics.
-	blocksync, err := blocksynchronizer.New(log, 100*time.Millisecond, algodClient, couchConfig)
-	if err != nil {
-		return fmt.Errorf("starting publisher: %w", err)
+	if cfg.Web.EnableSync {
+		// Start the publisher to collect/publish metrics.
+		blocksync, err := blocksynchronizer.New(log, 100*time.Millisecond, algodClient, couchConfig)
+		if err != nil {
+			return fmt.Errorf("starting publisher: %w", err)
+		}
+		defer blocksync.Stop()
 	}
-	defer blocksync.Stop()
-
 
 	// =========================================================================
 	// Shutdown

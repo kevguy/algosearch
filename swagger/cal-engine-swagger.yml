@@ -101,6 +101,132 @@ components:
               default:
                 - 0.0059
                 - 0.0063
+    BlockRewardData:
+      type: object
+      description: Rewards fields relating to rewards,
+      properties:
+        fuck:
+          example: me
+    BlockUpgradeStateData:
+      type: object
+      required:
+        - current-protocol
+      description: UpgradeState fields relating to a protocol upgrade.
+      properties:
+        current-protocol:
+          type: string
+          description: CurrentProtocol (proto) The current protocol version.
+          example: https://github.com/algorandfoundation/specs/tree/bc36005dbd776e6d1eaf0c560619bb183215645c
+        next-protocol:
+          type: string
+          description: NextProtocol (nextproto) The next proposed protocol version.
+        next-protocol-approvals:
+          type: number
+          description: NextProtocolApprovals (nextyes) Number of blocks which approved the protocol upgrade.
+        next-protocol-switch-on:
+          type: string
+          description: NextProtocolSwitchOn (nextswitch) Round on which the protocol upgrade will take effect.
+        next-protocol-vote-before:
+          type: string
+          description: NextProtocolVoteBefore (nextbefore) Deadline round for this protocol upgrade (No votes will be consider after this round).
+    BlockUpgradeVoteData:
+      type: object
+      description: UpgradeVote fields relating to voting for a protocol upgrade.
+      properties:
+        upgrade-approve:
+          type: string
+          description: UpgradeApprove (upgradeyes) Indicates a yes vote for the current proposal.
+        upgrade-delay:
+          type: string
+          description: UpgradeDelay (upgradedelay) Indicates the time between acceptance and execution.
+        upgrade-propose:
+          type: string
+          description: UpgradePropose (upgradeprop) Indicates a proposed upgrade.
+    TransactionData:
+      type: object
+      description: Rewards fields relating to rewards,
+      properties:
+        fuck:
+          example: me
+    BlockData:
+      type: object
+      required:
+        - genesis-hash
+        - genesis-id
+        - previous-block-hash
+        - round
+        - seed
+        - timestamp
+        - transactions-root
+      properties:
+        genesis-hash:
+          type: string
+          description: Genesis Hash (gh) hash to which this block belongs.
+          example: wGHE2Pwdvd7S12BL5FaOP20EGYesN73ktiC1qzkkit8=
+        genesis-id:
+          type: string
+          description: Genesis ID (gen) ID to which this block belongs.
+          example: mainnet-v1.0
+        previous-block-hash:
+          type: string
+          description: PreviousBlockHash (prev) Previous block hash.
+          example: "0oYrEQ4T+jOyxt9PYEQxEUxp43WoyATVVmNb6oNj4PI="
+        rewards:
+          allOf:
+            - $ref: "#/components/schemas/BlockRewardData"
+        round:
+          type: number
+          description: Round (rnd) Current round on which this block was appended to the chain.
+          example: Rewards fields relating to rewards,
+        seed:
+          type: string
+          description: Seed (seed) Sortition seed.
+          example: "Sj2taoRT+OlDTodNjXdodPK78WXSl4dfkNWxUzoqxDQ="
+        timestamp:
+          type: number
+          description: Timestamp (ts) Block creation timestamp in seconds since eposh.
+          example: 1637481021
+        transactions:
+          description: Transactions (txns) list of transactions corresponding to a given round.
+          type: array
+          items:
+            allOf:
+              - $ref: "#/components/schemas/TransactionData"
+        transactions-root:
+          description: >-
+            TransactionsRoot (txn) TransactionsRoot authenticates the set of transactions
+            appearing in the block. More specifically, it's the root of a merkle tree whose
+            aves are the block's Txids, in lexicographic order. For the empty block, it's
+             Note that the TxnRoot does not authenticate the signatures on the
+            ansactions, only the transactions themselves. Two blocks with the same
+            ansactions but in a different order and with different signatures will have
+            e same TxnRoot.
+          type: string
+          example: "jIBcMlQTfzzzMgMJofPPZS4qhV1Q3Z0ya5rELCACcCA"
+        txn-counter:
+          description: >-
+            TxnCounter (tc) TxnCounter counts the number of transactions committed in the
+            ledger, from the time at which support for this feature was introduced.
+            Specifically, TxnCounter is the number of the next transaction that will be
+            committed after this block. It is 0 when no transactions have ever been
+            committed (since TxnCounter started being supported).
+          example: 434008110
+        upgrade-state:
+          description: Hihi
+          allOf:
+            - $ref: "#/components/schemas/BlockUpgradeStateData"
+        upgrade-vote:
+          description: Hihi
+          allOf:
+            - $ref: "#/components/schemas/BlockUpgradeVoteData"
+        proposer:
+          type: string
+          description: Proposer
+          example: W2TVRKTHYB7HDVUGI6E6AVAXDGFT3RJT3XZGB2TVOT53TAISPBO2F5R3HE
+        block-hash:
+          type: string
+          description: Block hash
+          example: GNTA9izDj+OBtvedLqJb730/U/qW3q8DdrNkGEZtldo=
     InternalServerErrorResponse:
       type: object
       properties:
@@ -155,6 +281,29 @@ paths:
                 DbCacheCheckFail:
                   description: Server fails to connect to database cache.
                   value: { "error": "db cache not ready" }
+  /v1/algod/current-round:
+    get:
+      security: []
+      summary: Get Current Round from Algod API
+      description: Retrieves the current round data from Algod API
+      tags:
+        - Algod
+        - Round
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/FundingQuoteSuccessResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/InternalServerErrorResponse'
   /v1/offer/funding_quote:
     parameters:
       - in: query

@@ -377,10 +377,18 @@ func lsigToTransactionLsig(lsig types.LogicSig) *models.TransactionSignatureLogi
 	//}
 
 	fmt.Println("fuck you too")
+	txnMSig := msigToTransactionMsig(lsig.Msig)
+	if txnMSig == nil {
+		txnMSig = &models.TransactionSignatureMultisig{
+			Subsignature: nil,
+			Threshold:    0,
+			Version:      0,
+		}
+	}
 	ret := models.TransactionSignatureLogicsig{
 		Args:				lsig.Args,
 		Logic: 				lsig.Logic,
-		MultisigSignature:	*msigToTransactionMsig(lsig.Msig),
+		MultisigSignature:	*txnMSig,
 		Signature:			sigToTransactionSig(lsig.Sig),
 	}
 	return &ret
