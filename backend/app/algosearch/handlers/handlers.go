@@ -36,6 +36,7 @@ func WithCORS(origin string) func(opts *Options) {
 	}
 }
 
+
 // APIMuxConfig contains all the mandatory systems required by handlers.
 type APIMuxConfig struct {
 	Shutdown chan os.Signal
@@ -156,8 +157,8 @@ func v1(app *web.App, cfg APIMuxConfig) {
 	app.Handle(http.MethodGet, version, "/algod/current-round", rG.getCurrentRoundFromAPI)
 	app.Handle(http.MethodGet, version, "/algod/rounds/:num", rG.getRoundFromAPI)
 	app.Handle(http.MethodGet, version, "/current-round", rG.getLatestSyncedRound)
-	app.Handle(http.MethodGet, version, "/earliest-round", rG.getEarliestSyncedRound)
-	app.Handle(http.MethodGet, version, "/round/:num", rG.getRound)
+	app.Handle(http.MethodGet, version, "/earliest-round-num", rG.getEarliestSyncedRound)
+	app.Handle(http.MethodGet, version, "/rounds/:num", rG.getRound)
 	app.Handle(http.MethodGet, version, "/rounds", rG.getRoundsPagination)
 
 	// Register transaction endpoints
@@ -168,6 +169,6 @@ func v1(app *web.App, cfg APIMuxConfig) {
 	}
 	app.Handle(http.MethodGet, version, "/current-txn", tG.getLatestSyncedTransaction)
 	app.Handle(http.MethodGet, version, "/earliest-txn", tG.getEarliestSyncedTransaction)
-	app.Handle(http.MethodGet, version, "/transaction/:num", tG.getTransaction)
+	app.Handle(http.MethodGet, version, "/transactions/:id", tG.getTransaction)
 	app.Handle(http.MethodGet, version, "/transactions", tG.getTransactionsPagination)
 }
