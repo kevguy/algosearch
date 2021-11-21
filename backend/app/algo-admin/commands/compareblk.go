@@ -44,7 +44,9 @@ func CompareBlockBetweenAlgodAndIndexer(traceID string, log *zap.SugaredLogger, 
 	ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	indexerBlock, err := indexerApp.GetRound(ctx, traceID, log, indexerClient, blockNum)
+	indexerCore := indexerApp.NewCore(log, indexerClient)
+
+	indexerBlock, err := indexerCore.GetRound(ctx, traceID, blockNum)
 	//rawBlock, err := app.GetRoundInRawBytes(ctx, client, blockNum)
 	if err != nil {
 		return errors.Wrap(err, "getting current round from Indexer")

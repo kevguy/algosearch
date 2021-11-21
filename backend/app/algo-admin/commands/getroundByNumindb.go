@@ -24,7 +24,7 @@ func GetRoundNumInDbCmd(traceID string, log *zap.SugaredLogger, couchCfg couchdb
 
 	blockCore := block.NewCore(log, db)
 
-	block, err := blockCore.GetBlockByNum(ctx, traceID, log, blockNum)
+	block, err := blockCore.GetBlockByNum(ctx, blockNum)
 	if err != nil {
 		return errors.Wrap(err, "get block")
 	}

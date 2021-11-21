@@ -22,7 +22,9 @@ func PrettyPrintBlockFromIndexerCmd(traceID string, log *zap.SugaredLogger, cfg 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	block, err := app.GetRound(ctx, traceID, log, client, blockNum)
+	appCore := app.NewCore(log, client)
+
+	block, err := appCore.GetRound(ctx, "", blockNum)
 	//rawBlock, err := app.GetRoundInRawBytes(ctx, client, blockNum)
 	if err != nil {
 		return errors.Wrap(err, "getting current round from Indexer")
