@@ -141,7 +141,7 @@ func v1(app *web.App, cfg APIMuxConfig) {
 	app.Handle(http.MethodGet, "", "/test-error", samg.SendError)
 
 	// Register the index page for the website.
-	sg, err := swaggergrp.NewIndex(cfg.APIProtocol, cfg.APIHost, "cal-engine-swagger")
+	sg, err := swaggergrp.NewIndex(cfg.APIProtocol, cfg.APIHost, "algosearch")
 	if err != nil {
 		cfg.Log.Errorf("loading index template: %v", err)
 		//return nil, errors.Wrap(err, "loading index template")

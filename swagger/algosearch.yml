@@ -436,6 +436,47 @@ components:
             Sender (asnd) The effective sender during a clawback transactions. If this is
             not a zero value, the real transaction sender must be the Clawback address from
             the AssetParams.
+    BlockUpgradeState:
+      type: object
+      required:
+        - current-protocol
+      description: BlockUpgradeState fields relating to a protocol upgrade.
+      properties:
+        current-protocol:
+          type: string
+          description: CurrentProtocol (proto) The current protocol version.
+          example: "https://github.com/algorandfoundation/specs/tree/bc36005dbd776e6d1eaf0c560619bb183215645c"
+        next-protocol:
+          type: string
+          description: NextProtocol (nextproto) The next proposed protocol version.
+        next-protocol-approvals:
+          type: number
+          description: >-
+            NextProtocolApprovals (nextyes) Number of blocks which approved the protocol
+            upgrade.
+        next-protocol-switch-on:
+          type: number
+          description: >-
+            NextProtocolSwitchOn (nextswitch) Round on which the protocol upgrade will take
+            effect.
+        next-protocol-vote-before:
+          type: number
+          description: >-
+            NextProtocolVoteBefore (nextbefore) Deadline round for this protocol upgrade (No
+            votes will be consider after this round).
+    BlockUpgradeVote:
+      type: object
+      description: BlockUpgradeVote fields relating to voting for a protocol upgrade.
+      properties:
+        upgrade-approve:
+          type: boolean
+          description: UpgradeApprove (upgradeyes) Indicates a yes vote for the current proposal.
+        upgrade-delay:
+          type: number
+          description: UpgradeDelay (upgradedelay) Indicates the time between acceptance and execution.
+        upgrade-propose:
+          type: string
+          description: UpgradePropose (upgradeprop) Indicates a proposed upgrade.
     BlockRewardData:
       type: object
       description: Rewards fields relating to rewards,
@@ -715,11 +756,11 @@ components:
             committed (since TxnCounter started being supported).
           example: 434008110
         upgrade-state:
-          description: Hihi
+          description: UpgradeState fields relating to a protocol upgrade.
           allOf:
             - $ref: "#/components/schemas/BlockUpgradeStateData"
         upgrade-vote:
-          description: Hihi
+          description: UpgradeVote fields relating to voting for a protocol upgrade.
           allOf:
             - $ref: "#/components/schemas/BlockUpgradeVoteData"
         proposer:
