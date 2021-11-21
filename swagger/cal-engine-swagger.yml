@@ -101,12 +101,197 @@ components:
               default:
                 - 0.0059
                 - 0.0063
+    EvalDeltaKeyValue:
+      type: object
+      description: EvalDeltaKeyValue key-value pairs for StateDelta.
+      required:
+        - key
+        - value
+      properties:
+        key:
+          type: string
+          description: Key
+          example: R0E
+        value:
+          description: Value represents a TEAL value delta.
+          allOf:
+            - $ref: "#/components/schemas/EvalDelta"
+    EvalDelta:
+      type: object
+      required:
+        - action
+      properties:
+        action:
+          type: number
+          example: 2
+        bytes:
+          type: string
+        uint:
+          type: number
+          example: 10449075514872
+    TransactionKeyReg:
+      type: object
+      description: TransactionKeyreg fields for a keyreg transaction.
+      properties:
+        non-participation:
+          type: boolean
+          description: NonParticipation (nonpart) Mark the account as participating or non-participating.
+        selection-participation-key:
+          type: string
+          description: SelectionParticipationKey (selkey) Public key used with the Verified Random Function (VRF) result during committee selection.
+        vote-first-valid:
+          type: number
+          description: VoteFirstValid (votefst) First round this participation key is valid.
+        vote-key-diluation:
+          type: number
+          description: VoteKeyDilution (votekd) Number of subkeys in each batch of participation keys.
+        vote-last-valid:
+          type: number
+          description: VoteLastValid (votelst) Last round this participation key is valid.
+        vote-participation-key:
+          type: string
+          description: VoteParticipationKey (votekey) Participation public key used in key registration transactions.
+    AccountStateDelta:
+      type: object
+      description: AccountStateDelta application state delta.
+      required:
+        - address
+        - delta
+      properties:
+        address:
+          type: string
+          example: MACYLFKZ7U3A6VRYICAFOL65P6DEYP73RQSTNMPUGO357MFEORQMWJPOYU
+        delta:
+          description: Delta application state delta.
+          allOf:
+            - $ref: "#/components/schemas/EvalDeltaKeyValue"
+          example:
+            {
+              key: "VUE",
+              value: {
+                action: 2,
+                uint: 29838007476
+              }
+            }
+    TransactionPayment:
+      type: object
+      required:
+        - amount
+        - receiver
+      description: TransactionPayment fields for a payment transaction.
+      properties:
+        amount:
+          type: number
+          description: Amount (amt) number of MicroAlgos intended to be transferred.
+          example: 0
+        close-amount:
+          type: number
+          description: CloseAmount number of MicroAlgos that were sent to the close-remainder-to address when closing the sender account.
+        close-remainder-to:
+          type: string
+          description: CloseRemainderTo (close) when set, indicates that the sending account should be closed and all remaining funds be transferred to this address.
+        receiver:
+          type: string
+          description: Receiver (rcv) receiver's address.
+    TransactionSignature:
+      type: object
+      description: >-
+        TransactionSignature validation signature associated with some data. Only one of
+        the signatures should be provided.
+      properties:
+        logicsig:
+          description: Logicsig (lsig) Programatic transaction signature.
+          allOf:
+            - $ref: "#/components/schemas/TransactionSignatureLogicsig"
+        multisig:
+          description: Multisig (msig) structure holding multiple subsignatures.
+          allOf:
+            - $ref: "#/components/schemas/TransactionSignatureMultisig"
+        sig:
+          type: string
+          description: Sig (sig) Standard ed25519 signature.
+          example: k9mbQn6ILPU25eZv5gNKMyHB9zcwbOVRz4gtFepNLjaLtoX07kLc2iMy1ILIsiD0pxSWq7hf6dcBbKEMs6vsCw
+    TransactionSignatureLogicsig:
+      type: object
+      description: TransactionSignatureLogicsig (lsig) Programatic transaction signature.
+      properties:
+        args:
+          type: array
+          description: Args (arg) Logic arguments, base64 encoded.
+          items:
+            type: string
+        logic:
+          type: string
+          nullable: true
+          description: >-
+            Logic (l) Program signed by a signature or multi signature, or hashed to be the
+            address of ana ccount. Base64 encoded TEAL program.
+        multisig-signature:
+          description: MultisigSignature (msig) structure holding multiple subsignatures.
+          allOf:
+            - $ref: "#/components/schemas/TransactionSignatureMultisig"
+        signature:
+          description: Signature (sig) ed25519 signature.
+          type: string
+    TransactionSignatureMultisig:
+      type: object
+      description: TransactionSignatureMultisig (msig) structure holding multiple subsignatures.
+      properties:
+        subsignature:
+          description: Subsignature (subsig) holds pairs of public key and signatures.
+          allOf:
+            - $ref: "#/components/schemas/TransactionSignatureMultisigSubsignature"
+        threshold:
+          type: number
+          description: Threshold (thr)
+        version:
+          type: number
+          description: Version (v)
+    TransactionSignatureMultisigSubsignature:
+      type: object
+      description: TransactionSignatureMultisigSubsignature defines a model for TransactionSignatureMultisigSubsignature.
+      properties:
+        public-key:
+          type: string
+          description: PublicKey (pk)
+        signature:
+          type: string
+          description: Signature (s)
     BlockRewardData:
       type: object
       description: Rewards fields relating to rewards,
+      required:
+        - fee-sink
+        - rewards-calculation-round
+        - rewards-level
+        - rewards-pool
+        - rewards-rate
+        - rewards-residue
       properties:
-        fuck:
-          example: me
+        fee-sink:
+          type: string
+          description: FeeSink (fees) accepts transaction fees, it can only spend to the incentive pool.
+          example: Y76M3MSY6DKBRHBL7C3NNDXGS5IIMQVQVUAB6MP4XEMMGVF2QWNPL226CA
+        rewards-calculation-round:
+          type: number
+          description: RewardsCalculationRound (rwcalr) number of leftover MicroAlgos after the distribution of rewards-rate MicroAlgos for every reward unit in the next round.
+          example: 18000000
+        rewards-level:
+          type: number
+          description: RewardsLevel (earn) How many rewards, in MicroAlgos, have been distributed to each RewardUnit of MicroAlgos since genesis.
+          example: 212242
+        rewards-pool:
+          type: string
+          description: RewardsPool (rwd) accepts periodic injections from the fee-sink and continually redistributes them as rewards.
+          example: "737777777777777777777777777777777777777777777777777UFEJ2CI"
+        rewards-rate:
+          type: string
+          description: RewardsRate (rate) Number of new MicroAlgos added to the participation stake from rewards at the next round.
+          example: 43700000
+        rewards-residue:
+          type: number
+          description: RewardsResidue (frac) Number of leftover MicroAlgos after the distribution of RewardsRate/rewardUnits MicroAlgos for every reward unit in the next round.
+          example: 1505187333
     BlockUpgradeStateData:
       type: object
       required:
@@ -146,8 +331,111 @@ components:
       type: object
       description: Rewards fields relating to rewards,
       properties:
-        fuck:
-          example: me
+        auth-addr:
+          type: string
+          description: AuthAddr (sgnr) this is included with signed transactions when the signing address does not equal the sender. The backend can use this to ensure that auth addr is equal to the accounts auth addr.
+          example: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ
+        close-rewards:
+          type: number
+          description: CloseRewards (rc) rewards applied to close-remainder-to account.
+        closing-amount:
+          type: number
+          description: ClosingAmount (ca) closing amount for transaction.
+        confirmed-round:
+          type: number
+          description: ConfirmedRound round when the transaction was confirmed.
+          example: 17559915
+        created-application-index:
+          type: number
+          description: CreatedApplicationIndex specifies an application index (ID) if an application was created with this transaction.
+        created-asset-index:
+          type: number
+          description: CreatedAssetIndex specifies an asset index (ID) if an asset was created with this transaction.
+        fee:
+          type: number
+          description: Fee (fee) Transaction fee.
+          example: 1000
+        first-valid:
+          type: number
+          description: FirstValid (fv) First valid round for this transaction.
+          example: 17559910
+        genesis-hash:
+          type: string
+          description: GenesisHash (gh) Hash of genesis block.
+          example: wGHE2Pwdvd7S12BL5FaOP20EGYesN73ktiC1qzkkit8
+        genesis-id:
+          type: string
+          description: GenesisId (gen) genesis block ID.
+          example: mainnet-v1.0
+        global-state-delta:
+          description: GlobalStateDelta (gd) Global state key/value changes for the application being executed by this transaction.
+          allOf:
+            - $ref: "#/components/schemas/EvalDeltaKeyValue"
+        group:
+          description: >-
+            Group (grp) Base64 encoded byte array of a sha512/256 digest. When present
+            indicates that this transaction is part of a transaction group and the value is
+            the sha512/256 hash of the transactions in that group.
+          type: string
+          example: iRqKnMRI6CqEM650P8JeEjMMKKK833jOjetBFDGVna0
+        id:
+          type: string
+          description: transaction ID
+          example: T6IYXFQTZ7SMVEH5N5KYH5OSRW5XQRUZ4T7FX6TBDQ5HKNIAKQNA
+        intra-round-offset:
+          type: number
+          description: IntraRoundOffset offset into the round where this transaction was confirmed.
+        keyreg-transaction:
+          description: KeyregTransaction fields for a keyreg transaction.
+          allOf:
+            - $ref: "#/components/schemas/TransactionKeyReg"
+        last-valid:
+          type: number
+          description: LastValid (lv) Last valid round for this transaction.
+          example: 17560910
+        lease:
+          type: string
+          description: >-
+            Lease (lx) Base64 encoded 32-byte array. Lease enforces mutual exclusion of
+            transactions. If this field is nonzero, then once the transaction is confirmed,
+            it acquires the lease identified by the (Sender, Lease) pair of the transaction
+            until the LastValid round passes. While this transaction possesses the lease, no
+            other transaction specifying this lease can be confirmed.
+          example: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        local-state-delta:
+          description: LocalStateDelta (ld) Local state key/value changes for the application being executed by this transaction.
+          allOf:
+            - $ref: "#/components/schemas/AccountStateDelta"
+        note:
+          type: string
+          description: Note (note) Free form data.
+        payment-transaction:
+          description: PaymentTransaction fields for a payment transaction.
+          allOf:
+            - $ref: "#/components/schemas/TransactionPayment"
+        rekey-to:
+          type: string
+          description: >-
+            RekeyTo (rekey) when included in a valid transaction, the accounts auth addr
+            will be updated with this value and future signatures must be signed with the
+            key represented by this address.
+          example: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ
+        round-time:
+          type: number
+          description: RoundTime time when the block this transaction is in was confirmed.
+          example: 1637481021
+        sender:
+          type: string
+          description: Sender (snd) Sender's address.
+          example: MACYLFKZ7U3A6VRYICAFOL65P6DEYP73RQSTNMPUGO357MFEORQMWJPOYU
+        sender-rewards:
+          type: number
+          description: >-
+            Signature validation signature associated with some data. Only one of the
+            signatures should be provided.
+        signature:
+
+
     BlockData:
       type: object
       required:
