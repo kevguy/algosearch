@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/kevguy/algosearch/backend/app/algosearch/blocksynchronizer"
 	"github.com/kevguy/algosearch/backend/business/core/account"
+	algod2 "github.com/kevguy/algosearch/backend/business/core/algod"
 	"github.com/kevguy/algosearch/backend/business/core/application"
 	"github.com/kevguy/algosearch/backend/business/core/asset"
 	"github.com/kevguy/algosearch/backend/business/core/block"
@@ -21,6 +22,8 @@ func GetAndInsertBlockCmd(log *zap.SugaredLogger, cfg algod.Config, couchCfg cou
 	if err != nil {
 		return errors.Wrap(err, "connect to Algorand Node")
 	}
+
+	algodCore := algod2.NewCore(log, client)
 
 	db, err := couchdb.Open(couchCfg)
 	if err != nil {
@@ -46,6 +49,7 @@ func GetAndInsertBlockCmd(log *zap.SugaredLogger, cfg algod.Config, couchCfg cou
 			&accountCore,
 			&assetCore,
 			&appCore,
+			&algodCore,
 			i); err != nil {
 			//return err
 			log.Errorf("Failed to add Block Number %d\n", i)

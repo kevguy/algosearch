@@ -2,28 +2,30 @@ package commands
 
 import (
 	"context"
-	app "github.com/kevguy/algosearch/backend/business/algod"
 	algod2 "github.com/kevguy/algosearch/backend/business/core/algod"
 	"github.com/kevguy/algosearch/backend/foundation/algod"
 	"github.com/pkg/errors"
+	"go.uber.org/zap"
 	"time"
 )
 
 // GetCurrentRoundCmd retrieves information about the block for the latest round and prints it out.
-func GetCurrentRoundCmd(cfg algod.Config) error {
+func GetCurrentRoundCmd(log *zap.SugaredLogger, cfg algod.Config) error {
 	client, err := algod.Open(cfg)
 	if err != nil {
 		return errors.Wrap(err, "connect to Algorand Node")
 	}
 
+	algodCore := algod2.NewCore(log, client)
+
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	num, err := app.GetCurrentRoundNum(ctx, client)
+	num, err := algodCore.GetCurrentRoundNum(ctx)
 	if err != nil {
 		return errors.Wrap(err, "getting current round num from Algorand Node")
 	}
-	rawBlock, err := app.GetRoundInRawBytes(ctx, client, num)
+	rawBlock, err := algodCore.GetRoundInRawBytes(ctx, num)
 	if err != nil {
 		return errors.Wrap(err, "getting current round from Algorand Node")
 	}

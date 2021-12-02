@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	algodApp "github.com/kevguy/algosearch/backend/business/algod"
+	algod2 "github.com/kevguy/algosearch/backend/business/core/algod"
 	indexerApp "github.com/kevguy/algosearch/backend/business/core/indexer"
 	"github.com/kevguy/algosearch/backend/foundation/algod"
 	"github.com/kevguy/algosearch/backend/foundation/indexer"
@@ -22,10 +22,12 @@ func CompareBlockBetweenAlgodAndIndexer(traceID string, log *zap.SugaredLogger, 
 		return errors.Wrap(err, "connect to Algorand Node")
 	}
 
+	algodCore := algod2.NewCore(log, algodClient)
+
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	algodBlock, err := algodApp.GetRound(ctx, traceID, log, algodClient, blockNum)
+	algodBlock, err := algodCore.GetRound(ctx, traceID, blockNum)
 	//rawBlock, err := app.GetRoundInRawBytes(ctx, client, blockNum)
 	if err != nil {
 		return errors.Wrap(err, "getting current round from Algorand Node")

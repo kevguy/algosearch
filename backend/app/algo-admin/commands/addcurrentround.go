@@ -3,7 +3,6 @@ package commands
 import (
 	"context"
 	"fmt"
-	app "github.com/kevguy/algosearch/backend/business/algod"
 	algod2 "github.com/kevguy/algosearch/backend/business/core/algod"
 	"github.com/kevguy/algosearch/backend/business/core/block"
 	"github.com/kevguy/algosearch/backend/foundation/algod"
@@ -20,14 +19,16 @@ func AddCurrentRoundCmd(traceID string, log *zap.SugaredLogger, cfg algod.Config
 		return errors.Wrap(err, "connect to Algorand Node")
 	}
 
+	algodCore := algod2.NewCore(log, client)
+
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	num, err := app.GetCurrentRoundNum(ctx, client)
+	num, err := algodCore.GetCurrentRoundNum(ctx)
 	if err != nil {
 		return errors.Wrap(err, "getting current round num from Algorand Node")
 	}
-	rawBlock, err := app.GetRoundInRawBytes(ctx, client, num)
+	rawBlock, err := algodCore.GetRoundInRawBytes(ctx, num)
 	if err != nil {
 		return errors.Wrap(err, "getting current round from Algorand Node")
 	}

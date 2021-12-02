@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/algorand/go-algorand-sdk/client/v2/algod"
 	"github.com/algorand/go-algorand-sdk/client/v2/common/models"
-	app "github.com/kevguy/algosearch/backend/business/algod"
 	"github.com/kevguy/algosearch/backend/business/core/account"
 	algod2 "github.com/kevguy/algosearch/backend/business/core/algod"
 	"github.com/kevguy/algosearch/backend/business/core/application"
@@ -35,6 +34,7 @@ type BlockSynchronizer struct {
 	accountCore     *account.Core
 	assetCore       *asset.Core
 	appCore         *application.Core
+	algodCore 		*algod2.Core
 }
 
 // New creates a BlockSynchronizer for retrieving block data and saving it to CouchDB.
@@ -50,6 +50,9 @@ func New(log *zap.SugaredLogger, interval time.Duration, algodClient *algod.Clie
 	if err != nil {
 		return nil, errors.Wrap(err, "connect to couchdb database")
 	}
+
+	algodCore := algod2.NewCore(log, algodClient)
+	p.algodCore = &algodCore
 
 	blockStore := block.NewCore(log, db)
 	p.blockCore = &blockStore
@@ -100,7 +103,7 @@ func (p *BlockSynchronizer) update() {
 	// 111983 is amazing, it has a shit ton of transactions
 	//lastSyncedBlockNum = 111980
 
-	currentRoundNum, err := app.GetCurrentRoundNum(context.Background(), p.algodClient)
+	currentRoundNum, err := p.algodCore.GetCurrentRoundNum(context.Background())
 	if err != nil {
 		p.log.Errorw("blocksynchronizer", "status", "get current round num", "ERROR", err)
 	}
@@ -114,7 +117,7 @@ func (p *BlockSynchronizer) update() {
 		getRoundSuccessful := false
 		var rawBlock []byte
 		for !getRoundSuccessful {
-			rawBlock, err = app.GetRoundInRawBytes(context.Background(), p.algodClient, lastSyncedBlockNum + 1)
+			rawBlock, err = p.algodCore.GetRoundInRawBytes(context.Background(), lastSyncedBlockNum + 1)
 			if err != nil {
 				p.log.Errorw("blocksynchronizer", "status", "get round in raw bytes", "ERROR", err)
 				// Assuming it's not just block data not available, jump to the next round
@@ -174,7 +177,7 @@ func (p *BlockSynchronizer) update() {
 				assetIDs := algod2.ExtractAssetIdsFromTxn(txn)
 
 				for _, acctID := range accountIDs {
-					accountInfo, err := app.GetAccount(context.Background(),"", p.log, p.algodClient, acctID)
+					accountInfo, err := p.algodCore.GetAccount(context.Background(),"", acctID)
 					if err != nil {
 						p.log.Errorw("blocksynchronizer", "status", "can't get account", "ERROR", err)
 					}
@@ -183,7 +186,7 @@ func (p *BlockSynchronizer) update() {
 				}
 
 				for _, appID := range applicationIDs {
-					appInfo, err := app.GetApplication(context.Background(),"", p.log, p.algodClient, appID)
+					appInfo, err := p.algodCore.GetApplication(context.Background(),"", appID)
 					if err != nil {
 						p.log.Errorw("blocksynchronizer", "status", "can't get app", "ERROR", err)
 					}
@@ -192,7 +195,7 @@ func (p *BlockSynchronizer) update() {
 				}
 
 				for _, assetID := range assetIDs {
-					assetInfo, err := app.GetAsset(context.Background(),"", p.log, p.algodClient, assetID)
+					assetInfo, err := p.algodCore.GetAsset(context.Background(),"", assetID)
 					if err != nil {
 						p.log.Errorw("blocksynchronizer", "status", "can't get asset", "ERROR", err)
 					}
@@ -244,6 +247,7 @@ func GetAndInsertBlockData(
 	accountCore *account.Core,
 	assetCore *asset.Core,
 	appCore *application.Core,
+	algodCore *algod2.Core,
 	blockNum			uint64) error {
 	log.Infof("Trying to get round number: %d\n", blockNum)
 
@@ -251,7 +255,7 @@ func GetAndInsertBlockData(
 	var rawBlock []byte
 	var err error
 	for !getRoundSuccessful {
-		rawBlock, err = app.GetRoundInRawBytes(context.Background(), algodClient, blockNum)
+		rawBlock, err = algodCore.GetRoundInRawBytes(context.Background(), blockNum)
 		if err != nil {
 			log.Errorw("blocksynchronizer", "status", "get round in raw bytes", "ERROR", err)
 			// Assuming it's not just block data not available, jump to the next round
@@ -315,7 +319,7 @@ func GetAndInsertBlockData(
 			assetIDs := algod2.ExtractAssetIdsFromTxn(txn)
 
 			for _, acctID := range accountIDs {
-				accountInfo, err := app.GetAccount(context.Background(),"", log, algodClient, acctID)
+				accountInfo, err := algodCore.GetAccount(context.Background(),"", acctID)
 				if err != nil {
 					log.Errorw("blocksynchronizer", "status", "can't get account", "ERROR", err)
 					//return err
@@ -325,7 +329,7 @@ func GetAndInsertBlockData(
 			}
 
 			for _, appID := range applicationIDs {
-				appInfo, err := app.GetApplication(context.Background(),"", log, algodClient, appID)
+				appInfo, err := algodCore.GetApplication(context.Background(),"", appID)
 				if err != nil {
 					log.Errorw("blocksynchronizer", "status", "can't get app", "ERROR", err)
 					//return err
@@ -335,7 +339,7 @@ func GetAndInsertBlockData(
 			}
 
 			for _, assetID := range assetIDs {
-				assetInfo, err := app.GetAsset(context.Background(),"", log, algodClient, assetID)
+				assetInfo, err := algodCore.GetAsset(context.Background(),"", assetID)
 				if err != nil {
 					log.Errorw("blocksynchronizer", "status", "can't get asset", "ERROR", err)
 					//return err

@@ -5,7 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	app "github.com/kevguy/algosearch/backend/business/algod"
+	algod2 "github.com/kevguy/algosearch/backend/business/core/algod"
 	"github.com/kevguy/algosearch/backend/foundation/algod"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
@@ -19,10 +19,12 @@ func PrettyPrintBlockFromAlgodCmd(traceID string, log *zap.SugaredLogger, cfg al
 		return errors.Wrap(err, "connect to Algorand Node")
 	}
 
+	algodCore := algod2.NewCore(log, client)
+
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	block, err := app.GetRound(ctx, traceID, log, client, blockNum)
+	block, err := algodCore.GetRound(ctx, traceID, blockNum)
 	//rawBlock, err := app.GetRoundInRawBytes(ctx, client, blockNum)
 	if err != nil {
 		return errors.Wrap(err, "getting current round from Algorand Node")

@@ -156,7 +156,7 @@ func run(log *zap.SugaredLogger) error {
 		}
 
 	case "get-current-round":
-		if err := commands.GetCurrentRoundCmd(algorandConfig); err != nil {
+		if err := commands.GetCurrentRoundCmd(log, algorandConfig); err != nil {
 			return fmt.Errorf("getting current round: %w", err)
 		}
 
@@ -176,7 +176,7 @@ func run(log *zap.SugaredLogger) error {
 		if err != nil {
 			return fmt.Errorf("num arg format wrong: %w", err)
 		}
-		if err := commands.GetRoundCmd(algorandConfig, uint64(num)); err != nil {
+		if err := commands.GetRoundCmd(log, algorandConfig, uint64(num)); err != nil {
 			return fmt.Errorf("getting current round: %w", err)
 		}
 
