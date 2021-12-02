@@ -1,7 +1,7 @@
 # Build the Go Binary.
-FROM golang:1.16 as build_algosearch-backend
+FROM golang:1.17 as build_algosearch-backend
 ENV CGO_ENABLED 0
-ARG VCS_REF
+ARG BUILD_REF
 
 # Create the service directory and the copy the module files first and then
 # download the dependencies. If this doesn't change, we won't need to do this
@@ -17,18 +17,22 @@ COPY ./backend /service/backend
 # Build the admin tool so we can have it in the container. This should not change
 # often so do this first.
 WORKDIR /service/backend/app/algo-admin
-RUN go build -ldflags "-X main.build=${VCS_REF}"
+RUN go build -ldflags "-X main.build=${BUILD_REF}"
 
-# Build the service binary. We are doing this last since this will be different
-# every time we run through this process.
+# Build the service binary.
 WORKDIR /service/backend/app/algosearch
-RUN go build -ldflags "-X main.build=${VCS_REF}"
+RUN go build -ldflags "-X main.build=${BUILD_REF}"
 
 
 # Run the Go Binary in Alpine.
-FROM alpine:3.14
+FROM alpine:3.15
+
+# https://stackoverflow.com/questions/59094236/error-unknown-time-zone-america-los-angeles-in-time-loadlocation
+# https://stackoverflow.com/questions/59044243/timezones-failing-to-load-in-go-1-13
+RUN apk add --no-cache tzdata
+
 ARG BUILD_DATE
-ARG VCS_REF
+ARG BUILD_REF
 COPY --from=build_algosearch-backend /service/backend/app/algo-admin/algo-admin /service/admin
 COPY --from=build_algosearch-backend /service/backend/app/algosearch/algosearch /service/algosearch
 WORKDIR /service
@@ -38,5 +42,5 @@ LABEL org.opencontainers.image.created="${BUILD_DATE}" \
       org.opencontainers.image.title="algosearch" \
       org.opencontainers.image.authors="Kevin Lai <kev@borecast.com>" \
       org.opencontainers.image.source="https://github.com/kevguy/algosearch/app/algosearch" \
-      org.opencontainers.image.revision="${VCS_REF}" \
+      org.opencontainers.image.revision="${BUILD_REF}" \
       org.opencontainers.image.vendor="Borecast"

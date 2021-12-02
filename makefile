@@ -113,7 +113,15 @@ algosearch-backend:
 	docker build \
 		-f zarf/docker/dockerfile.algosearch-backend \
 		-t algosearch-backend-amd64:$(VERSION) \
-		--build-arg VCS_REF=$(VERSION) \
+		--build-arg BUILD_REF=$(VERSION) \
+		--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
+		.
+
+algosearch-metrics:
+	docker build \
+		-f zarf/docker/dockerfile.metrics \
+		-t metrics-amd64:$(VERSION) \
+		--build-arg BUILD_REF=$(VERSION) \
 		--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
 		.
 
@@ -121,7 +129,7 @@ algosearch-backend-latest:
 	docker build \
 		-f zarf/docker/dockerfile.algosearch-backend \
 		-t algosearch-backend-amd64:latest \
-		--build-arg VCS_REF=latest \
+		--build-arg BUILD_REF=latest \
 		--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
 		.
 

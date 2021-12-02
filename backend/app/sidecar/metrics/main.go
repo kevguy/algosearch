@@ -2,8 +2,11 @@ package main
 
 import (
 	"errors"
+	"expvar"
 	"fmt"
+	"go.uber.org/automaxprocs/maxprocs"
 	"net/http"
+	"net/http/pprof"
 	_ "net/http/pprof"
 	"os"
 	"os/signal"
@@ -12,12 +15,10 @@ import (
 	"time"
 
 	"github.com/ardanlabs/conf/v2"
-	"github.com/kevguy/algosearch/backend/app/algosearch/handlers"
 	"github.com/kevguy/algosearch/backend/app/sidecar/metrics/collector"
 	"github.com/kevguy/algosearch/backend/app/sidecar/metrics/publisher"
-	"github.com/kevguy/algosearch/backend/app/sidecar/metrics/publisher/expvar"
+	expvarsrv "github.com/kevguy/algosearch/backend/app/sidecar/metrics/publisher/expvar"
 	"github.com/kevguy/algosearch/backend/foundation/logger"
-	"go.uber.org/automaxprocs/maxprocs"
 	"go.uber.org/zap"
 )
 
@@ -34,14 +35,7 @@ func main() {
 	}
 	defer log.Sync()
 
-	// Make sure the program is using the correct
-	// number of threads if a CPU quota is set.
-	if _, err := maxprocs.Set(); err != nil {
-		log.Errorw("startup", zap.Error(err))
-		os.Exit(1)
-	}
-	log.Infow("startup", "GOMAXPROCS", runtime.GOMAXPROCS(0))
-
+	// Perform the startup and shutdown sequence.
 	if err := run(log); err != nil {
 		log.Errorw("startup", "ERROR", err)
 		os.Exit(1)
@@ -49,6 +43,16 @@ func main() {
 }
 
 func run(log *zap.SugaredLogger) error {
+
+	// =========================================================================
+	// GOMAXPROCS
+
+	// Set the correct number of threads for the service
+	// based on what is available either by the machine or quotas.
+	if _, err := maxprocs.Set(); err != nil {
+		return fmt.Errorf("maxprocs: %w", err)
+	}
+	log.Infow("startup", "GOMAXPROCS", runtime.GOMAXPROCS(0))
 
 	// =========================================================================
 	// Configuration
@@ -90,6 +94,12 @@ func run(log *zap.SugaredLogger) error {
 		return fmt.Errorf("parsing config: %w", err)
 	}
 
+	// =========================================================================
+	// App Starting
+
+	log.Infow("starting service", "version", build)
+	defer log.Infow("shutdown complete")
+
 	out, err := conf.String(&cfg)
 	if err != nil {
 		return fmt.Errorf("generating config for output: %w", err)
@@ -104,12 +114,18 @@ func run(log *zap.SugaredLogger) error {
 	// The Debug function returns a mux to listen and serve on for all the debug
 	// related endpoints. This include the standard library endpoints.
 
-	debugMux := handlers.DebugStandardLibraryMux()
+	mux := http.NewServeMux()
+	mux.HandleFunc("/debug/pprof/", pprof.Index)
+	mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+	mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
+	mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+	mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
+	mux.Handle("/debug/vars", expvar.Handler())
 
 	// Start the service listening for debug requests.
 	// Not concerned with shutting this down with load shedding.
 	go func() {
-		if err := http.ListenAndServe(cfg.Web.DebugHost, debugMux); err != nil {
+		if err := http.ListenAndServe(cfg.Web.DebugHost, mux); err != nil {
 			log.Errorw("shutdown", "status", "debug router closed", "host", cfg.Web.DebugHost, "ERROR", err)
 		}
 	}()
@@ -117,7 +133,7 @@ func run(log *zap.SugaredLogger) error {
 	// =========================================================================
 	// Start expvar Service
 
-	exp := expvar.New(log, cfg.Expvar.Host, cfg.Expvar.Route, cfg.Expvar.ReadTimeout, cfg.Expvar.WriteTimeout, cfg.Expvar.IdleTimeout)
+	exp := expvarsrv.New(log, cfg.Expvar.Host, cfg.Expvar.Route, cfg.Expvar.ReadTimeout, cfg.Expvar.WriteTimeout, cfg.Expvar.IdleTimeout)
 	defer exp.Stop(cfg.Expvar.ShutdownTimeout)
 
 	// =========================================================================

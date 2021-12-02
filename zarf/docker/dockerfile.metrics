@@ -1,7 +1,7 @@
 # Build the Go Binary.
-FROM golang:1.16 as build_metrics
+FROM golang:1.17 as build_metrics
 ENV CGO_ENABLED 0
-ARG VCS_REF
+ARG BUILD_REF
 
 # Create the service directory and the copy the module files first and then
 # download the dependencies. If this doesn't change, we won't need to do this
@@ -17,13 +17,13 @@ COPY ./backend /service/backend
 # Build the service binary. We are doing this last since this will be different
 # every time we run through this process.
 WORKDIR /service/backend/app/sidecar/metrics
-RUN go build -ldflags "-X main.build=${VCS_REF}"
+RUN go build -ldflags "-X main.build=${BUILD_REF}"
 
 
 # Run the Go Binary in Alpine.
-FROM alpine:3.14
+FROM alpine:3.15
 ARG BUILD_DATE
-ARG VCS_REF
+ARG BUILD_REF
 COPY --from=build_metrics /service/backend/app/sidecar/metrics/metrics /service/metrics
 WORKDIR /service
 CMD ["./metrics"]
@@ -32,5 +32,5 @@ LABEL org.opencontainers.image.created="${BUILD_DATE}" \
       org.opencontainers.image.title="metrics" \
       org.opencontainers.image.authors="Kevin Lai <kev@borecast.com>" \
       org.opencontainers.image.source="https://github.com/kevguy/algosearch/app/sidecar/metrics" \
-      org.opencontainers.image.revision="${VCS_REF}" \
+      org.opencontainers.image.revision="${BUILD_REF}" \
       org.opencontainers.image.vendor="Borecast"
