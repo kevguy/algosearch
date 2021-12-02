@@ -39,6 +39,8 @@ func NewApp(shutdown chan os.Signal, mw ...Middleware) *App {
 
 	mux := httptreemux.NewContextMux()
 
+
+
 	return &App{
 		mux:      mux,
 		otmux:    otelhttp.NewHandler(mux, "request"),

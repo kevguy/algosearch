@@ -5,8 +5,11 @@ package handlers
 import (
 	"context"
 	"expvar"
+	"fmt"
 	block2 "github.com/kevguy/algosearch/backend/business/core/block"
 	transaction2 "github.com/kevguy/algosearch/backend/business/core/transaction"
+	"github.com/kevguy/algosearch/backend/foundation/websocket"
+	"log"
 	"net/http"
 	"net/http/pprof"
 	"os"
@@ -47,6 +50,7 @@ type APIMuxConfig struct {
 	AlgodClient		*algod.Client
 	IndexerClient	*indexer.Client
 	CouchClient		*kivik.Client
+	Hub				*websocket.Hub
 }
 
 // APIMux constructs an http.Handler with all application routes defined.
@@ -75,6 +79,8 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) http.Handler {
 		return nil
 	}
 	app.Handle(http.MethodGet, "", "/swagger/*", f, mid.Cors("*"))
+
+
 
 	// Accept CORS 'OPTIONS' preflight requests if config has been provided.
 	// Don't forget to apply the CORS middleware to the routes that need it.
@@ -147,6 +153,7 @@ func v1(app *web.App, cfg APIMuxConfig) {
 		//return nil, errors.Wrap(err, "loading index template")
 	}
 	app.Handle(http.MethodGet, "", "/api/doc", sg.ServeDoc)
+	//app.Handle(http.MethodGet, "", "/wstest", sg.ServeWsTest)
 
 	// Register round endpoints
 	rG := roundGroup{
@@ -154,12 +161,12 @@ func v1(app *web.App, cfg APIMuxConfig) {
 		blockCore:	block2.NewCore(cfg.Log, cfg.CouchClient),
 		algodClient: cfg.AlgodClient,
 	}
-	app.Handle(http.MethodGet, version, "/algod/current-round", rG.getCurrentRoundFromAPI)
-	app.Handle(http.MethodGet, version, "/algod/rounds/:num", rG.getRoundFromAPI)
-	app.Handle(http.MethodGet, version, "/current-round", rG.getLatestSyncedRound)
-	app.Handle(http.MethodGet, version, "/earliest-round-num", rG.getEarliestSyncedRound)
-	app.Handle(http.MethodGet, version, "/rounds/:num", rG.getRound)
-	app.Handle(http.MethodGet, version, "/rounds", rG.getRoundsPagination)
+	app.Handle(http.MethodGet, version, "/algod/current-round", rG.getCurrentRoundFromAPI, mid.Cors("*"))
+	app.Handle(http.MethodGet, version, "/algod/rounds/:num", rG.getRoundFromAPI, mid.Cors("*"))
+	app.Handle(http.MethodGet, version, "/current-round", rG.getLatestSyncedRound, mid.Cors("*"))
+	app.Handle(http.MethodGet, version, "/earliest-round-num", rG.getEarliestSyncedRound, mid.Cors(*))
+	app.Handle(http.MethodGet, version, "/rounds/:num", rG.getRound, mid.Cors("*"))
+	app.Handle(http.MethodGet, version, "/rounds", rG.getRoundsPagination, mid.Cors("*"))
 
 	// Register transaction endpoints
 	tG := transactionGroup{
@@ -167,8 +174,40 @@ func v1(app *web.App, cfg APIMuxConfig) {
 		transactionCore: transaction2.NewCore(cfg.Log, cfg.CouchClient),
 		algodClient: cfg.AlgodClient,
 	}
-	app.Handle(http.MethodGet, version, "/current-txn", tG.getLatestSyncedTransaction)
-	app.Handle(http.MethodGet, version, "/earliest-txn", tG.getEarliestSyncedTransaction)
-	app.Handle(http.MethodGet, version, "/transactions/:id", tG.getTransaction)
-	app.Handle(http.MethodGet, version, "/transactions", tG.getTransactionsPagination)
+	app.Handle(http.MethodGet, version, "/current-txn", tG.getLatestSyncedTransaction, mid.Cors("*"))
+	app.Handle(http.MethodGet, version, "/earliest-txn", tG.getEarliestSyncedTransaction, mid.Cors("*"))
+	app.Handle(http.MethodGet, version, "/transactions/:id", tG.getTransaction, mid.Cors("*"))
+	app.Handle(http.MethodGet, version, "/transactions", tG.getTransactionsPagination, mid.Cors("*"))
+
+	app.Handle(http.MethodGet, "", "/wstest", serveHome)
+	//http.HandleFunc("/wstest", serveHome)
+	//http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+	app.Handle(http.MethodGet, "", "/ws", func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+		fmt.Println("Hey yo")
+		fmt.Println("Hey yo")
+		fmt.Println("Hey yo")
+		fmt.Println("Hey yo")
+		fmt.Println("Hey yo")
+		fmt.Println("Hey yo")
+		fmt.Println("Hey yo")
+		fmt.Println("Hey yo")
+		fmt.Println("Hey yo")
+		websocket.ServeWs(cfg.Hub, w, r)
+		return nil
+	})
+}
+
+func serveHome(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	fmt.Println("fuck you")
+	log.Println(r.URL)
+	//if r.URL.Path != "/" {
+	//	http.Error(w, "Not found", http.StatusNotFound)
+	//	return nil
+	//}
+	if r.Method != "GET" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return nil
+	}
+	http.ServeFile(w, r, "home.html")
+	return nil
 }

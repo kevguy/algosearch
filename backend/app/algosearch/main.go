@@ -11,6 +11,8 @@ import (
 	"github.com/kevguy/algosearch/backend/foundation/couchdb"
 	"github.com/kevguy/algosearch/backend/foundation/indexer"
 	"github.com/kevguy/algosearch/backend/foundation/keystore"
+	"github.com/kevguy/algosearch/backend/foundation/websocket"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -242,6 +244,9 @@ func run(log *zap.SugaredLogger) error {
 		return fmt.Errorf("connecting to couchdb database: %w", err)
 	}
 
+	hub := websocket.NewHub()
+	go hub.Run()
+
 	// =========================================================================
 	// Start Debug Service
 
@@ -273,14 +278,15 @@ func run(log *zap.SugaredLogger) error {
 
 	// Construct the mux for the API calls.
 	apiMux := handlers.APIMux(handlers.APIMuxConfig{
-		APIProtocol:   cfg.Web.DeployProtocol,
-		APIHost:       cfg.Web.DeployHost,
-		Shutdown:    shutdown,
-		Log:         log,
-		Auth:     auth,
-		AlgodClient: algodClient,
-		IndexerClient: indexerClient,
-		CouchClient: db,
+		APIProtocol:   	cfg.Web.DeployProtocol,
+		APIHost:       	cfg.Web.DeployHost,
+		Shutdown:      	shutdown,
+		Log:         	log,
+		Auth:     		auth,
+		AlgodClient: 	algodClient,
+		IndexerClient: 	indexerClient,
+		CouchClient: 	db,
+		Hub: 			hub,
 	})
 
 	// Construct a server to service the requests against the mux.
@@ -296,6 +302,25 @@ func run(log *zap.SugaredLogger) error {
 	// Make a channel to listen for errors coming from the listener. Use a
 	// buffered channel so the goroutine can exit if we don't collect this error.
 	serverErrors := make(chan error, 1)
+
+
+	/*
+	hub := websocket.NewHub()
+	go hub.Run()
+	http.HandleFunc("/wstest", serveHome)
+	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("Hey yo")
+		fmt.Println("Hey yo")
+		fmt.Println("Hey yo")
+		fmt.Println("Hey yo")
+		fmt.Println("Hey yo")
+		fmt.Println("Hey yo")
+		fmt.Println("Hey yo")
+		fmt.Println("Hey yo")
+		fmt.Println("Hey yo")
+		websocket.ServeWs(hub, w, r)
+	})
+	 */
 
 	// Start the service listening for api requests.
 	go func() {
@@ -375,4 +400,18 @@ func startTracing(serviceName string, reporterURI string, probability float64) (
 	// I can only get this working properly using the singleton :(
 	otel.SetTracerProvider(traceProvider)
 	return traceProvider, nil
+}
+
+
+func serveHome(w http.ResponseWriter, r *http.Request) {
+	log.Println(r.URL)
+	if r.URL.Path != "/" {
+		http.Error(w, "Not found", http.StatusNotFound)
+		return
+	}
+	if r.Method != "GET" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	http.ServeFile(w, r, "swagger/home.html")
 }
