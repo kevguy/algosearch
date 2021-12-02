@@ -5,7 +5,7 @@ import (
 	"context"
 	"github.com/algorand/go-algorand-sdk/client/v2/common/models"
 	"github.com/go-kivik/kivik/v4"
-	app "github.com/kevguy/algosearch/backend/business/algod"
+	app "github.com/kevguy/algosearch/backend/business/core/algod"
 	"github.com/kevguy/algosearch/backend/business/data/schema"
 	"github.com/kevguy/algosearch/backend/foundation/web"
 	"github.com/pkg/errors"

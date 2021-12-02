@@ -1,27 +1,23 @@
-package handlers
+package transactiongrp
 
 import (
 	"context"
 	"fmt"
-	"github.com/algorand/go-algorand-sdk/client/v2/algod"
 	"github.com/kevguy/algosearch/backend/business/core/transaction"
 	"github.com/kevguy/algosearch/backend/business/core/transaction/db"
 	v1web "github.com/kevguy/algosearch/backend/business/web/v1"
 	"github.com/kevguy/algosearch/backend/foundation/web"
 	"github.com/pkg/errors"
-	"go.uber.org/zap"
 	"net/http"
 	"strconv"
 )
 
-type transactionGroup struct {
-	log         *zap.SugaredLogger
-	transactionCore transaction.Core
-	algodClient *algod.Client
+type Handlers struct {
+	TransactionCore transaction.Core
 }
 
-// getTransaction retrieves a block from CouchDB based on the round number (num)
-func (tG transactionGroup) getTransaction(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+// GetTransaction retrieves a block from CouchDB based on the round number (num)
+func (h Handlers) GetTransaction(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	_, err := web.GetValues(ctx)
 	if err != nil {
 		return web.NewShutdownError("web value missing from context")
@@ -29,7 +25,7 @@ func (tG transactionGroup) getTransaction(ctx context.Context, w http.ResponseWr
 
 	id := web.Param(r, "id")
 	// TODO: add trace ID
-	transactionData, err := tG.transactionCore.GetTransaction(ctx, id)
+	transactionData, err := h.TransactionCore.GetTransaction(ctx, id)
 	if err != nil {
 		return errors.Wrapf(err, "unable to get transaction %s", id)
 	}
@@ -37,14 +33,14 @@ func (tG transactionGroup) getTransaction(ctx context.Context, w http.ResponseWr
 	return web.Respond(ctx, w, transactionData, http.StatusOK)
 }
 
-// getLatestSyncedTransaction retrieves the latest transaction from CouchDB.
-func (tG transactionGroup) getLatestSyncedTransaction(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+// GetLatestSyncedTransaction retrieves the latest transaction from CouchDB.
+func (h Handlers) GetLatestSyncedTransaction(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	_, err := web.GetValues(ctx)
 	if err != nil {
 		return web.NewShutdownError("web value missing from context")
 	}
 
-	transactionData, err := tG.transactionCore.GetLatestTransaction(ctx)
+	transactionData, err := h.TransactionCore.GetLatestTransaction(ctx)
 	if err != nil {
 		return errors.Wrapf(err, "unable to get latest synced transaction")
 	}
@@ -52,14 +48,14 @@ func (tG transactionGroup) getLatestSyncedTransaction(ctx context.Context, w htt
 	return web.Respond(ctx, w, transactionData, http.StatusOK)
 }
 
-// getEarliestSyncedTransaction retrieves the earliest transaction from CouchDB.
-func (tG transactionGroup) getEarliestSyncedTransaction(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+// GetEarliestSyncedTransaction retrieves the earliest transaction from CouchDB.
+func (h Handlers) GetEarliestSyncedTransaction(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	_, err := web.GetValues(ctx)
 	if err != nil {
 		return web.NewShutdownError("web value missing from context")
 	}
 
-	transactionData, err := tG.transactionCore.GetEarliestTransaction(ctx)
+	transactionData, err := h.TransactionCore.GetEarliestTransaction(ctx)
 	if err != nil {
 		return errors.Wrapf(err, "unable to get earliest synced transaction")
 	}
@@ -67,7 +63,7 @@ func (tG transactionGroup) getEarliestSyncedTransaction(ctx context.Context, w h
 	return web.Respond(ctx, w, transactionData, http.StatusOK)
 }
 
-func (tG transactionGroup) getTransactionsPagination(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func (h Handlers) GetTransactionsPagination(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 
 	// limit
 	limitQueries := web.Query(r, "limit")
@@ -109,7 +105,7 @@ func (tG transactionGroup) getTransactionsPagination(ctx context.Context, w http
 		return v1web.NewRequestError(fmt.Errorf("invalid 'sort' format: %s", orderQueries[0]), http.StatusBadRequest)
 	}
 
-	result, numOfPages, numOfTxns, err := tG.transactionCore.GetTransactionsPagination(ctx, latestTxn, order, int64(page), int64(limit))
+	result, numOfPages, numOfTxns, err := h.TransactionCore.GetTransactionsPagination(ctx, latestTxn, order, int64(page), int64(limit))
 	if err != nil {
 		return errors.Wrap(err, "Error fetching pagination results")
 	}

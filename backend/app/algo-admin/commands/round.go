@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	app "github.com/kevguy/algosearch/backend/business/algod"
+	algod2 "github.com/kevguy/algosearch/backend/business/core/algod"
 	"github.com/kevguy/algosearch/backend/foundation/algod"
 	"github.com/pkg/errors"
 	"time"
@@ -23,7 +24,7 @@ func GetRoundCmd(cfg algod.Config, blockNum uint64) error {
 	if err != nil {
 		return fmt.Errorf("getting rount %d from Algorand Node %w", blockNum, err)
 	}
-	if err := app.PrintBlockInfoFromRawBytes(rawBlock); err != nil {
+	if err := algod2.PrintBlockInfoFromRawBytes(rawBlock); err != nil {
 		return fmt.Errorf("process round %d raw block from Algorand Node %w", blockNum, err)
 	}
 

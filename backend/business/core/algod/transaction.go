@@ -386,10 +386,10 @@ func lsigToTransactionLsig(lsig types.LogicSig) *models.TransactionSignatureLogi
 		}
 	}
 	ret := models.TransactionSignatureLogicsig{
-		Args:				lsig.Args,
-		Logic: 				lsig.Logic,
-		MultisigSignature:	*txnMSig,
-		Signature:			sigToTransactionSig(lsig.Sig),
+		Args:              lsig.Args,
+		Logic:             lsig.Logic,
+		MultisigSignature: *txnMSig,
+		Signature:         sigToTransactionSig(lsig.Sig),
 	}
 	return &ret
 }
@@ -565,10 +565,10 @@ func ProcessTransactionInBlock(txn types.SignedTxnInBlock, blockInfo types.Block
 		Signature:                sig,
 		Id:   					  crypto.TransactionIDString(txn.Txn),
 		// TODO
-		RekeyTo: 				  txn.Txn.RekeyTo.String(),
-		GlobalStateDelta:		  stateDeltaToStateDelta(txn.EvalDelta.GlobalDelta),
-		LocalStateDelta:		  localStateDelta,
-		AuthAddr:                 txn.AuthAddr.String(),
+		RekeyTo:          txn.Txn.RekeyTo.String(),
+		GlobalStateDelta: stateDeltaToStateDelta(txn.EvalDelta.GlobalDelta),
+		LocalStateDelta:  localStateDelta,
+		AuthAddr:         txn.AuthAddr.String(),
 	}
 
 	switch txn.Txn.Type {

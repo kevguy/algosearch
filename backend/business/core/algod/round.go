@@ -3,27 +3,25 @@ package algod
 import (
 	"context"
 	"encoding/base64"
-	algodv2 "github.com/algorand/go-algorand-sdk/client/v2/algod"
 	"github.com/algorand/go-algorand-sdk/client/v2/common/models"
 	"github.com/algorand/go-algorand-sdk/encoding/msgpack"
 	"github.com/kevguy/algosearch/backend/business/core/block/db"
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
-	"go.uber.org/zap"
 	"strconv"
 )
 
 // GetRound retrieves a block from the Algod API based on the round number given
-func GetRound(ctx context.Context, traceID string, log *zap.SugaredLogger, algodClient *algodv2.Client, roundNum uint64) (*db.NewBlock, error) {
+func (c Core) GetRound(ctx context.Context, traceID string, roundNum uint64) (*db.NewBlock, error) {
 
 	ctx, span := otel.GetTracerProvider().Tracer("").Start(ctx, "algod.GetRound")
 	span.SetAttributes(attribute.Int64("round", int64(roundNum)))
 	defer span.End()
 
-	log.Infow("algod.GetRound", "traceid", traceID)
+	c.log.Infow("algod.GetRound", "traceid", traceID)
 
-	rawBlock, err := GetRoundInRawBytes(ctx, algodClient, roundNum)
+	rawBlock, err := c.GetRoundInRawBytes(ctx, roundNum)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to query for current round")
 	}
@@ -36,19 +34,19 @@ func GetRound(ctx context.Context, traceID string, log *zap.SugaredLogger, algod
 }
 
 // GetCurrentRound retrieves retrieves the current block from the Algod API
-func GetCurrentRound(ctx context.Context, traceID string, log *zap.SugaredLogger, algodClient *algodv2.Client) (*db.NewBlock, error) {
+func (c Core) GetCurrentRound(ctx context.Context, traceID string) (*db.NewBlock, error) {
 
 	ctx, span := otel.GetTracerProvider().Tracer("").Start(ctx, "algod.GetCurrentRound")
 	defer span.End()
 
-	log.Infow("algod.GetCurrentRound", "traceid", traceID)
+	c.log.Infow("algod.GetCurrentRound", "traceid", traceID)
 
-	currNum, err := GetCurrentRoundNum(ctx, algodClient)
+	currNum, err := c.GetCurrentRoundNum(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to query for current round num")
 	}
 
-	blockData, err := GetRound(ctx, traceID, log, algodClient, currNum)
+	blockData, err := c.GetRound(ctx, traceID, currNum)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to get round data")
 	}
@@ -56,13 +54,13 @@ func GetCurrentRound(ctx context.Context, traceID string, log *zap.SugaredLogger
 }
 
 // GetCurrentRoundNum retrieves the current round number from the Algod API
-func GetCurrentRoundNum(ctx context.Context, algodClient *algodv2.Client) (uint64, error) {
+func (c Core) GetCurrentRoundNum(ctx context.Context) (uint64, error) {
 
 	ctx, span := otel.GetTracerProvider().Tracer("").Start(ctx, "algod.GetCurrentRoundInRawBytes")
 	//span.SetAttributes(attribute.String("query", q))
 	defer span.End()
 
-	nodeStatus, pingError := algodClient.Status().Do(ctx)
+	nodeStatus, pingError := c.algodClient.Status().Do(ctx)
 	if pingError != nil {
 		return 0, errors.Wrap(pingError, "Error getting node status")
 	}
@@ -74,13 +72,13 @@ func GetCurrentRoundNum(ctx context.Context, algodClient *algodv2.Client) (uint6
 }
 
 // GetRoundInRawBytes retrieves the specified round and returns result in byte format.
-func GetRoundInRawBytes(ctx context.Context, algodClient *algodv2.Client, roundNum uint64) ([]byte, error) {
+func (c Core) GetRoundInRawBytes(ctx context.Context, roundNum uint64) ([]byte, error) {
 
 	ctx, span := otel.GetTracerProvider().Tracer("").Start(ctx, "algorand.GetRoundInRawBytes")
 	span.SetAttributes(attribute.String("blockNum", strconv.FormatUint(roundNum, 10)))
 	defer span.End()
 
-	rawBlock, err := algodClient.BlockRaw(roundNum).Do(ctx)
+	rawBlock, err := c.algodClient.BlockRaw(roundNum).Do(ctx)
 	if err != nil {
 		return []byte{}, errors.Wrap(err, "getting ground in raw bytes")
 	}

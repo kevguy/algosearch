@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	app "github.com/kevguy/algosearch/backend/business/algod"
+	algod2 "github.com/kevguy/algosearch/backend/business/core/algod"
 	"github.com/kevguy/algosearch/backend/business/core/block"
 	"github.com/kevguy/algosearch/backend/foundation/algod"
 	"github.com/kevguy/algosearch/backend/foundation/couchdb"
@@ -30,7 +31,7 @@ func AddCurrentRoundCmd(traceID string, log *zap.SugaredLogger, cfg algod.Config
 	if err != nil {
 		return errors.Wrap(err, "getting current round from Algorand Node")
 	}
-	if err := app.PrintBlockInfoFromRawBytes(rawBlock); err != nil {
+	if err := algod2.PrintBlockInfoFromRawBytes(rawBlock); err != nil {
 		return errors.Wrap(err, "process current round raw block")
 	}
 
@@ -45,7 +46,7 @@ func AddCurrentRoundCmd(traceID string, log *zap.SugaredLogger, cfg algod.Config
 
 	blockCore := block.NewCore(log, db)
 
-	newBlock, err := app.ConvertBlockRawBytes(ctx, rawBlock)
+	newBlock, err := algod2.ConvertBlockRawBytes(ctx, rawBlock)
 	if err != nil {
 		return errors.Wrap(err, "convert raw bytes to block data")
 	}

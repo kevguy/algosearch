@@ -3,6 +3,7 @@ package commands
 import (
 	"context"
 	app "github.com/kevguy/algosearch/backend/business/algod"
+	algod2 "github.com/kevguy/algosearch/backend/business/core/algod"
 	"github.com/kevguy/algosearch/backend/foundation/algod"
 	"github.com/pkg/errors"
 	"time"
@@ -26,7 +27,7 @@ func GetCurrentRoundCmd(cfg algod.Config) error {
 	if err != nil {
 		return errors.Wrap(err, "getting current round from Algorand Node")
 	}
-	if err := app.PrintBlockInfoFromRawBytes(rawBlock); err != nil {
+	if err := algod2.PrintBlockInfoFromRawBytes(rawBlock); err != nil {
 		return errors.Wrap(err, "process current round raw block")
 	}
 

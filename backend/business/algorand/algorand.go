@@ -6,7 +6,7 @@ import (
 	"github.com/algorand/go-algorand-sdk/client/v2/common/models"
 	indexerv2 "github.com/algorand/go-algorand-sdk/client/v2/indexer"
 	"github.com/go-kivik/kivik/v4"
-	"github.com/kevguy/algosearch/backend/business/algod"
+	"github.com/kevguy/algosearch/backend/business/core/algod"
 	"github.com/kevguy/algosearch/backend/business/core/block"
 	"github.com/kevguy/algosearch/backend/business/core/indexer"
 	"github.com/kevguy/algosearch/backend/business/core/transaction"
@@ -23,6 +23,7 @@ type Agent struct {
 	//indexerClient *indexerv2.Client
 	algodClient *algodv2.Client
 
+	algodCore 		*algod.Core
 	indexerCore		*indexer.Core
 	blockCore 		*block.Core
 	transactionCore *transaction.Core
@@ -34,6 +35,7 @@ func NewAgent(log *zap.SugaredLogger,
 	algodClient *algodv2.Client,
 	couchClient *kivik.Client) Agent {
 
+	algodCore := algod.NewCore(log, algodClient)
 	blockCore := block.NewCore(log, couchClient)
 	transactionCore := transaction.NewCore(log, couchClient)
 
@@ -47,6 +49,7 @@ func NewAgent(log *zap.SugaredLogger,
 		log: log,
 		algodClient: algodClient,
 
+		algodCore: &algodCore,
 		indexerCore: indexerCore,
 		blockCore: &blockCore,
 		transactionCore: &transactionCore,
@@ -92,7 +95,7 @@ func (a Agent) GetRound(ctx context.Context, traceID string, log *zap.SugaredLog
 
 	// Try Algod
 	if a.algodClient != nil {
-		algodBlock, err := algod.GetRound(ctx, traceID, log, a.algodClient, roundNum)
+		algodBlock, err := a.algodCore.GetRound(ctx, traceID, roundNum)
 		if err != nil {
 			log.Errorf("unable to get block data from algod for round %d\n", roundNum)
 

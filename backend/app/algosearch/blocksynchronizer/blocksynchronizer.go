@@ -9,6 +9,7 @@ import (
 	"github.com/algorand/go-algorand-sdk/client/v2/common/models"
 	app "github.com/kevguy/algosearch/backend/business/algod"
 	"github.com/kevguy/algosearch/backend/business/core/account"
+	algod2 "github.com/kevguy/algosearch/backend/business/core/algod"
 	"github.com/kevguy/algosearch/backend/business/core/application"
 	"github.com/kevguy/algosearch/backend/business/core/asset"
 	"github.com/kevguy/algosearch/backend/business/core/block"
@@ -129,7 +130,7 @@ func (p *BlockSynchronizer) update() {
 		//fmt.Printf("last synced num: %d\n", lastSyncedBlockNum + 1)
 		p.log.Infof("Adding Round #%d\n", lastSyncedBlockNum + 1)
 
-		newBlock, err := app.ConvertBlockRawBytes(context.Background(), rawBlock)
+		newBlock, err := algod2.ConvertBlockRawBytes(context.Background(), rawBlock)
 		if err != nil {
 			p.log.Errorw("blocksynchronizer", "status", "convert raw bytes to block data", "ERROR", err)
 		}
@@ -168,9 +169,9 @@ func (p *BlockSynchronizer) update() {
 
 			for _, txn := range newBlock.Transactions {
 
-				accountIDs := app.ExtractAccountAddrsFromTxn(txn)
-				applicationIDs := app.ExtractApplicationIdsFromTxn(txn)
-				assetIDs := app.ExtractAssetIdsFromTxn(txn)
+				accountIDs := algod2.ExtractAccountAddrsFromTxn(txn)
+				applicationIDs := algod2.ExtractApplicationIdsFromTxn(txn)
+				assetIDs := algod2.ExtractAssetIdsFromTxn(txn)
 
 				for _, acctID := range accountIDs {
 					accountInfo, err := app.GetAccount(context.Background(),"", p.log, p.algodClient, acctID)
@@ -266,7 +267,7 @@ func GetAndInsertBlockData(
 	//fmt.Printf("last synced num: %d\n", lastSyncedBlockNum + 1)
 	log.Infof("Adding Round #%d\n", blockNum)
 
-	newBlock, err := app.ConvertBlockRawBytes(context.Background(), rawBlock)
+	newBlock, err := algod2.ConvertBlockRawBytes(context.Background(), rawBlock)
 	if err != nil {
 		log.Errorw("blocksynchronizer", "status", "convert raw bytes to block data", "ERROR", err)
 		return err
@@ -309,9 +310,9 @@ func GetAndInsertBlockData(
 
 		for _, txn := range newBlock.Transactions {
 
-			accountIDs := app.ExtractAccountAddrsFromTxn(txn)
-			applicationIDs := app.ExtractApplicationIdsFromTxn(txn)
-			assetIDs := app.ExtractAssetIdsFromTxn(txn)
+			accountIDs := algod2.ExtractAccountAddrsFromTxn(txn)
+			applicationIDs := algod2.ExtractApplicationIdsFromTxn(txn)
+			assetIDs := algod2.ExtractAssetIdsFromTxn(txn)
 
 			for _, acctID := range accountIDs {
 				accountInfo, err := app.GetAccount(context.Background(),"", log, algodClient, acctID)

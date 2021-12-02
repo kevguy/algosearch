@@ -6,6 +6,9 @@ import (
 	"context"
 	"expvar"
 	"fmt"
+	"github.com/kevguy/algosearch/backend/app/algosearch/handlers/v1/roundgrp"
+	"github.com/kevguy/algosearch/backend/app/algosearch/handlers/v1/transactiongrp"
+	algod2 "github.com/kevguy/algosearch/backend/business/core/algod"
 	block2 "github.com/kevguy/algosearch/backend/business/core/block"
 	transaction2 "github.com/kevguy/algosearch/backend/business/core/transaction"
 	"github.com/kevguy/algosearch/backend/foundation/websocket"
@@ -156,28 +159,25 @@ func v1(app *web.App, cfg APIMuxConfig) {
 	//app.Handle(http.MethodGet, "", "/wstest", sg.ServeWsTest)
 
 	// Register round endpoints
-	rG := roundGroup{
-		log:         cfg.Log,
-		blockCore:	block2.NewCore(cfg.Log, cfg.CouchClient),
-		algodClient: cfg.AlgodClient,
+	rG := roundgrp.Handlers{
+		BlockCore: block2.NewCore(cfg.Log, cfg.CouchClient),
+		AlgodCore: algod2.NewCore(cfg.Log, cfg.AlgodClient),
 	}
-	app.Handle(http.MethodGet, version, "/algod/current-round", rG.getCurrentRoundFromAPI, mid.Cors("*"))
-	app.Handle(http.MethodGet, version, "/algod/rounds/:num", rG.getRoundFromAPI, mid.Cors("*"))
-	app.Handle(http.MethodGet, version, "/current-round", rG.getLatestSyncedRound, mid.Cors("*"))
-	app.Handle(http.MethodGet, version, "/earliest-round-num", rG.getEarliestSyncedRound, mid.Cors("*"))
-	app.Handle(http.MethodGet, version, "/rounds/:num", rG.getRound, mid.Cors("*"))
-	app.Handle(http.MethodGet, version, "/rounds", rG.getRoundsPagination, mid.Cors("*"))
+	app.Handle(http.MethodGet, version, "/algod/current-round", rG.GetCurrentRoundFromAPI, mid.Cors("*"))
+	app.Handle(http.MethodGet, version, "/algod/rounds/:num", rG.GetRoundFromAPI, mid.Cors("*"))
+	app.Handle(http.MethodGet, version, "/current-round", rG.GetLatestSyncedRound, mid.Cors("*"))
+	app.Handle(http.MethodGet, version, "/earliest-round-num", rG.GetEarliestSyncedRound, mid.Cors("*"))
+	app.Handle(http.MethodGet, version, "/rounds/:num", rG.GetRound, mid.Cors("*"))
+	app.Handle(http.MethodGet, version, "/rounds", rG.GetRoundsPagination, mid.Cors("*"))
 
 	// Register transaction endpoints
-	tG := transactionGroup{
-		log:         cfg.Log,
-		transactionCore: transaction2.NewCore(cfg.Log, cfg.CouchClient),
-		algodClient: cfg.AlgodClient,
+	tG := transactiongrp.Handlers{
+		TransactionCore: transaction2.NewCore(cfg.Log, cfg.CouchClient),
 	}
-	app.Handle(http.MethodGet, version, "/current-txn", tG.getLatestSyncedTransaction, mid.Cors("*"))
-	app.Handle(http.MethodGet, version, "/earliest-txn", tG.getEarliestSyncedTransaction, mid.Cors("*"))
-	app.Handle(http.MethodGet, version, "/transactions/:id", tG.getTransaction, mid.Cors("*"))
-	app.Handle(http.MethodGet, version, "/transactions", tG.getTransactionsPagination, mid.Cors("*"))
+	app.Handle(http.MethodGet, version, "/current-txn", tG.GetLatestSyncedTransaction, mid.Cors("*"))
+	app.Handle(http.MethodGet, version, "/earliest-txn", tG.GetEarliestSyncedTransaction, mid.Cors("*"))
+	app.Handle(http.MethodGet, version, "/transactions/:id", tG.GetTransaction, mid.Cors("*"))
+	app.Handle(http.MethodGet, version, "/transactions", tG.GetTransactionsPagination, mid.Cors("*"))
 
 	app.Handle(http.MethodGet, "", "/wstest", serveHome)
 	//http.HandleFunc("/wstest", serveHome)
