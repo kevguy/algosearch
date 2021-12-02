@@ -164,7 +164,7 @@ func v1(app *web.App, cfg APIMuxConfig) {
 	app.Handle(http.MethodGet, version, "/algod/current-round", rG.getCurrentRoundFromAPI, mid.Cors("*"))
 	app.Handle(http.MethodGet, version, "/algod/rounds/:num", rG.getRoundFromAPI, mid.Cors("*"))
 	app.Handle(http.MethodGet, version, "/current-round", rG.getLatestSyncedRound, mid.Cors("*"))
-	app.Handle(http.MethodGet, version, "/earliest-round-num", rG.getEarliestSyncedRound, mid.Cors(*))
+	app.Handle(http.MethodGet, version, "/earliest-round-num", rG.getEarliestSyncedRound, mid.Cors("*"))
 	app.Handle(http.MethodGet, version, "/rounds/:num", rG.getRound, mid.Cors("*"))
 	app.Handle(http.MethodGet, version, "/rounds", rG.getRoundsPagination, mid.Cors("*"))
 
