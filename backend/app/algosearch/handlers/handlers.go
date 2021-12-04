@@ -5,9 +5,11 @@ package handlers
 import (
 	"context"
 	"expvar"
+	"github.com/kevguy/algosearch/backend/app/algosearch/handlers/v1/acctgrp"
 	"github.com/kevguy/algosearch/backend/app/algosearch/handlers/v1/roundgrp"
 	"github.com/kevguy/algosearch/backend/app/algosearch/handlers/v1/transactiongrp"
 	"github.com/kevguy/algosearch/backend/app/algosearch/handlers/v1/wsgrp"
+	"github.com/kevguy/algosearch/backend/business/core/account"
 	algod2 "github.com/kevguy/algosearch/backend/business/core/algod"
 	block2 "github.com/kevguy/algosearch/backend/business/core/block"
 	transaction2 "github.com/kevguy/algosearch/backend/business/core/transaction"
@@ -178,6 +180,16 @@ func v1(app *web.App, cfg APIMuxConfig) {
 	app.Handle(http.MethodGet, version, "/transactions/acct/:acct_id", tG.GetTransactionsByAcctID, mid.Cors("*"))
 	app.Handle(http.MethodGet, version, "/transactions/acct/:acct_id/count", tG.GetTransactionsByAcctIDCount, mid.Cors("*"))
 	app.Handle(http.MethodGet, version, "/transactions", tG.GetTransactionsPagination, mid.Cors("*"))
+
+	// Register account endpoints
+	aG := acctgrp.Handlers{
+		AcctCore: account.NewCore(cfg.Log, cfg.CouchClient),
+	}
+	app.Handle(http.MethodGet, version, "/accts/latest", aG.GetLatestSyncedAccountAddr, mid.Cors("*"))
+	app.Handle(http.MethodGet, version, "/accts/earliest", aG.GetEarliestSyncedAccountAddr, mid.Cors("*"))
+	app.Handle(http.MethodGet, version, "/accts/count", aG.GetAcctCount, mid.Cors("*"))
+	app.Handle(http.MethodGet, version, "/accts/:addr", aG.GetAccount, mid.Cors("*"))
+	app.Handle(http.MethodGet, version, "/accts", aG.GetAccountsPagination, mid.Cors("*"))
 
 	// Register websocket endpoints
 	wsG := wsgrp.Handlers{
