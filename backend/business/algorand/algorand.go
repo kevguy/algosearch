@@ -2,17 +2,17 @@ package algorand
 
 import (
 	"context"
+	"fmt"
 	algodv2 "github.com/algorand/go-algorand-sdk/client/v2/algod"
 	"github.com/algorand/go-algorand-sdk/client/v2/common/models"
 	indexerv2 "github.com/algorand/go-algorand-sdk/client/v2/indexer"
 	"github.com/go-kivik/kivik/v4"
 	"github.com/kevguy/algosearch/backend/business/core/algod"
 	"github.com/kevguy/algosearch/backend/business/core/block"
+	blockDb "github.com/kevguy/algosearch/backend/business/core/block/db"
 	"github.com/kevguy/algosearch/backend/business/core/indexer"
 	"github.com/kevguy/algosearch/backend/business/core/transaction"
-	blockDb "github.com/kevguy/algosearch/backend/business/core/block/db"
 
-	"github.com/pkg/errors"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.uber.org/zap"
@@ -75,7 +75,7 @@ func (a Agent) GetRound(ctx context.Context, traceID string, log *zap.SugaredLog
 	// Whatever we do, we still have to get data from Couch (for proposer and block hash, at least for the time being)
 	couchBlock, err := a.blockCore.GetBlockByNum(ctx, roundNum)
 	if err != nil {
-		return nil, errors.Wrapf(err, "unable to query couch for round %d", roundNum)
+		return nil, fmt.Errorf("unable to query couch for round %d: %w", roundNum, err)
 	}
 
 	// Try Indexer
@@ -128,7 +128,7 @@ func (a Agent) GetTransaction(ctx context.Context, traceID string, log *zap.Suga
 	// Whatever we do, we still have to get data from Couch (for proposer and block hash, at least for the time being)
 	couchTransaction, err := a.transactionCore.GetTransaction(ctx, transactionID)
 	if err != nil {
-		return nil, errors.Wrapf(err, "unable to query couch for transaction %s", transactionID)
+		return nil, fmt.Errorf("unable to query couch for transaction %s: %w", transactionID, err)
 	}
 
 	// Try Indexer

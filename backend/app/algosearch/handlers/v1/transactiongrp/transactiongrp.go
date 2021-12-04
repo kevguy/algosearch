@@ -89,7 +89,8 @@ func (h Handlers) GetTransactionsPagination(ctx context.Context, w http.Response
 	}
 	page, err := strconv.Atoi(pageQueries[0])
 	if err != nil {
-		return v1web.NewRequestError(fmt.Errorf("invalid 'page' format: %s", latestTxnQueries[0]), http.StatusBadRequest)
+		//return v1web.NewRequestError(fmt.Errorf("invalid 'page' format: %s", latestTxnQueries[0]), http.StatusBadRequest)
+		return v1web.NewRequestError(fmt.Errorf("invalid 'page' format: %s", pageQueries[0]), http.StatusBadRequest)
 	}
 
 	// order
@@ -107,7 +108,7 @@ func (h Handlers) GetTransactionsPagination(ctx context.Context, w http.Response
 
 	result, numOfPages, numOfTxns, err := h.TransactionCore.GetTransactionsPagination(ctx, latestTxn, order, int64(page), int64(limit))
 	if err != nil {
-		return errors.Wrap(err, "Error fetching pagination results")
+		return fmt.Errorf("error fetching pagination results: %w", err)
 	}
 
 	type Payload struct {

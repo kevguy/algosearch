@@ -175,6 +175,8 @@ func v1(app *web.App, cfg APIMuxConfig) {
 	app.Handle(http.MethodGet, version, "/current-txn", tG.GetLatestSyncedTransaction, mid.Cors("*"))
 	app.Handle(http.MethodGet, version, "/earliest-txn", tG.GetEarliestSyncedTransaction, mid.Cors("*"))
 	app.Handle(http.MethodGet, version, "/transactions/:id", tG.GetTransaction, mid.Cors("*"))
+	app.Handle(http.MethodGet, version, "/transactions/acct/:acct_id", tG.GetTransactionsByAcctID, mid.Cors("*"))
+	app.Handle(http.MethodGet, version, "/transactions/acct/:acct_id/count", tG.GetTransactionsByAcctIDCount, mid.Cors("*"))
 	app.Handle(http.MethodGet, version, "/transactions", tG.GetTransactionsPagination, mid.Cors("*"))
 
 	// Register websocket endpoints

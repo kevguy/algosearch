@@ -30,10 +30,12 @@ func main() {
 	}
 	defer log.Sync()
 
+	// Perform the startup and shutdown sequence.
 	if err := run(log); err != nil {
-		if errors.Cause(err) != commands.ErrHelp {
-			log.Errorw("", zap.Error(err))
+		if !errors.Is(err, commands.ErrHelp) {
+			log.Errorw("startup", "ERROR", err)
 		}
+		log.Sync()
 		os.Exit(1)
 	}
 }
@@ -43,15 +45,15 @@ func run(log *zap.SugaredLogger) error {
 	// =========================================================================
 	// Configuration
 
-	var cfg struct {
+	cfg := struct {
 		conf.Version
-		Args conf.Args
+		Args    conf.Args
 		CouchDB struct {
-			Protocol   string `conf:"default:http"`
-			User       string `conf:"default:admin"`
-			Password   string `conf:"default:password,mask"`
+			Protocol string `conf:"default:http"`
+			User     string `conf:"default:admin"`
+			Password string `conf:"default:password,mask"`
 			//Host       string `conf:"default:127.0.0.1:5984"`
-			Host		string `conf:"default:89.39.110.254:5984"`
+			Host string `conf:"default:89.39.110.254:5984"`
 		}
 		Algorand struct {
 			//AlgodAddr	string `conf:"default:http://localhost:4001"`
@@ -60,17 +62,19 @@ func run(log *zap.SugaredLogger) error {
 			//KmdToken	string `conf:"default:a"`
 			//IndexerAddr 	string `conf:"default:http://localhost:8980"`
 			//IndexerToken	string `conf:"default:empty"`
-			AlgodAddr		string `conf:"default:http://89.39.110.254:4001"`
-			AlgodToken		string `conf:"default:a2d2ac864300588718c6c05ff241a14fad99d30a19806356f3b9c8008559c4c1"`
-			KmdAddr			string `conf:""`
-			KmdToken		string `conf:""`
-			IndexerAddr 	string `conf:""`
-			IndexerToken	string `conf:"default:empty"`
+			AlgodAddr    string `conf:"default:http://89.39.110.254:4001"`
+			AlgodToken   string `conf:"default:a2d2ac864300588718c6c05ff241a14fad99d30a19806356f3b9c8008559c4c1"`
+			KmdAddr      string `conf:""`
+			KmdToken     string `conf:""`
+			IndexerAddr  string `conf:""`
+			IndexerToken string `conf:"default:empty"`
 		}
+	}{
+		Version: conf.Version{
+			Build: build,
+			Desc:  "copyright information here",
+		},
 	}
-	cfg.Version.Build = build
-	cfg.Version.Desc = "copyright information here"
-
 
 	// This is some special handling that the configuration library cannot
 	// handle default value being an empty string
@@ -106,10 +110,10 @@ func run(log *zap.SugaredLogger) error {
 	}
 
 	algorandConfig := algod.Config{
-		AlgodAddr: cfg.Algorand.AlgodAddr,
+		AlgodAddr:  cfg.Algorand.AlgodAddr,
 		AlgodToken: cfg.Algorand.AlgodToken,
-		KmdAddr: cfg.Algorand.KmdAddr,
-		KmdToken: cfg.Algorand.KmdToken,
+		KmdAddr:    cfg.Algorand.KmdAddr,
+		KmdToken:   cfg.Algorand.KmdToken,
 	}
 
 	indexerConfig := indexer.Config{
@@ -117,11 +121,23 @@ func run(log *zap.SugaredLogger) error {
 		IndexerToken: cfg.Algorand.IndexerToken,
 	}
 
+
+	return processCommands(cfg.Args, log, couchConfig, algorandConfig, indexerConfig)
+}
+
+// processCommands handles the execution of the commands specified on
+// the command line.
+func processCommands(args conf.Args,
+	log *zap.SugaredLogger,
+	couchConfig couchdb.Config,
+	algorandConfig algod.Config,
+	indexerConfig indexer.Config) error {
+
 	traceID := "00000000-0000-0000-0000-000000000000"
 
-	switch cfg.Args.Num(0) {
+	switch args.Num(0) {
 	case "pprint-round-algod":
-		numStr := cfg.Args.Num(1)
+		numStr := args.Num(1)
 		num, err := strconv.Atoi(numStr)
 		if err != nil {
 			return fmt.Errorf("num arg format wrong: %w", err)
@@ -131,7 +147,7 @@ func run(log *zap.SugaredLogger) error {
 		}
 
 	case "pprint-round-indexer":
-		numStr := cfg.Args.Num(1)
+		numStr := args.Num(1)
 		num, err := strconv.Atoi(numStr)
 		if err != nil {
 			return fmt.Errorf("num arg format wrong: %w", err)
@@ -141,7 +157,7 @@ func run(log *zap.SugaredLogger) error {
 		}
 
 	case "compare-round-algod-indexer":
-		numStr := cfg.Args.Num(1)
+		numStr := args.Num(1)
 		num, err := strconv.Atoi(numStr)
 		if err != nil {
 			return fmt.Errorf("num arg format wrong: %w", err)
@@ -161,7 +177,7 @@ func run(log *zap.SugaredLogger) error {
 		}
 
 	case "add-round":
-		numStr := cfg.Args.Num(1)
+		numStr := args.Num(1)
 		num, err := strconv.Atoi(numStr)
 		if err != nil {
 			return fmt.Errorf("num arg format wrong: %w", err)
@@ -171,7 +187,7 @@ func run(log *zap.SugaredLogger) error {
 		}
 
 	case "get-round":
-		numStr := cfg.Args.Num(1)
+		numStr := args.Num(1)
 		num, err := strconv.Atoi(numStr)
 		if err != nil {
 			return fmt.Errorf("num arg format wrong: %w", err)
@@ -181,16 +197,16 @@ func run(log *zap.SugaredLogger) error {
 		}
 
 	case "get-round-from-db":
-		blockHashStr := cfg.Args.Num(1)
-		if err != nil {
-			return fmt.Errorf("num arg format wrong: %w", err)
-		}
+		blockHashStr := args.Num(1)
+		//if err != nil {
+		//	return fmt.Errorf("num arg format wrong: %w", err)
+		//}
 		if err := commands.GetRoundInDbCmd(traceID, log, couchConfig, blockHashStr); err != nil {
 			return fmt.Errorf("add round from db: %w", err)
 		}
 
 	case "get-round-from-db-by-num":
-		numStr := cfg.Args.Num(1)
+		numStr := args.Num(1)
 		num, err := strconv.Atoi(numStr)
 		if err != nil {
 			return fmt.Errorf("num arg format wrong: %w", err)
@@ -205,47 +221,47 @@ func run(log *zap.SugaredLogger) error {
 		}
 
 	case "get-rounds-pagination":
-		latestBlockNumStr := cfg.Args.Num(1)
+		latestBlockNumStr := args.Num(1)
 		latestBlockNum, err := strconv.Atoi(latestBlockNumStr)
 		if err != nil {
 			return fmt.Errorf("latestBlockNum arg format wrong: %w", err)
 		}
-		noOfItemsStr := cfg.Args.Num(2)
+		noOfItemsStr := args.Num(2)
 		noOfItems, err := strconv.Atoi(noOfItemsStr)
 		if err != nil {
 			return fmt.Errorf("noOfItems arg format wrong: %w", err)
 		}
-		pageNoStr := cfg.Args.Num(3)
+		pageNoStr := args.Num(3)
 		pageNo, err := strconv.Atoi(pageNoStr)
 		if err != nil {
 			return fmt.Errorf("pageNo arg format wrong: %w", err)
 		}
-		order := cfg.Args.Num(4)
+		order := args.Num(4)
 		if err := commands.GetRoundsPaginationCmd(traceID, log, couchConfig, int64(latestBlockNum), int64(noOfItems), int64(pageNo), order); err != nil {
 			return fmt.Errorf("add round from db: %w", err)
 		}
 
 	case "get-txns-pagination":
-		latestTxnId := cfg.Args.Num(1)
-		noOfItemsStr := cfg.Args.Num(2)
+		latestTxnId := args.Num(1)
+		noOfItemsStr := args.Num(2)
 		noOfItems, err := strconv.Atoi(noOfItemsStr)
 		if err != nil {
 			return fmt.Errorf("noOfItems arg format wrong: %w", err)
 		}
-		pageNoStr := cfg.Args.Num(3)
+		pageNoStr := args.Num(3)
 		pageNo, err := strconv.Atoi(pageNoStr)
 		if err != nil {
 			return fmt.Errorf("pageNo arg format wrong: %w", err)
 		}
-		order := cfg.Args.Num(4)
+		order := args.Num(4)
 		if err := commands.GetTransactionsPaginationCmd(traceID, log, couchConfig, latestTxnId, int64(noOfItems), int64(pageNo), order); err != nil {
 			return fmt.Errorf("add round from db: %w", err)
 		}
 
 	case "get-and-insert-blocks":
-		startBlockStr := cfg.Args.Num(1)
+		startBlockStr := args.Num(1)
 		startBlock, err := strconv.Atoi(startBlockStr)
-		endBlockStr := cfg.Args.Num(2)
+		endBlockStr := args.Num(2)
 		endBlock, err := strconv.Atoi(endBlockStr)
 
 		if err != nil {
@@ -266,17 +282,17 @@ func run(log *zap.SugaredLogger) error {
 		}
 
 	case "get-txns-from-db":
-		limitStr := cfg.Args.Num(1)
+		limitStr := args.Num(1)
 		limit, err := strconv.Atoi(limitStr)
 		if err != nil {
 			return fmt.Errorf("limit arg format wrong: %w", err)
 		}
-		pageNoStr := cfg.Args.Num(2)
+		pageNoStr := args.Num(2)
 		pageNo, err := strconv.Atoi(pageNoStr)
 		if err != nil {
 			return fmt.Errorf("pageNo arg format wrong: %w", err)
 		}
-		order := cfg.Args.Num(3)
+		order := args.Num(3)
 		if order != "asc" && order != "desc" {
 			return fmt.Errorf("order arg format wrong")
 		}
@@ -286,7 +302,7 @@ func run(log *zap.SugaredLogger) error {
 		}
 
 	case "get-txns-by-acct-from-db":
-		acctID := cfg.Args.Num(1)
+		acctID := args.Num(1)
 		if acctID == "" {
 			return fmt.Errorf("acctID should not be empty")
 		}
@@ -295,21 +311,21 @@ func run(log *zap.SugaredLogger) error {
 		}
 
 	case "get-txns-by-acct-pagination-from-db":
-		acctID := cfg.Args.Num(1)
+		acctID := args.Num(1)
 		if acctID == "" {
 			return fmt.Errorf("acctID should not be empty")
 		}
-		limitStr := cfg.Args.Num(2)
+		limitStr := args.Num(2)
 		limit, err := strconv.Atoi(limitStr)
 		if err != nil {
 			return fmt.Errorf("limit arg format wrong: %w", err)
 		}
-		pageNoStr := cfg.Args.Num(3)
+		pageNoStr := args.Num(3)
 		pageNo, err := strconv.Atoi(pageNoStr)
 		if err != nil {
 			return fmt.Errorf("pageNo arg format wrong: %w", err)
 		}
-		order := cfg.Args.Num(4)
+		order := args.Num(4)
 		if order != "asc" && order != "desc" {
 			return fmt.Errorf("order arg format wrong")
 		}

@@ -1056,7 +1056,7 @@ paths:
   /v1/transactions/{id}:
     get:
       security: []
-      summary: Get Round from API by Transaction ID
+      summary: Get Transaction from API by Transaction ID
       description: Retrieves the transaction data from API by Transaction ID
       tags:
         - Transaction
@@ -1119,6 +1119,100 @@ paths:
               schema:
                 allOf:
                   - $ref: '#/components/schemas/TransactionData'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/InternalServerErrorResponse'
+  /v1/transactions/acct/{id}/count:
+    get:
+      security: []
+      summary: Get Transaction Count from API by Account ID
+      description: Retrieves the number of Transactions from API by Account ID
+      tags:
+        - Transaction
+        - Account
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: The Account ID
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: number
+                description: the number of transactions
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/InternalServerErrorResponse'
+  /v1/transactions/acct/{id}:
+    parameters:
+      - in: query
+        required: true
+        name: limit
+        schema:
+          type: number
+          example: 50
+        description: number of items per page
+      - in: query
+        required: true
+        name: page
+        schema:
+          type: number
+          example: 10
+        description: number of pages
+      - in: query
+        required: true
+        name: order
+        schema:
+          type: string
+          example: asc
+        description: sort order (asc/desc)
+    get:
+      security: []
+      summary: Get Transactions from API by Account ID
+      description: Retrieves the transaction data from API by Account ID
+      tags:
+        - Transaction
+        - Account
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: The Account ID
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  num_of_pages:
+                    type: number
+                    description: Number Of Pages
+                  num_of_txns:
+                    type: number
+                    description: Number Of Transactions
+                  items:
+                    description: The Transactions
+                    type: array
+                    items:
+                      allOf:
+                        - $ref: '#/components/schemas/TransactionData'
         '500':
           description: Internal Server Error
           content:

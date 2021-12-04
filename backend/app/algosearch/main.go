@@ -12,7 +12,6 @@ import (
 	"github.com/kevguy/algosearch/backend/foundation/indexer"
 	"github.com/kevguy/algosearch/backend/foundation/keystore"
 	"github.com/kevguy/algosearch/backend/foundation/websocket"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -253,7 +252,7 @@ func run(log *zap.SugaredLogger) error {
 	log.Infow("startup", "status", "debug v1 router started", "host", cfg.Web.DebugHost)
 
 	// The Debug function returns a mux to listen and serve on for all the debug
-	// related endpoints. This include the standard library endpoints.
+	// related endpoints. This includes the standard library endpoints.
 
 	// Construct the mux for the debug calls.
 	debugMux := handlers.DebugMux(build, log, db, algodClient)
@@ -354,7 +353,7 @@ func run(log *zap.SugaredLogger) error {
 		ctx, cancel := context.WithTimeout(context.Background(), cfg.Web.ShutdownTimeout)
 		defer cancel()
 
-		// Asking listener to shutdown and shed load.
+		// Asking listener to shut down and shed load.
 		if err := api.Shutdown(ctx); err != nil {
 			api.Close()
 			return fmt.Errorf("could not stop server gracefully: %w", err)
@@ -366,7 +365,7 @@ func run(log *zap.SugaredLogger) error {
 
 // =============================================================================
 
-// startTracing configure open telemetery to be used with zipkin.
+// startTracing configure open telemetry to be used with zipkin.
 func startTracing(serviceName string, reporterURI string, probability float64) (*trace.TracerProvider, error) {
 
 	// WARNING: The current settings are using defaults which may not be
@@ -400,18 +399,4 @@ func startTracing(serviceName string, reporterURI string, probability float64) (
 	// I can only get this working properly using the singleton :(
 	otel.SetTracerProvider(traceProvider)
 	return traceProvider, nil
-}
-
-
-func serveHome(w http.ResponseWriter, r *http.Request) {
-	log.Println(r.URL)
-	if r.URL.Path != "/" {
-		http.Error(w, "Not found", http.StatusNotFound)
-		return
-	}
-	if r.Method != "GET" {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-	http.ServeFile(w, r, "swagger/home.html")
 }
