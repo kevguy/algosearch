@@ -5,14 +5,13 @@ package handlers
 import (
 	"context"
 	"expvar"
-	"fmt"
 	"github.com/kevguy/algosearch/backend/app/algosearch/handlers/v1/roundgrp"
 	"github.com/kevguy/algosearch/backend/app/algosearch/handlers/v1/transactiongrp"
+	"github.com/kevguy/algosearch/backend/app/algosearch/handlers/v1/wsgrp"
 	algod2 "github.com/kevguy/algosearch/backend/business/core/algod"
 	block2 "github.com/kevguy/algosearch/backend/business/core/block"
 	transaction2 "github.com/kevguy/algosearch/backend/business/core/transaction"
 	"github.com/kevguy/algosearch/backend/foundation/websocket"
-	"log"
 	"net/http"
 	"net/http/pprof"
 	"os"
@@ -156,7 +155,6 @@ func v1(app *web.App, cfg APIMuxConfig) {
 		//return nil, errors.Wrap(err, "loading index template")
 	}
 	app.Handle(http.MethodGet, "", "/api/doc", sg.ServeDoc)
-	//app.Handle(http.MethodGet, "", "/wstest", sg.ServeWsTest)
 
 	// Register round endpoints
 	rG := roundgrp.Handlers{
@@ -179,35 +177,11 @@ func v1(app *web.App, cfg APIMuxConfig) {
 	app.Handle(http.MethodGet, version, "/transactions/:id", tG.GetTransaction, mid.Cors("*"))
 	app.Handle(http.MethodGet, version, "/transactions", tG.GetTransactionsPagination, mid.Cors("*"))
 
-	app.Handle(http.MethodGet, "", "/wstest", serveHome)
-	//http.HandleFunc("/wstest", serveHome)
-	//http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-	app.Handle(http.MethodGet, "", "/ws", func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-		fmt.Println("Hey yo")
-		fmt.Println("Hey yo")
-		fmt.Println("Hey yo")
-		fmt.Println("Hey yo")
-		fmt.Println("Hey yo")
-		fmt.Println("Hey yo")
-		fmt.Println("Hey yo")
-		fmt.Println("Hey yo")
-		fmt.Println("Hey yo")
-		websocket.ServeWs(cfg.Hub, w, r)
-		return nil
-	})
-}
-
-func serveHome(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	fmt.Println("fuck you")
-	log.Println(r.URL)
-	//if r.URL.Path != "/" {
-	//	http.Error(w, "Not found", http.StatusNotFound)
-	//	return nil
-	//}
-	if r.Method != "GET" {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return nil
+	// Register websocket endpoints
+	wsG := wsgrp.Handlers{
+		Hub: cfg.Hub,
 	}
-	http.ServeFile(w, r, "home.html")
-	return nil
+	app.Handle(http.MethodGet, "", "/wstest", wsG.ServeHomePage)
+	app.Handle(http.MethodGet, "", "/ws", wsG.ServeWS)
+	app.Handle(http.MethodGet, version, "/test-socket", wsG.SendDummy)
 }

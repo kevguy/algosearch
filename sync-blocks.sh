@@ -68,36 +68,36 @@
 #go run ./backend/app/algo-admin/main.go get-and-insert-blocks 670001 680000 | go run backend/app/logfmt/main.go &
 #go run ./backend/app/algo-admin/main.go get-and-insert-blocks 680001 690000 | go run backend/app/logfmt/main.go &
 #go run ./backend/app/algo-admin/main.go get-and-insert-blocks 690001 700000 | go run backend/app/logfmt/main.go &
+# go run ./backend/app/algo-admin/main.go get-and-insert-blocks 700001 720000 | go run backend/app/logfmt/main.go &
+# go run ./backend/app/algo-admin/main.go get-and-insert-blocks 720001 730000 | go run backend/app/logfmt/main.go &
+# go run ./backend/app/algo-admin/main.go get-and-insert-blocks 730001 740000 | go run backend/app/logfmt/main.go &
+# go run ./backend/app/algo-admin/main.go get-and-insert-blocks 740001 750000 | go run backend/app/logfmt/main.go &
+# go run ./backend/app/algo-admin/main.go get-and-insert-blocks 750001 760000 | go run backend/app/logfmt/main.go &
+# go run ./backend/app/algo-admin/main.go get-and-insert-blocks 760001 770000 | go run backend/app/logfmt/main.go &
+# go run ./backend/app/algo-admin/main.go get-and-insert-blocks 770001 780000 | go run backend/app/logfmt/main.go &
+# go run ./backend/app/algo-admin/main.go get-and-insert-blocks 780001 790000 | go run backend/app/logfmt/main.go &
+# go run ./backend/app/algo-admin/main.go get-and-insert-blocks 790001 800000 | go run backend/app/logfmt/main.go
 
-go run ./backend/app/algo-admin/main.go get-and-insert-blocks 700001 720000 | go run backend/app/logfmt/main.go &
-go run ./backend/app/algo-admin/main.go get-and-insert-blocks 720001 730000 | go run backend/app/logfmt/main.go &
-go run ./backend/app/algo-admin/main.go get-and-insert-blocks 730001 740000 | go run backend/app/logfmt/main.go &
-go run ./backend/app/algo-admin/main.go get-and-insert-blocks 740001 750000 | go run backend/app/logfmt/main.go &
-go run ./backend/app/algo-admin/main.go get-and-insert-blocks 750001 760000 | go run backend/app/logfmt/main.go &
-go run ./backend/app/algo-admin/main.go get-and-insert-blocks 760001 770000 | go run backend/app/logfmt/main.go &
-go run ./backend/app/algo-admin/main.go get-and-insert-blocks 770001 780000 | go run backend/app/logfmt/main.go &
-go run ./backend/app/algo-admin/main.go get-and-insert-blocks 780001 790000 | go run backend/app/logfmt/main.go &
-go run ./backend/app/algo-admin/main.go get-and-insert-blocks 790001 800000 | go run backend/app/logfmt/main.go
-#go run ./backend/app/algo-admin/main.go get-and-insert-blocks 800001 810000 | go run backend/app/logfmt/main.go &
-#go run ./backend/app/algo-admin/main.go get-and-insert-blocks 810001 820000 | go run backend/app/logfmt/main.go &
-#go run ./backend/app/algo-admin/main.go get-and-insert-blocks 820001 830000 | go run backend/app/logfmt/main.go &
-#go run ./backend/app/algo-admin/main.go get-and-insert-blocks 830001 840000 | go run backend/app/logfmt/main.go &
-#go run ./backend/app/algo-admin/main.go get-and-insert-blocks 840001 850000 | go run backend/app/logfmt/main.go &
-#go run ./backend/app/algo-admin/main.go get-and-insert-blocks 850001 860000 | go run backend/app/logfmt/main.go &
-#go run ./backend/app/algo-admin/main.go get-and-insert-blocks 860001 870000 | go run backend/app/logfmt/main.go &
-#go run ./backend/app/algo-admin/main.go get-and-insert-blocks 870001 880000 | go run backend/app/logfmt/main.go &
-#go run ./backend/app/algo-admin/main.go get-and-insert-blocks 880001 890000 | go run backend/app/logfmt/main.go &
-#go run ./backend/app/algo-admin/main.go get-and-insert-blocks 890001 900000 | go run backend/app/logfmt/main.go &
-#go run ./backend/app/algo-admin/main.go get-and-insert-blocks 900001 910000 | go run backend/app/logfmt/main.go &
-#go run ./backend/app/algo-admin/main.go get-and-insert-blocks 910001 920000 | go run backend/app/logfmt/main.go &
-#go run ./backend/app/algo-admin/main.go get-and-insert-blocks 920001 930000 | go run backend/app/logfmt/main.go &
-#go run ./backend/app/algo-admin/main.go get-and-insert-blocks 930001 940000 | go run backend/app/logfmt/main.go &
-#go run ./backend/app/algo-admin/main.go get-and-insert-blocks 940001 950000 | go run backend/app/logfmt/main.go &
-#go run ./backend/app/algo-admin/main.go get-and-insert-blocks 950001 960000 | go run backend/app/logfmt/main.go &
-#go run ./backend/app/algo-admin/main.go get-and-insert-blocks 960001 970000 | go run backend/app/logfmt/main.go &
-#go run ./backend/app/algo-admin/main.go get-and-insert-blocks 970001 980000 | go run backend/app/logfmt/main.go &
-#go run ./backend/app/algo-admin/main.go get-and-insert-blocks 980001 990000 | go run backend/app/logfmt/main.go &
-#go run ./backend/app/algo-admin/main.go get-and-insert-blocks 990001 1000000 | go run backend/app/logfmt/main.go &
+go run ./backend/app/algo-admin/main.go get-and-insert-blocks 800001 810000 | go run backend/app/logfmt/main.go &
+go run ./backend/app/algo-admin/main.go get-and-insert-blocks 810001 820000 | go run backend/app/logfmt/main.go &
+go run ./backend/app/algo-admin/main.go get-and-insert-blocks 820001 830000 | go run backend/app/logfmt/main.go &
+go run ./backend/app/algo-admin/main.go get-and-insert-blocks 830001 840000 | go run backend/app/logfmt/main.go &
+go run ./backend/app/algo-admin/main.go get-and-insert-blocks 840001 850000 | go run backend/app/logfmt/main.go &
+go run ./backend/app/algo-admin/main.go get-and-insert-blocks 850001 860000 | go run backend/app/logfmt/main.go &
+go run ./backend/app/algo-admin/main.go get-and-insert-blocks 860001 870000 | go run backend/app/logfmt/main.go &
+go run ./backend/app/algo-admin/main.go get-and-insert-blocks 870001 880000 | go run backend/app/logfmt/main.go &
+go run ./backend/app/algo-admin/main.go get-and-insert-blocks 880001 890000 | go run backend/app/logfmt/main.go &
+go run ./backend/app/algo-admin/main.go get-and-insert-blocks 890001 900000 | go run backend/app/logfmt/main.go &
+go run ./backend/app/algo-admin/main.go get-and-insert-blocks 900001 910000 | go run backend/app/logfmt/main.go &
+go run ./backend/app/algo-admin/main.go get-and-insert-blocks 910001 920000 | go run backend/app/logfmt/main.go &
+go run ./backend/app/algo-admin/main.go get-and-insert-blocks 920001 930000 | go run backend/app/logfmt/main.go &
+go run ./backend/app/algo-admin/main.go get-and-insert-blocks 930001 940000 | go run backend/app/logfmt/main.go &
+go run ./backend/app/algo-admin/main.go get-and-insert-blocks 940001 950000 | go run backend/app/logfmt/main.go &
+go run ./backend/app/algo-admin/main.go get-and-insert-blocks 950001 960000 | go run backend/app/logfmt/main.go &
+go run ./backend/app/algo-admin/main.go get-and-insert-blocks 960001 970000 | go run backend/app/logfmt/main.go &
+go run ./backend/app/algo-admin/main.go get-and-insert-blocks 970001 980000 | go run backend/app/logfmt/main.go &
+go run ./backend/app/algo-admin/main.go get-and-insert-blocks 980001 990000 | go run backend/app/logfmt/main.go &
+go run ./backend/app/algo-admin/main.go get-and-insert-blocks 990001 1000000 | go run backend/app/logfmt/main.go
 #go run ./backend/app/algo-admin/main.go get-and-insert-blocks 1000001 1020000 | go run backend/app/logfmt/main.go &
 #go run ./backend/app/algo-admin/main.go get-and-insert-blocks 1020001 1030000 | go run backend/app/logfmt/main.go &
 #go run ./backend/app/algo-admin/main.go get-and-insert-blocks 1030001 1040000 | go run backend/app/logfmt/main.go &

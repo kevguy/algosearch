@@ -19,7 +19,7 @@ services:
     container_name: algosearch-backend
     networks:
       - shared-network
-    image: algosearch-backend-amd64:1.0
+    image: algosearch-backend-amd64:1.1
     ports:
       - 3000:3000 # CRUD API
       - 4000:4000 # DEBUG API
@@ -30,7 +30,7 @@ services:
     container_name: metrics
     networks:
       - shared-network
-    image: metrics-amd64:1.0
+    image: metrics-amd64:1.1
     ports:
       - 3001:3001 # EXPVAR API
       - 4001:4001 # DEBUG API
