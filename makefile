@@ -79,7 +79,7 @@ run-couch:
 	mkdir -p db-data
 	echo $(pwd)/db-data
 	#docker run -e COUCHDB_USER=admin -e COUCHDB_PASSWORD=password -p 5984:5984 --name my-couchdb -v $(pwd)/db-data:/opt/couchdb/data -d couchdb
-	docker run -e COUCHDB_USER=admin -e COUCHDB_PASSWORD=password -p 5984:5984 --name algosearch-couchdb -v $(shell pwd)/db-data:/opt/couchdb/data -d couchdb
+	docker run -e COUCHDB_USER=kevin -e COUCHDB_PASSWORD=makechesterproud! -p 5984:5984 --name algosearch-couchdb -v $(shell pwd)/db-data:/opt/couchdb/data -d couchdb
 	# https://github.com/apache/couchdb-docker/issues/54
 	# curl -X PUT http://127.0.0.1:5984/_users
 	# https://guide.couchdb.org/draft/security.html

@@ -50,8 +50,8 @@ func run(log *zap.SugaredLogger) error {
 		Args    conf.Args
 		CouchDB struct {
 			Protocol string `conf:"default:http"`
-			User     string `conf:"default:admin"`
-			Password string `conf:"default:password,mask"`
+			User       string `conf:"default:kevin"`
+			Password   string `conf:"default:makechesterproud!,mask"`
 			//Host       string `conf:"default:127.0.0.1:5984"`
 			Host string `conf:"default:89.39.110.254:5984"`
 		}
