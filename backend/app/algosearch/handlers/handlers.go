@@ -185,11 +185,11 @@ func v1(app *web.App, cfg APIMuxConfig) {
 	aG := acctgrp.Handlers{
 		AcctCore: account.NewCore(cfg.Log, cfg.CouchClient),
 	}
-	app.Handle(http.MethodGet, version, "/accts/latest", aG.GetLatestSyncedAccountAddr, mid.Cors("*"))
-	app.Handle(http.MethodGet, version, "/accts/earliest", aG.GetEarliestSyncedAccountAddr, mid.Cors("*"))
-	app.Handle(http.MethodGet, version, "/accts/count", aG.GetAcctCount, mid.Cors("*"))
-	app.Handle(http.MethodGet, version, "/accts/:addr", aG.GetAccount, mid.Cors("*"))
-	app.Handle(http.MethodGet, version, "/accts", aG.GetAccountsPagination, mid.Cors("*"))
+	app.Handle(http.MethodGet, version, "/accounts/latest", aG.GetLatestSyncedAccountAddr, mid.Cors("*"))
+	app.Handle(http.MethodGet, version, "/accounts/earliest", aG.GetEarliestSyncedAccountAddr, mid.Cors("*"))
+	app.Handle(http.MethodGet, version, "/accounts/count", aG.GetAcctCount, mid.Cors("*"))
+	app.Handle(http.MethodGet, version, "/accounts/:addr", aG.GetAccount, mid.Cors("*"))
+	app.Handle(http.MethodGet, version, "/accounts", aG.GetAccountsPagination, mid.Cors("*"))
 
 	// Register websocket endpoints
 	wsG := wsgrp.Handlers{
