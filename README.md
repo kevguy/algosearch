@@ -235,3 +235,14 @@ Rmb to support Group Transactions, this seems hard tbh.
 References:
 - https://developer.algorand.org/docs/reference/node/config/
 - https://developer.algorand.org/tutorials/betanet-sandbox/#1-running-betanet-for-the-first-time
+
+
+TODO:
+- transactions by account
+- sync blocks
+- ASA names
+- add original swagger doc
+- get algod ledger supply (https://developer.algorand.org/docs/rest-apis/algod/v2/#get-v2ledgersupply)
+  - latest/current round
+  - online money
+  - circulating supply

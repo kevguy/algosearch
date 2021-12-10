@@ -330,7 +330,7 @@ func run(log *zap.SugaredLogger) error {
 
 	if cfg.Web.EnableSync {
 		// Start the publisher to collect/publish metrics.
-		blocksync, err := blocksynchronizer.New(log, 100*time.Millisecond, algodClient, couchConfig)
+		blocksync, err := blocksynchronizer.New(log, 100*time.Millisecond, algodClient, couchConfig, hub)
 		if err != nil {
 			return fmt.Errorf("starting publisher: %w", err)
 		}

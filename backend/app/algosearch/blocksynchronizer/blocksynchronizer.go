@@ -14,6 +14,7 @@ import (
 	"github.com/kevguy/algosearch/backend/business/core/block"
 	"github.com/kevguy/algosearch/backend/business/core/transaction"
 	"github.com/kevguy/algosearch/backend/foundation/couchdb"
+	"github.com/kevguy/algosearch/backend/foundation/websocket"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"log"
@@ -35,15 +36,17 @@ type BlockSynchronizer struct {
 	assetCore       *asset.Core
 	appCore         *application.Core
 	algodCore 		*algod2.Core
+	hub				*websocket.Hub
 }
 
 // New creates a BlockSynchronizer for retrieving block data and saving it to CouchDB.
-func New(log *zap.SugaredLogger, interval time.Duration, algodClient *algod.Client, cfg couchdb.Config) (*BlockSynchronizer, error) {
+func New(log *zap.SugaredLogger, interval time.Duration, algodClient *algod.Client, cfg couchdb.Config, hub *websocket.Hub) (*BlockSynchronizer, error) {
 	p := BlockSynchronizer{
 		log:       log,
 		timer:     time.NewTimer(interval),
 		shutdown:  make(chan struct{}),
 		algodClient: algodClient,
+		hub: 		hub,
 	}
 
 	db, err := couchdb.Open(cfg)
@@ -92,6 +95,16 @@ func (p *BlockSynchronizer) Stop() {
 	p.wg.Wait()
 }
 
+func (p *BlockSynchronizer) broadcastUpdate(newInfo WsMessage) error {
+	fmt.Println(newInfo)
+	res, err := json.Marshal(newInfo)
+	if err != nil {
+		return fmt.Errorf("marshaling new block info for broadcasting: %w", err)
+	}
+	p.hub.ExternalBroadcast <- res
+	return nil
+}
+
 // TODO: add retry
 // update pulls the block data and saves it to CouchDB.
 func (p *BlockSynchronizer) update() {
@@ -113,6 +126,14 @@ func (p *BlockSynchronizer) update() {
 
 	if (currentRoundNum - lastSyncedBlockNum) > 1 {
 		p.log.Infof("Trying to get round number: %d\n", lastSyncedBlockNum + 1)
+
+		var newBlockPayload = WsMessage{
+			Block:           models.Block{},
+			TransactionList: nil,
+			AccountList:     nil,
+			AssetList:       nil,
+			AppList:         nil,
+		}
 
 		getRoundSuccessful := false
 		var rawBlock []byte
@@ -144,6 +165,8 @@ func (p *BlockSynchronizer) update() {
 			p.log.Errorw("blocksynchronizer", "status", "marshal new block bytes to block data", "ERROR", err)
 		}
 
+		newBlockPayload.Block = newBlock.Block
+
 		var prettyJSON bytes.Buffer
 		err = json.Indent(&prettyJSON, payloadStr, "", "\t")
 		if err != nil {
@@ -162,8 +185,15 @@ func (p *BlockSynchronizer) update() {
 		var accountList []models.Account
 		var assetList []models.Asset
 		var appList []models.Application
+		var txnIdList []string
 
 		if len(newBlock.Transactions) > 0 {
+
+			for _, txn := range newBlock.Transactions {
+				txnIdList = append(txnIdList, txn.Id)
+			}
+			newBlockPayload.TransactionList = txnIdList
+
 			_, err = p.transactionCore.AddTransactions(context.Background(), newBlock.Transactions)
 			if err != nil {
 				p.log.Errorw("blocksynchronizer", "status", "can't add new transaction(s)", "ERROR", err)
@@ -210,6 +240,12 @@ func (p *BlockSynchronizer) update() {
 			if err != nil {
 				p.log.Errorw("blocksynchronizer", "status", "can't add/update account(s)", "ERROR", err)
 			}
+
+			var acctIdList []string
+			for _, acct := range accountList {
+				acctIdList = append(acctIdList, acct.Address)
+			}
+			newBlockPayload.AccountList = acctIdList
 		}
 
 		if len(assetList) > 0 {
@@ -217,6 +253,12 @@ func (p *BlockSynchronizer) update() {
 			if err != nil {
 				p.log.Errorw("blocksynchronizer", "status", "can't add/update asset(s)", "ERROR", err)
 			}
+
+			var assetIdList []uint64
+			for _, asset := range assetList {
+				assetIdList  = append(assetIdList, asset.Index)
+			}
+			newBlockPayload.AssetList = assetIdList
 		}
 
 		if len(appList) > 0 {
@@ -224,6 +266,16 @@ func (p *BlockSynchronizer) update() {
 			if err != nil {
 				p.log.Errorw("blocksynchronizer", "status", "can't add/update application(s)", "ERROR", err)
 			}
+
+			var appIdList []uint64
+			for _, app := range appList {
+				appIdList = append(appIdList, app.Id)
+			}
+			newBlockPayload.AppList = appIdList
+		}
+
+		if err = p.broadcastUpdate(newBlockPayload); err != nil {
+			p.log.Errorw("blocksynchronizer", "status", "can't broadcast block update through websocket", "ERROR", err)
 		}
 
 		//for _, transaction := range newBlock.Transactions {
