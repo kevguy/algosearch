@@ -771,6 +771,8 @@ components:
           type: string
           description: Block hash
           example: GNTA9izDj+OBtvedLqJb730/U/qW3q8DdrNkGEZtldo=
+    AccountData:
+
     InternalServerErrorResponse:
       type: object
       properties:

@@ -86,6 +86,7 @@ run-couch:
 	# > HOST="http://anna:secret@127.0.0.1:5984"
     # > curl -X PUT $HOST/somedatabase
     # {"ok":true}
+    # curl -X PUT 'http://kevin:makechesterproud!@127.0.0.1:5984/_users'
 
 stop-couch:
 	docker stop algosearch-couchdb
