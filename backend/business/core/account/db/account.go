@@ -245,28 +245,23 @@ func (s Store) GetAccountCountBtnKeys(ctx context.Context, startKey, endKey stri
 	}
 	db := s.couchClient.DB(schema.GlobalDbName)
 
-	// http://kevin:makechesterproud!@89.39.110.254:5984/algo_global/_design/acct/_view/acctByCount/start_key=2255PMXS65R54KKH5FQVV5UQZSAQCYL5U3OWQ2E5IZGOLK5XVTAVKNRPPQ&end_key=ZZUUXY52TC57ENLO52R7VSO5JTJGH6EKMBAZBLABAS3SQM5T765NOSJ4W4
+	// curl 'http://kevin:makechesterproud!@89.39.110.254:5984/algo_global/_design/acct/_view/acctByCount?startKey=2255PMXS65R54KKH5FQVV5UQZSAQCYL5U3OWQ2E5IZGOLK5XVTAVKNRPPQ&endKey=ZZYX3V6N74FGHGYLMSKJRVTRXT7GAZAQ47F4MOPX6S7FQRQU4FXZOLRQ2I'
 	rows, err := db.Query(ctx, schema.AccountDDoc, "_view/" +schema.AccountViewByIdInCount, kivik.Options{
-		"start_key": startKey,
-		"end_key": endKey,
+		"startKey": startKey,
+		"endKey": endKey,
 	})
 	if err != nil {
 		return 0, errors.Wrap(err, "Fetch data error")
 	}
 
-	type Payload struct {
-		Key *string `json:"key"`
-		Value int64 `json:"value"`
-	}
-
-	var payload Payload
+	var count int64
 	for rows.Next() {
-		if err := rows.ScanDoc(&payload); err != nil {
+		if err := rows.ScanValue(&count); err != nil {
 			return 0, errors.Wrap(err, "Can't find anything")
 		}
 	}
 
-	return payload.Value, nil
+	return count, nil
 }
 
 func (s Store) GetAccountsPagination(ctx context.Context, latestAccountId string, order string, pageNo, limit int64) ([]Account, int64, int64, error) {
