@@ -64,7 +64,8 @@ get-current-round:
 # Run the cal-engine with all the defaults, except the private keys
 it-rain:
 # 	go run app/cal-engine/main.go --auth-keys-folder=./keys-dir
-	go run backend/app/algosearch/main.go --web-enable-sync=true | go run backend/app/logfmt/main.go
+#	go run backend/app/algosearch/main.go --web-enable-sync=true | go run backend/app/logfmt/main.go
+	go run backend/app/algosearch/main.go | go run backend/app/logfmt/main.go
 
 restart-couch: stop-couch start-couch
 

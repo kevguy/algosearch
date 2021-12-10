@@ -6,6 +6,8 @@ import (
 	"context"
 	"expvar"
 	"github.com/kevguy/algosearch/backend/app/algosearch/handlers/v1/acctgrp"
+	"github.com/kevguy/algosearch/backend/app/algosearch/handlers/v1/assetgrp"
+	"github.com/kevguy/algosearch/backend/app/algosearch/handlers/v1/ledgergrp"
 	"github.com/kevguy/algosearch/backend/app/algosearch/handlers/v1/roundgrp"
 	"github.com/kevguy/algosearch/backend/app/algosearch/handlers/v1/transactiongrp"
 	"github.com/kevguy/algosearch/backend/app/algosearch/handlers/v1/wsgrp"
@@ -158,10 +160,12 @@ func v1(app *web.App, cfg APIMuxConfig) {
 	}
 	app.Handle(http.MethodGet, "", "/api/doc", sg.ServeDoc)
 
+	algodCore := algod2.NewCore(cfg.Log, cfg.AlgodClient)
+
 	// Register round endpoints
 	rG := roundgrp.Handlers{
 		BlockCore: block2.NewCore(cfg.Log, cfg.CouchClient),
-		AlgodCore: algod2.NewCore(cfg.Log, cfg.AlgodClient),
+		AlgodCore: algodCore,
 	}
 	app.Handle(http.MethodGet, version, "/algod/current-round", rG.GetCurrentRoundFromAPI, mid.Cors("*"))
 	app.Handle(http.MethodGet, version, "/algod/rounds/:num", rG.GetRoundFromAPI, mid.Cors("*"))
@@ -190,6 +194,14 @@ func v1(app *web.App, cfg APIMuxConfig) {
 	app.Handle(http.MethodGet, version, "/accounts/count", aG.GetAcctCount, mid.Cors("*"))
 	app.Handle(http.MethodGet, version, "/accounts/:addr", aG.GetAccount, mid.Cors("*"))
 	app.Handle(http.MethodGet, version, "/accounts", aG.GetAccountsPagination, mid.Cors("*"))
+
+	asG := assetgrp.Handlers{AlgodCore: algodCore}
+	app.Handle(http.MethodGet, version, "/algod/assets/:idx", asG.GetAssetByIDFromAPI, mid.Cors("*"))
+
+	lG := ledgergrp.Handlers{
+		AlgodCore: algodCore,
+	}
+	app.Handle(http.MethodGet, version, "/algod/ledger/supply", lG.GetLedgerSupplyFromAPI, mid.Cors("*"))
 
 	// Register websocket endpoints
 	wsG := wsgrp.Handlers{
