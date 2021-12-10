@@ -15,6 +15,10 @@ export PROJECT = ardan-starter-kit
 # zipkin: http://localhost:9411
 # expvarmon -ports=":4000" -vars="build,requests,goroutines,errors,panics,mem:memstats.Alloc"
 
+# Access metrics directly (4000) or through the sidecar (3001)
+# expvarmon -ports=":4000" -vars="build,requests,goroutines,errors,panics,mem:memstats.Alloc"
+# expvarmon -ports=":3001" -endpoint="/metrics" -vars="build,requests,goroutines,errors,panics,mem:memstats.Alloc"
+
 # Used to install expvarmon program for metrics dashboard.
 # go install github.com/divan/expvarmon@latest
 
@@ -64,8 +68,8 @@ get-current-round:
 # Run the cal-engine with all the defaults, except the private keys
 it-rain:
 # 	go run app/cal-engine/main.go --auth-keys-folder=./keys-dir
-#	go run backend/app/algosearch/main.go --web-enable-sync=true | go run backend/app/logfmt/main.go
-	go run backend/app/algosearch/main.go | go run backend/app/logfmt/main.go
+	go run backend/app/algosearch/main.go --web-enable-sync=true | go run backend/app/logfmt/main.go
+#	go run backend/app/algosearch/main.go | go run backend/app/logfmt/main.go
 
 restart-couch: stop-couch start-couch
 
@@ -122,7 +126,7 @@ algosearch-backend:
 algosearch-metrics:
 	docker build \
 		-f zarf/docker/dockerfile.metrics \
-		-t metrics-amd64:$(VERSION) \
+		-t algosearch-metrics-amd64:$(VERSION) \
 		--build-arg BUILD_REF=$(VERSION) \
 		--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
 		.

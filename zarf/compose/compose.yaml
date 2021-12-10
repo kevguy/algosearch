@@ -27,10 +27,10 @@ services:
       - zipkin
 
   metrics:
-    container_name: metrics
+    container_name: algosearch-metrics
     networks:
       - shared-network
-    image: metrics-amd64:1.1
+    image: algosearch-metrics-amd64:1.1
     ports:
       - 3001:3001 # EXPVAR API
       - 4001:4001 # DEBUG API
