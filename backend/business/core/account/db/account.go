@@ -239,6 +239,10 @@ func (s Store) GetAccountCountBtnKeys(ctx context.Context, startKey, endKey stri
 		"startKey", startKey,
 		"endKey", endKey)
 
+	if startKey == endKey {
+		return 0, nil
+	}
+
 	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
 	if err != nil || !exist {
 		return 0, errors.Wrap(err, schema.GlobalDbName+ " database check fails")
