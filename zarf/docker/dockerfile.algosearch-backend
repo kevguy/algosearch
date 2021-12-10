@@ -13,6 +13,8 @@ RUN go mod download
 
 # Copy the source code into the container.
 COPY ./backend /service/backend
+COPY ./zarf /service/zarf
+COPY ./swagger /service/swagger
 
 # Build the admin tool so we can have it in the container. This should not change
 # often so do this first.
@@ -35,6 +37,9 @@ ARG BUILD_DATE
 ARG BUILD_REF
 COPY --from=build_algosearch-backend /service/backend/app/algo-admin/algo-admin /service/admin
 COPY --from=build_algosearch-backend /service/backend/app/algosearch/algosearch /service/algosearch
+COPY --from=build_algosearch-backend /service/zarf/keys/. /service/zarf/keys/.
+COPY --from=build_algosearch-backend /service/swagger /service/swagger
+
 WORKDIR /service
 CMD ["./algosearch"]
 
