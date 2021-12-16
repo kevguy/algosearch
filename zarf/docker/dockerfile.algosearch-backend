@@ -39,9 +39,13 @@ COPY --from=build_algosearch-backend /service/backend/app/algo-admin/algo-admin 
 COPY --from=build_algosearch-backend /service/backend/app/algosearch/algosearch /service/algosearch
 COPY --from=build_algosearch-backend /service/zarf/keys/. /service/zarf/keys/.
 COPY --from=build_algosearch-backend /service/swagger /service/swagger
+COPY --from=build_algosearch-backend /service/zarf/start-backend.sh /service/start-backend.sh
 
 WORKDIR /service
-CMD ["./algosearch"]
+# CMD ["./admin", "migrate", ";", "./algosearch"]
+RUN chmod +x ./start-backend.sh
+CMD ["./start-backend.sh"]
+# CMD ["./algosearch"]
 
 LABEL org.opencontainers.image.created="${BUILD_DATE}" \
       org.opencontainers.image.title="algosearch" \

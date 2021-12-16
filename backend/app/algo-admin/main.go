@@ -49,11 +49,16 @@ func run(log *zap.SugaredLogger) error {
 		conf.Version
 		Args    conf.Args
 		CouchDB struct {
+			//Protocol string `conf:"default:http"`
+			//User       string `conf:"default:kevin"`
+			//Password   string `conf:"default:makechesterproud!,mask"`
+			////Host       string `conf:"default:127.0.0.1:5984"`
+			//Host string `conf:"default:89.39.110.254:5984"`
 			Protocol string `conf:"default:http"`
-			User       string `conf:"default:kevin"`
-			Password   string `conf:"default:makechesterproud!,mask"`
+			User       string `conf:"default:algorand"`
+			Password   string `conf:"default:algorand,mask"`
 			//Host       string `conf:"default:127.0.0.1:5984"`
-			Host string `conf:"default:89.39.110.254:5984"`
+			Host string `conf:"default:localhost:5984"`
 		}
 		Algorand struct {
 			//AlgodAddr	string `conf:"default:http://localhost:4001"`

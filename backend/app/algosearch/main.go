@@ -84,7 +84,7 @@ func run(log *zap.SugaredLogger) error {
 			WriteTimeout    time.Duration `conf:"default:10s"`
 			IdleTimeout     time.Duration `conf:"default:120s"`
 			ShutdownTimeout time.Duration `conf:"default:20s"`
-			EnableSync		bool		  `conf:"default:false,help:specifies if the API should auto-sync new blocks"`
+			EnableSync		bool		  `conf:"default:true,help:specifies if the API should auto-sync new blocks"`
 		}
 		Auth struct {
 			KeysFolder string `conf:"default:zarf/keys/"`
@@ -92,10 +92,15 @@ func run(log *zap.SugaredLogger) error {
 		}
 		CouchDB struct {
 			Protocol   string `conf:"default:http"`
-			User       string `conf:"default:kevin"`
+			User       string `conf:"default:kevin",env:ALGOSEARCH_COUCH_DB_USER`
 			Password   string `conf:"default:makechesterproud!,mask"`
 			//Host       string `conf:"default:127.0.0.1:5984"`
 			Host       string `conf:"default:89.39.110.254:5984"`
+			//Protocol   string `conf:"default:http"`
+			//User       string `conf:"default:algorand",env:ALGOSEARCH_COUCH_DB_USER`
+			//Password   string `conf:"default:algorand,mask"`
+			////Host       string `conf:"default:127.0.0.1:5984"`
+			//Host       string `conf:"default:localhost:5984"`
 		}
 		Algorand struct {
 			//AlgodAddr		string `conf:"default:http://localhost:4001"`
@@ -104,12 +109,12 @@ func run(log *zap.SugaredLogger) error {
 			//KmdToken		string `conf:"default:a"`
 			//IndexerAddr 	string `conf:"default:http://localhost:8980"`
 			//IndexerToken	string `conf:"default:empty"`
-			AlgodAddr		string `conf:"default:http://89.39.110.254:4001"`
-			AlgodToken		string `conf:"default:a2d2ac864300588718c6c05ff241a14fad99d30a19806356f3b9c8008559c4c1"`
+			AlgodAddr		string `conf:"default:http://89.39.110.254:4001,env:ALGOD_ADDR"`
+			AlgodToken		string `conf:"default:a2d2ac864300588718c6c05ff241a14fad99d30a19806356f3b9c8008559c4c1,env:ALGOD_TOKEN"`
 			KmdAddr			string `conf:""`
 			KmdToken		string `conf:""`
-			IndexerAddr 	string `conf:""`
-			IndexerToken	string `conf:"default:empty"`
+			IndexerAddr 	string `conf:"env:INDEXER_ADDR"`
+			IndexerToken	string `conf:"default:empty,env:INDEXER_TOKEN"`
 		}
 		Zipkin struct {
 			ReporterURI string  `conf:"default:http://localhost:9411/api/v2/spans"`

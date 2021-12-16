@@ -19,7 +19,7 @@ func Migrate(cfg couchdb.Config) error {
 		return fmt.Errorf("connect database: %w", err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 600*time.Second)
 	defer db.Close(ctx)
 	defer cancel()
 

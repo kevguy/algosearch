@@ -3,6 +3,7 @@ package schema
 
 import (
 	"context"
+	"fmt"
 	_ "github.com/go-kivik/couchdb/v4" // The CouchDB driver
 	kivik "github.com/go-kivik/kivik/v4"
 	"github.com/kevguy/algosearch/backend/foundation/couchdb"
@@ -69,11 +70,11 @@ func InsertBlockViewsForGlobalDB(ctx context.Context, client *kivik.Client, dbNa
 	}
 	db := client.DB(dbName)
 
-	_, err = db.Query(ctx, BlockDDoc, "_view/" +BlockViewByRoundNo)
+	rows, err := db.Query(ctx, BlockDDoc, "_view/" +BlockViewByRoundNo)
 	//if err != nil {
 	//	return errors.Wrap(err, dbName + " database and query by timestamp view failed to be queried")
 	//}
-	//if !rows.Next() {
+	if rows == nil || !rows.Next() {
 		_, err = db.Put(context.TODO(), BlockDDoc, map[string]interface{}{
 			"_id": BlockDDoc,
 			"views": map[string]interface{}{
@@ -96,10 +97,10 @@ func InsertBlockViewsForGlobalDB(ctx context.Context, client *kivik.Client, dbNa
 				},
 			},
 		})
-		if err != nil {
-			return errors.Wrap(err, dbName + " database and query by timestamp view failed to be created")
+		if err != nil && err.Error() != "Conflict: Document update conflict." {
+			return fmt.Errorf("%s database and query by timestamp block view failed to be created: %w", dbName, err)
 		}
-	//}
+	}
 	return nil
 }
 
@@ -113,11 +114,12 @@ func InsertTransactionViewsForGlobalDB(ctx context.Context, client *kivik.Client
 	}
 	db := client.DB(dbName)
 
-	_, err = db.Query(ctx, TransactionDDoc, "_view/" +TransactionViewInLatest)
+	rows, err := db.Query(ctx, TransactionDDoc, "_view/" +TransactionViewInLatest)
 	//if err != nil {
 	//	return errors.Wrap(err, dbName + " database and query by timestamp view failed to be queried")
 	//}
 	//if !rows.Next() {
+	if rows == nil || !rows.Next() {
 		_, err = db.Put(context.TODO(), TransactionDDoc, map[string]interface{}{
 			"_id": TransactionDDoc,
 			"views": map[string]interface{}{
@@ -219,10 +221,10 @@ func InsertTransactionViewsForGlobalDB(ctx context.Context, client *kivik.Client
 				},
 			},
 		})
-		if err != nil {
-			return errors.Wrap(err, dbName + " database and query by timestamp view failed to be created")
+		if err != nil && err.Error() != "Conflict: Document update conflict." {
+			return fmt.Errorf("%s database and query by timestamp transaction view failed to be created: %w", dbName, err)
 		}
-	//}
+	}
 	return nil
 }
 
@@ -236,11 +238,12 @@ func InsertAcctViewsForGlobalDB(ctx context.Context, client *kivik.Client, dbNam
 	}
 	db := client.DB(dbName)
 
-	_, err = db.Query(ctx, AccountDDoc, "_view/" +AccountViewByIdInLatest)
+	rows, err := db.Query(ctx, AccountDDoc, "_view/" +AccountViewByIdInLatest)
 	//if err != nil {
 	//	return errors.Wrap(err, dbName + " database and query by timestamp view failed to be queried")
 	//}
 	//if !rows.Next() {
+	if rows == nil || !rows.Next() {
 	_, err = db.Put(context.TODO(), AccountDDoc, map[string]interface{}{
 		"_id": AccountDDoc,
 		"views": map[string]interface{}{
@@ -262,10 +265,10 @@ func InsertAcctViewsForGlobalDB(ctx context.Context, client *kivik.Client, dbNam
 			},
 		},
 	})
-	if err != nil {
-		return errors.Wrap(err, dbName + " database and query by timestamp view failed to be created")
+	if err != nil && err.Error() != "Conflict: Document update conflict." {
+		return fmt.Errorf("%s database and query by timestamp account view failed to be created: %w", dbName, err)
 	}
-	//}
+	}
 	return nil
 }
 
@@ -279,11 +282,12 @@ func InsertAssetViewsForGlobalDB(ctx context.Context, client *kivik.Client, dbNa
 	}
 	db := client.DB(dbName)
 
-	_, err = db.Query(ctx, AssetDDoc, "_view/" +AssetViewByIdInLatest)
+	rows, err := db.Query(ctx, AssetDDoc, "_view/" +AssetViewByIdInLatest)
 	//if err != nil {
 	//	return errors.Wrap(err, dbName + " database and query by timestamp view failed to be queried")
 	//}
 	//if !rows.Next() {
+	if rows == nil || !rows.Next() {
 	_, err = db.Put(context.TODO(), AssetDDoc, map[string]interface{}{
 		"_id": AssetDDoc,
 		"views": map[string]interface{}{
@@ -305,10 +309,10 @@ func InsertAssetViewsForGlobalDB(ctx context.Context, client *kivik.Client, dbNa
 			},
 		},
 	})
-	if err != nil {
-		return errors.Wrap(err, dbName + " database and query by timestamp view failed to be created")
+	if err != nil && err.Error() != "Conflict: Document update conflict." {
+		return fmt.Errorf("%s database and query by timestamp asset view failed to be created: %w", dbName, err)
 	}
-	//}
+	}
 	return nil
 }
 
@@ -322,16 +326,17 @@ func InsertApplicationViewsForGlobalDB(ctx context.Context, client *kivik.Client
 	}
 	db := client.DB(dbName)
 
-	_, err = db.Query(ctx, ApplicationDDoc, "_view/" +ApplicationViewByIdInLatest)
+	rows, err := db.Query(ctx, ApplicationDDoc, "_view/" +ApplicationViewByIdInLatest)
 	//if err != nil {
 	//	return errors.Wrap(err, dbName + " database and query by timestamp view failed to be queried")
 	//}
 	//if !rows.Next() {
+	if rows == nil || !rows.Next() {
 	_, err = db.Put(context.TODO(), ApplicationDDoc, map[string]interface{}{
 		"_id": AssetDDoc,
 		"views": map[string]interface{}{
 			ApplicationViewByIdInLatest: map[string]interface{}{
-				"map": `function(doc) { 
+				"map": `function(doc) {
 					if (doc.doc_type === 'app') {
 						// emit(doc.id, {_id: doc.id});
 						emit(doc.id, null);
@@ -348,10 +353,10 @@ func InsertApplicationViewsForGlobalDB(ctx context.Context, client *kivik.Client
 			},
 		},
 	})
-	if err != nil {
-		return errors.Wrap(err, dbName + " database and query by timestamp view failed to be created")
+	if err != nil && err.Error() != "Conflict: Document update conflict." {
+		return fmt.Errorf("%s database and query by timestamp application view failed to be created: %w", dbName, err)
 	}
-	//}
+	}
 	return nil
 }
 
@@ -487,41 +492,46 @@ func InsertLatestViewForBlocksDB(ctx context.Context, client *kivik.Client, dbNa
 // defined in this package.
 func Migrate(ctx context.Context, db *kivik.Client) error {
 	if err := couchdb.StatusCheck(ctx, db); err != nil {
-		return errors.Wrap(err, "status check database")
+		return fmt.Errorf("status check database: %w", err)
 	}
 
 	// Create the databases, delete the old ones if exist
 	//var dbList = []string{"blocks", "transactions", "addresses"}
-	var dbList = []string{GlobalDbName}
-	for _, dbName := range dbList {
-		if err := createDB(ctx, db, dbName); err != nil {
-			return errors.Wrap(err, dbName + " database creation fails")
-		}
-	}
+	//var dbList = []string{GlobalDbName}
+	//for _, dbName := range dbList {
+	//	if err := createDB(ctx, db, dbName); err != nil {
+	//		return errors.Wrap(err, dbName + " database creation fails")
+	//	}
+	//}
 
 	// Block views
+	fmt.Println("Block views")
 	if err := InsertBlockViewsForGlobalDB(ctx, db, GlobalDbName); err != nil {
-		return errors.Wrap(err, "database fails to create view(s) for blocks")
+		return fmt.Errorf("database fails to create view(s) for blocks: %w", err)
 	}
 
 	// Transaction views
+	fmt.Println("Transaction views")
 	if err := InsertTransactionViewsForGlobalDB(ctx, db, GlobalDbName); err != nil {
-		return errors.Wrap(err, "database fails to create view(s) for transactions")
+		return fmt.Errorf("database fails to create view(s) for transactions: %w", err)
 	}
 
 	// Account views
+	fmt.Println("Account views")
 	if err := InsertAcctViewsForGlobalDB(ctx, db, GlobalDbName); err != nil {
-		return errors.Wrap(err, "database fails to create view(s) for accounts")
+		return fmt.Errorf("database fails to create view(s) for accounts: %w", err)
 	}
 
 	// Asset views
+	fmt.Println("Asset views")
 	if err := InsertAssetViewsForGlobalDB(ctx, db, GlobalDbName); err != nil {
-		return errors.Wrap(err, "database fails to create view(s) for assets")
+		return fmt.Errorf("database fails to create view(s) for assets: %w", err)
 	}
 
 	// Application views
+	fmt.Println("Application views")
 	if err := InsertApplicationViewsForGlobalDB(ctx, db, GlobalDbName); err != nil {
-		return errors.Wrap(err, "database fails to create view(s) for applications")
+		return fmt.Errorf("database fails to create view(s) for applications: %w", err)
 	}
 
 	// TODO: To-Be-Deleted

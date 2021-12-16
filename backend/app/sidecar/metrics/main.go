@@ -60,7 +60,7 @@ func run(log *zap.SugaredLogger) error {
 	cfg := struct {
 		conf.Version
 		Web struct {
-			DebugHost string `conf:"default:0.0.0.0:4001"`
+			DebugHost string `conf:"default:0.0.0.0:3002"`
 		}
 		Expvar struct {
 			Host            string        `conf:"default:0.0.0.0:3001"`
