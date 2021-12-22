@@ -85,6 +85,7 @@ func run(log *zap.SugaredLogger) error {
 			IdleTimeout     time.Duration `conf:"default:120s"`
 			ShutdownTimeout time.Duration `conf:"default:20s"`
 			EnableSync		bool		  `conf:"default:true,help:specifies if the API should auto-sync new blocks"`
+			SyncInternal    time.Duration `conf:"default:"5s`
 		}
 		Auth struct {
 			KeysFolder string `conf:"default:zarf/keys/"`
@@ -94,7 +95,6 @@ func run(log *zap.SugaredLogger) error {
 			Protocol   string `conf:"default:http"`
 			User       string `conf:"default:kevin",env:ALGOSEARCH_COUCH_DB_USER`
 			Password   string `conf:"default:makechesterproud!,mask"`
-			//Host       string `conf:"default:127.0.0.1:5984"`
 			Host       string `conf:"default:89.39.110.254:5984"`
 			//Protocol   string `conf:"default:http"`
 			//User       string `conf:"default:algorand",env:ALGOSEARCH_COUCH_DB_USER`
@@ -103,16 +103,20 @@ func run(log *zap.SugaredLogger) error {
 			//Host       string `conf:"default:localhost:5984"`
 		}
 		Algorand struct {
-			//AlgodAddr		string `conf:"default:http://localhost:4001"`
+			//AlgodProtocol	string `conf:"default:http,env:ALGOD_PROTOCOL"`
+			//AlgodAddr		string `conf:"default:localhost:4001"`
 			//AlgodToken		string `conf:"default:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"`
 			//KmdAddr			string `conf:"default:http://localhost:7833"`
 			//KmdToken		string `conf:"default:a"`
-			//IndexerAddr 	string `conf:"default:http://localhost:8980"`
+			//IndexerProtocol string `conf:"default:http,env:INDEXER_PROTOCOL"`
+			//IndexerAddr 	string `conf:"default:localhost:8980"`
 			//IndexerToken	string `conf:"default:empty"`
-			AlgodAddr		string `conf:"default:http://89.39.110.254:4001,env:ALGOD_ADDR"`
+			AlgodProtocol	string `conf:"default:http,env:ALGOD_PROTOCOL"`
+			AlgodAddr		string `conf:"default:89.39.110.254:4001,env:ALGOD_ADDR"`
 			AlgodToken		string `conf:"default:a2d2ac864300588718c6c05ff241a14fad99d30a19806356f3b9c8008559c4c1,env:ALGOD_TOKEN"`
 			KmdAddr			string `conf:""`
 			KmdToken		string `conf:""`
+			IndexerProtocol string `conf:"env:INDEXER_PROTOCOL"`
 			IndexerAddr 	string `conf:"env:INDEXER_ADDR"`
 			IndexerToken	string `conf:"default:empty,env:INDEXER_TOKEN"`
 		}
@@ -195,10 +199,10 @@ func run(log *zap.SugaredLogger) error {
 	// =========================================================================
 	// Start Algorand Algod Client
 
-	log.Infow("startup", "status", "initializing algorand algod client support", "host", cfg.Algorand.AlgodAddr)
+	log.Infow("startup", "status", "initializing algorand algod client support", "host", cfg.Algorand.AlgodProtocol + "://" + cfg.Algorand.AlgodAddr)
 
 	algodClient, err := algod.Open(algod.Config{
-		AlgodAddr: cfg.Algorand.AlgodAddr,
+		AlgodAddr: cfg.Algorand.AlgodProtocol + "://" + cfg.Algorand.AlgodAddr,
 		AlgodToken: cfg.Algorand.AlgodToken,
 		KmdAddr: cfg.Algorand.KmdAddr,
 		KmdToken: cfg.Algorand.KmdToken,
@@ -207,7 +211,7 @@ func run(log *zap.SugaredLogger) error {
 		return fmt.Errorf("connecting to algorand node: %w", err)
 	}
 	defer func() {
-		log.Infow("shutdown", "status", "stopping algorand algod client support", "host", cfg.Algorand.AlgodAddr)
+		log.Infow("shutdown", "status", "stopping algorand algod client support", "host", cfg.Algorand.AlgodProtocol + "://" + cfg.Algorand.AlgodAddr)
 		//algodClient.Close()
 	}()
 
@@ -216,17 +220,17 @@ func run(log *zap.SugaredLogger) error {
 
 	var indexerClient *_indexer.Client = nil
 	if cfg.Algorand.IndexerAddr != "" {
-		log.Infow("startup", "status", "initializing algorand indexer client support", "host", cfg.Algorand.AlgodAddr)
+		log.Infow("startup", "status", "initializing algorand indexer client support", "host", cfg.Algorand.IndexerProtocol + "://" + cfg.Algorand.IndexerAddr)
 
 		indexerClient, err = indexer.Open(indexer.Config{
-			IndexerAddr: cfg.Algorand.IndexerAddr,
+			IndexerAddr: cfg.Algorand.IndexerProtocol + "://" + cfg.Algorand.IndexerAddr,
 			IndexerToken: cfg.Algorand.IndexerToken,
 		})
 		if err != nil {
 			return fmt.Errorf("connecting to algorand indexer: %w", err)
 		}
 		defer func() {
-			log.Infow("shutdown", "status", "stopping algorand indexer client support", "host", cfg.Algorand.IndexerAddr)
+			log.Infow("shutdown", "status", "stopping algorand indexer client support", "host", cfg.Algorand.IndexerProtocol + "://" + cfg.Algorand.IndexerAddr)
 			//algodClient.Close()
 		}()
 	}

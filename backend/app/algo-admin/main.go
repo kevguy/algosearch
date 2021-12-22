@@ -49,28 +49,31 @@ func run(log *zap.SugaredLogger) error {
 		conf.Version
 		Args    conf.Args
 		CouchDB struct {
-			//Protocol string `conf:"default:http"`
-			//User       string `conf:"default:kevin"`
-			//Password   string `conf:"default:makechesterproud!,mask"`
-			////Host       string `conf:"default:127.0.0.1:5984"`
-			//Host string `conf:"default:89.39.110.254:5984"`
 			Protocol string `conf:"default:http"`
-			User       string `conf:"default:algorand"`
-			Password   string `conf:"default:algorand,mask"`
+			User       string `conf:"default:kevin"`
+			Password   string `conf:"default:makechesterproud!,mask"`
 			//Host       string `conf:"default:127.0.0.1:5984"`
-			Host string `conf:"default:localhost:5984"`
+			Host string `conf:"default:89.39.110.254:5984"`
+			//Protocol string `conf:"default:http"`
+			//User       string `conf:"default:algorand"`
+			//Password   string `conf:"default:algorand,mask"`
+			////Host       string `conf:"default:127.0.0.1:5984"`
+			//Host string `conf:"default:localhost:5984"`
 		}
 		Algorand struct {
-			//AlgodAddr	string `conf:"default:http://localhost:4001"`
+			//AlgodProtocol string `conf:"default:http"`
+			//AlgodAddr	string `conf:"default:localhost:4001"`
 			//AlgodToken	string `conf:"default:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"`
 			//KmdAddr		string `conf:"default:http://localhost:7833"`
 			//KmdToken	string `conf:"default:a"`
 			//IndexerAddr 	string `conf:"default:http://localhost:8980"`
 			//IndexerToken	string `conf:"default:empty"`
-			AlgodAddr    string `conf:"default:http://89.39.110.254:4001"`
+			AlgodProtocol string `conf:"default:http"`
+			AlgodAddr    string `conf:"default:89.39.110.254:4001"`
 			AlgodToken   string `conf:"default:a2d2ac864300588718c6c05ff241a14fad99d30a19806356f3b9c8008559c4c1"`
 			KmdAddr      string `conf:""`
 			KmdToken     string `conf:""`
+			IndexerProtocol string `conf:""`
 			IndexerAddr  string `conf:""`
 			IndexerToken string `conf:"default:empty"`
 		}
@@ -115,14 +118,14 @@ func run(log *zap.SugaredLogger) error {
 	}
 
 	algorandConfig := algod.Config{
-		AlgodAddr:  cfg.Algorand.AlgodAddr,
+		AlgodAddr:  cfg.Algorand.AlgodProtocol + "://" + cfg.Algorand.AlgodAddr,
 		AlgodToken: cfg.Algorand.AlgodToken,
 		KmdAddr:    cfg.Algorand.KmdAddr,
 		KmdToken:   cfg.Algorand.KmdToken,
 	}
 
 	indexerConfig := indexer.Config{
-		IndexerAddr:  cfg.Algorand.IndexerAddr,
+		IndexerAddr:  cfg.Algorand.IndexerProtocol + "://" + cfg.Algorand.IndexerAddr,
 		IndexerToken: cfg.Algorand.IndexerToken,
 	}
 
