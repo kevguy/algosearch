@@ -1,0 +1,56 @@
+# Build the Go Binary.
+FROM golang:1.17 as build_algosearch
+ENV CGO_ENABLED 0
+ARG BUILD_REF
+
+# Create the service directory and the copy the module files first and then
+# download the dependencies. If this doesn't change, we won't need to do this
+# again in future builds.
+RUN mkdir /service
+COPY go.* /service/
+WORKDIR /service
+RUN go mod download
+
+# Copy the source code into the container.
+COPY ./backend /service/backend
+COPY ./zarf /service/zarf
+COPY ./swagger /service/swagger
+
+# Build the admin tool so we can have it in the container. This should not change
+# often so do this first.
+WORKDIR /service/backend/app/algo-admin
+RUN go build -ldflags "-X main.build=${BUILD_REF}"
+
+# Build the service binary.
+WORKDIR /service/backend/app/algosearch
+RUN go build -ldflags "-X main.build=${BUILD_REF}"
+
+WORKDIR /service/backend/app/sidecar/metrics
+RUN go build -ldflags "-X main.build=${BUILD_REF}"
+
+# Run the Go Binary in Alpine.
+FROM alpine:3.15
+
+# https://stackoverflow.com/questions/59094236/error-unknown-time-zone-america-los-angeles-in-time-loadlocation
+# https://stackoverflow.com/questions/59044243/timezones-failing-to-load-in-go-1-13
+RUN apk add --no-cache tzdata
+
+ARG BUILD_DATE
+ARG BUILD_REF
+COPY --from=build_algosearch /service/backend/app/algo-admin/algo-admin /service/admin
+COPY --from=build_algosearch /service/backend/app/algosearch/algosearch /service/algosearch
+COPY --from=build_algosearch /service/zarf/keys/. /service/zarf/keys/.
+COPY --from=build_algosearch /service/swagger /service/swagger
+COPY --from=build_algosearch /service/zarf/start-all.sh /service/start-all.sh
+COPY --from=build_algosearch /service/backend/app/sidecar/metrics/metrics /service/metrics
+
+WORKDIR /service
+RUN chmod +x ./start-all.sh
+CMD ["./start-all.sh"]
+
+LABEL org.opencontainers.image.created="${BUILD_DATE}" \
+      org.opencontainers.image.title="algosearch" \
+      org.opencontainers.image.authors="Kevin Lai <kev@borecast.com>" \
+      org.opencontainers.image.source="https://github.com/kevguy/algosearch/app/algosearch" \
+      org.opencontainers.image.revision="${BUILD_REF}" \
+      org.opencontainers.image.vendor="Borecast"

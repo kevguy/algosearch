@@ -83,6 +83,10 @@ func (h Handlers) SrchKey(ctx context.Context, w http.ResponseWriter, r *http.Re
 		}
 	}
 
+	// TODO: Search by Asset Name
+
+	// TODO: Search Group Tx ID
+
 	type Response struct {
 		BlockHashFound bool `json:"block_hash_found"`
 		BlockRoundFound bool `json:"block_round_found"`

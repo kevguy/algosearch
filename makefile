@@ -115,6 +115,14 @@ VERSION := 1.1
 
 all: algosearch-backend metrics
 
+algosearch:
+	docker build \
+		-f zarf/docker/dockerfile.all \
+		-t algosearch-amd64:$(VERSION) \
+		--build-arg BUILD_REF=$(VERSION) \
+		--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
+		.
+
 algosearch-backend:
 	docker build \
 		-f zarf/docker/dockerfile.algosearch-backend \
