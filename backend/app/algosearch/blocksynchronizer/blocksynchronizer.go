@@ -274,6 +274,12 @@ func (p *BlockSynchronizer) update() {
 			newBlockPayload.AppList = appIdList
 		}
 
+		speed, err := p.blockCore.GetBlockTxnSpeed(context.Background())
+		if err != nil {
+			p.log.Errorw("blocksynchronizer", "status", "can't find block txn speed", "ERROR", err)
+		}
+		newBlockPayload.AvgBlockTxnSpeed = speed
+
 		if err = p.broadcastUpdate(newBlockPayload); err != nil {
 			p.log.Errorw("blocksynchronizer", "status", "can't broadcast block update through websocket", "ERROR", err)
 		}

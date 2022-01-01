@@ -29,7 +29,7 @@ func (h Handlers) SrchKey(ctx context.Context, w http.ResponseWriter, r *http.Re
 	}
 	keyQueries := web.Query(r, "key")
 	if len(keyQueries) == 0 {
-		return v1web.NewRequestError(fmt.Errorf("missing query parameter: limit"), http.StatusBadRequest)
+		return v1web.NewRequestError(fmt.Errorf("missing query parameter: key"), http.StatusBadRequest)
 	}
 
 	var blockHashFound = false

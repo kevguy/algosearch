@@ -10,4 +10,5 @@ type WsMessage struct {
 	AccountList 		[]string  		`json:"account_ids"`
 	AssetList 			[]uint64 		`json:"asset_ids"`
 	AppList 			[]uint64 		`json:"app_ids"`
+	AvgBlockTxnSpeed	float64			`json:"avg_block_txn_speed"`
 }

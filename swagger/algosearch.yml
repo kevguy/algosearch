@@ -771,8 +771,6 @@ components:
           type: string
           description: Block hash
           example: GNTA9izDj+OBtvedLqJb730/U/qW3q8DdrNkGEZtldo=
-    AccountData:
-
     InternalServerErrorResponse:
       type: object
       properties:
@@ -873,6 +871,38 @@ paths:
               schema:
                 allOf:
                   - $ref: '#/components/schemas/BlockData'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/InternalServerErrorResponse'
+  /v1/algod/ledger/supply:
+    get:
+      security: []
+      summary: Get the current supply reported by the ledger through Algod API
+      description: Get the current supply reported by the ledger through Algod API.
+      tags:
+        - Algod
+        - Ledger
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  current_round:
+                    type: number
+                    description: current round
+                  online-money:
+                    type: number
+                    description: online money
+                  total-money:
+                    type: number
+                    description: total money
         '500':
           description: Internal Server Error
           content:
@@ -1215,6 +1245,61 @@ paths:
                     items:
                       allOf:
                         - $ref: '#/components/schemas/TransactionData'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/InternalServerErrorResponse'
+  /v1/search:
+    parameters:
+      - in: query
+        required: true
+        name: key
+        schema:
+          type: string
+          example: 226TEYMZSVDPKVXTYT7HGSTBKT2R5J6K4IWXSMMYFTKPMD66JZSBGVKJKY
+    get:
+      security: []
+      summary: Get Search Results by Key
+      description: >-
+        Retrieves search results by supplying a key, and in return the user will
+        receive if this search key belongs to a block, account, asset, application or a transaction.
+      tags:
+        - Search
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  block_hash_found:
+                    type: boolean
+                    example: false
+                    description: if block hash is found
+                  block_round_found:
+                    type: boolean
+                    example: false
+                    description: if block round number is found
+                  txn_found:
+                    type: boolean
+                    example: false
+                    description: if transaction id is found
+                  acct_found:
+                    type: boolean
+                    example: false
+                    description: if account address is found
+                  asset_found:
+                    type: boolean
+                    example: false
+                    description: if asset id is found
+                  application_found:
+                    type: boolean
+                    example: false
+                    description: if application id is found
         '500':
           description: Internal Server Error
           content:

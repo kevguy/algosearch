@@ -414,3 +414,60 @@ func (s Store) GetBlocksPagination(ctx context.Context, latestBlockNum int64, or
 
 	return fetchedBlocks, numOfPages, numOfBlks, nil
 }
+
+// GetBlockTxnSpeed compares the latest 10 blocks it could find in the database
+// and finds the average transaction speed
+func (s Store) GetBlockTxnSpeed(ctx context.Context) (float64, error) {
+
+	ctx, span := otel.GetTracerProvider().
+		Tracer("").
+		Start(ctx, "block.GetBlockTxnTime")
+	defer span.End()
+
+	s.log.Infow("block.GetBlockTxnTime", "traceid", web.GetTraceID(ctx))
+
+	exist, err := s.couchClient.DBExists(ctx, schema.GlobalDbName)
+	if err != nil || !exist {
+		return 0.0, errors.Wrap(err, schema.GlobalDbName+ " database check fails")
+	}
+	db := s.couchClient.DB(schema.GlobalDbName)
+
+	// Get latest 10 blocks
+	options := kivik.Options{
+		"include_docs": true,
+		"limit": 10,
+		"descending": true,
+	}
+
+	rows, err := db.Query(ctx, schema.BlockDDoc, "_view/" +schema.BlockViewByRoundNo, options)
+	if err != nil {
+		return 0.0, errors.Wrap(err, "Fetch data error")
+	}
+
+	var fetchedBlocks = []Block{}
+	for rows.Next() {
+		var block = Block{}
+		if err := rows.ScanDoc(&block); err != nil {
+			return 0.0, errors.Wrap(err, "unwrapping block")
+		}
+		fetchedBlocks = append(fetchedBlocks, block)
+	}
+
+	if len(fetchedBlocks) <= 1 {
+		return 0.0, nil
+	} else {
+		var timeDiffs []uint64
+		for idx, block := range fetchedBlocks {
+			if idx > 1 {
+				timeDiffs = append(timeDiffs, fetchedBlocks[idx-1].Timestamp - block.Timestamp)
+			}
+		}
+
+		var sum uint64 = 0
+		for _, item := range timeDiffs {
+			sum += item
+		}
+		average := float64(sum) / float64(len(timeDiffs))
+		return average, nil
+	}
+}

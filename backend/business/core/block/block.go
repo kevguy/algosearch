@@ -54,3 +54,7 @@ func (c Core) GetBlocksPagination(ctx context.Context, latestBlockNum int64, ord
 func (c Core) GetNumOfBlocks(ctx context.Context) (int64, error) {
 	return c.store.GetNumOfBlocks(ctx)
 }
+
+func (c Core) GetBlockTxnSpeed(ctx context.Context) (float64, error) {
+	return c.store.GetBlockTxnSpeed(ctx)
+}

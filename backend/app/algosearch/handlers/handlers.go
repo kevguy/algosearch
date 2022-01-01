@@ -218,7 +218,7 @@ func v1(app *web.App, cfg APIMuxConfig) {
 		AssetCore: assetCore,
 		ApplicationCore: appCore,
 	}
-	app.Handle(http.MethodGet, version, "/search/:key", sG.SrchKey, mid.Cors("*"))
+	app.Handle(http.MethodGet, version, "/search", sG.SrchKey, mid.Cors("*"))
 
 	// Register websocket endpoints
 	wsG := wsgrp.Handlers{
