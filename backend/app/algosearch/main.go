@@ -85,7 +85,7 @@ func run(log *zap.SugaredLogger) error {
 			IdleTimeout     time.Duration `conf:"default:120s"`
 			ShutdownTimeout time.Duration `conf:"default:20s"`
 			EnableSync		bool		  `conf:"default:true,help:specifies if the API should auto-sync new blocks"`
-			SyncInternal    time.Duration `conf:"default:"5s`
+			SyncInternal    time.Duration `conf:"default:5s"`
 		}
 		Auth struct {
 			KeysFolder string `conf:"default:zarf/keys/"`

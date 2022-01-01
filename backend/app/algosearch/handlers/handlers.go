@@ -9,10 +9,13 @@ import (
 	"github.com/kevguy/algosearch/backend/app/algosearch/handlers/v1/assetgrp"
 	"github.com/kevguy/algosearch/backend/app/algosearch/handlers/v1/ledgergrp"
 	"github.com/kevguy/algosearch/backend/app/algosearch/handlers/v1/roundgrp"
+	"github.com/kevguy/algosearch/backend/app/algosearch/handlers/v1/srchgrp"
 	"github.com/kevguy/algosearch/backend/app/algosearch/handlers/v1/transactiongrp"
 	"github.com/kevguy/algosearch/backend/app/algosearch/handlers/v1/wsgrp"
 	"github.com/kevguy/algosearch/backend/business/core/account"
 	algod2 "github.com/kevguy/algosearch/backend/business/core/algod"
+	"github.com/kevguy/algosearch/backend/business/core/application"
+	"github.com/kevguy/algosearch/backend/business/core/asset"
 	block2 "github.com/kevguy/algosearch/backend/business/core/block"
 	transaction2 "github.com/kevguy/algosearch/backend/business/core/transaction"
 	"github.com/kevguy/algosearch/backend/foundation/websocket"
@@ -161,10 +164,15 @@ func v1(app *web.App, cfg APIMuxConfig) {
 	app.Handle(http.MethodGet, "", "/api/doc", sg.ServeDoc)
 
 	algodCore := algod2.NewCore(cfg.Log, cfg.AlgodClient)
+	blockCore := block2.NewCore(cfg.Log, cfg.CouchClient)
+	txnCore := transaction2.NewCore(cfg.Log, cfg.CouchClient)
+	acctCore := account.NewCore(cfg.Log, cfg.CouchClient)
+	assetCore := asset.NewCore(cfg.Log, cfg.CouchClient)
+	appCore := application.NewCore(cfg.Log, cfg.CouchClient)
 
-	// Register round endpoints
+// Register round endpoints
 	rG := roundgrp.Handlers{
-		BlockCore: block2.NewCore(cfg.Log, cfg.CouchClient),
+		BlockCore: blockCore,
 		AlgodCore: algodCore,
 	}
 	app.Handle(http.MethodGet, version, "/algod/current-round", rG.GetCurrentRoundFromAPI, mid.Cors("*"))
@@ -176,7 +184,7 @@ func v1(app *web.App, cfg APIMuxConfig) {
 
 	// Register transaction endpoints
 	tG := transactiongrp.Handlers{
-		TransactionCore: transaction2.NewCore(cfg.Log, cfg.CouchClient),
+		TransactionCore: txnCore,
 	}
 	app.Handle(http.MethodGet, version, "/current-txn", tG.GetLatestSyncedTransaction, mid.Cors("*"))
 	app.Handle(http.MethodGet, version, "/earliest-txn", tG.GetEarliestSyncedTransaction, mid.Cors("*"))
@@ -187,7 +195,7 @@ func v1(app *web.App, cfg APIMuxConfig) {
 
 	// Register account endpoints
 	aG := acctgrp.Handlers{
-		AcctCore: account.NewCore(cfg.Log, cfg.CouchClient),
+		AcctCore: acctCore,
 	}
 	app.Handle(http.MethodGet, version, "/accounts/latest", aG.GetLatestSyncedAccountAddr, mid.Cors("*"))
 	app.Handle(http.MethodGet, version, "/accounts/earliest", aG.GetEarliestSyncedAccountAddr, mid.Cors("*"))
@@ -202,6 +210,15 @@ func v1(app *web.App, cfg APIMuxConfig) {
 		AlgodCore: algodCore,
 	}
 	app.Handle(http.MethodGet, version, "/algod/ledger/supply", lG.GetLedgerSupplyFromAPI, mid.Cors("*"))
+
+	sG := srchgrp.Handlers{
+		BlockCore: blockCore,
+		TransactionCore: txnCore,
+		AcctCore: acctCore,
+		AssetCore: assetCore,
+		ApplicationCore: appCore,
+	}
+	app.Handle(http.MethodGet, version, "/search/:key", sG.SrchKey, mid.Cors("*"))
 
 	// Register websocket endpoints
 	wsG := wsgrp.Handlers{
