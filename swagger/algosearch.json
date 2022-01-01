@@ -924,6 +924,108 @@
           }
         }
       },
+      "ApplicationStateSchema": {
+        "type": "object",
+        "description": "specifies maximums on the number of each type that may be",
+        "properties": {
+          "num-bytes-slice": {
+            "type": "number",
+            "description": "number of byte slices"
+          },
+          "num-uint": {
+            "description": "number of uints",
+            "type": "number"
+          }
+        }
+      },
+      "ApplicationLocalState": {
+        "type": "object",
+        "description": "stores local state associated with an application.",
+        "required": [
+          "id",
+          "schema"
+        ],
+        "properties": {
+          "closed-out-at-round": {
+            "type": "number",
+            "description": "round when account closed out of the application."
+          },
+          "deleted": {
+            "type": "boolean",
+            "description": "whether or not the application local state is currently deleted from its account."
+          },
+          "id": {
+            "type": "number",
+            "description": "the application which this local state is for."
+          },
+          "key-value": {
+            "type": "object",
+            "description": "storage",
+            "properties": {
+              "key": {
+                "type": "string",
+                "description": "key"
+              },
+              "value": {
+                "type": "object",
+                "description": "the TEAL value",
+                "properties": {
+                  "bytes": {
+                    "type": "string",
+                    "description": "the bytes value"
+                  },
+                  "type": {
+                    "type": "string",
+                    "description": "value type"
+                  },
+                  "uint": {
+                    "type": "number",
+                    "description": "uint value"
+                  }
+                }
+              }
+            }
+          },
+          "opted-in-at-round": {
+            "type": "number",
+            "description": "round when the account opted into the application."
+          },
+          "schema": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ApplicationStateSchema"
+              }
+            ],
+            "description": "schema"
+          }
+        }
+      },
+      "AccountData": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string",
+            "description": "the account public key"
+          },
+          "amount": {
+            "type": "number",
+            "description": "specifies the amount of MicroAlgos in the account, without the pending rewards."
+          },
+          "app-local-state": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ApplicationLocalState"
+              }
+            ],
+            "nullable": true,
+            "description": "(appl) applications local data stored in this account."
+          },
+          "apps-total-extra-pages": {
+            "type": "number",
+            "description": "the sum of all extra application program pages for this account."
+          }
+        }
+      },
       "InternalServerErrorResponse": {
         "type": "object",
         "properties": {
@@ -1730,6 +1832,272 @@
         }
       }
     },
+    "/v1/accounts": {
+      "parameters": [
+        {
+          "in": "query",
+          "required": true,
+          "name": "latest_acct",
+          "schema": {
+            "type": "number",
+            "example": 300
+          },
+          "description": "the latest Account Addre user wants to start with"
+        },
+        {
+          "in": "query",
+          "required": true,
+          "name": "limit",
+          "schema": {
+            "type": "number",
+            "example": 50
+          },
+          "description": "number of items per page"
+        },
+        {
+          "in": "query",
+          "required": true,
+          "name": "page",
+          "schema": {
+            "type": "number",
+            "example": 10
+          },
+          "description": "number of pages"
+        },
+        {
+          "in": "query",
+          "required": true,
+          "name": "order",
+          "schema": {
+            "type": "string",
+            "example": "asc"
+          },
+          "description": "sort order (asc/desc)"
+        }
+      ],
+      "get": {
+        "security": [],
+        "summary": "Get Accounts from API with Pagination",
+        "description": "Retrieves account data from API with pagination",
+        "tags": [
+          "Account"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "num_of_pages": {
+                      "type": "number",
+                      "description": "Number of pages"
+                    },
+                    "num_of_txns": {
+                      "type": "number",
+                      "description": "Number of transactions"
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/AccountData"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/InternalServerErrorResponse"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/accounts/{addr}": {
+      "get": {
+        "security": [],
+        "summary": "Get Account from API by Account Address",
+        "description": "Retrieves the account data from API by Account Address",
+        "tags": [
+          "Account"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "addr",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "The Account Address"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/AccountData"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/InternalServerErrorResponse"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/accounts/latest": {
+      "get": {
+        "security": [],
+        "summary": "Get Latest Synced Account from API",
+        "description": "Retrieves the last synced account from API",
+        "tags": [
+          "Account"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/AccountData"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/InternalServerErrorResponse"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/accounts/earliest": {
+      "get": {
+        "security": [],
+        "summary": "Get Earliest Synced Account from API",
+        "description": "Retrieves the earliest synced account from API",
+        "tags": [
+          "Transaction"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/AccountData"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/InternalServerErrorResponse"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/accounts/count": {
+      "get": {
+        "security": [],
+        "summary": "Get Account Count from API",
+        "description": "Retrieves the number of Accounts from API",
+        "tags": [
+          "Account"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "number",
+                  "description": "the number of accounts"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/InternalServerErrorResponse"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/search": {
       "parameters": [
         {
@@ -1745,7 +2113,7 @@
       "get": {
         "security": [],
         "summary": "Get Search Results by Key",
-        "description": "Retrieves search results by supplying a key, and in return the user will receive if this search key belongs to a block, account, asset, application or a transaction.  ",
+        "description": "Retrieves search results by supplying a key, and in return the user will receive if this search key belongs to a block, account, asset, application or a transaction.",
         "tags": [
           "Search"
         ],
