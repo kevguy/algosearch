@@ -161,7 +161,7 @@ func v1(app *web.App, cfg APIMuxConfig) {
 		cfg.Log.Errorf("loading index template: %v", err)
 		//return nil, errors.Wrap(err, "loading index template")
 	}
-	app.Handle(http.MethodGet, "", "/api/doc", sg.ServeDoc)
+	app.Handle(http.MethodGet, "", "/api/doc", sg.ServeDoc, mid.Cors("*"))
 
 	algodCore := algod2.NewCore(cfg.Log, cfg.AlgodClient)
 	blockCore := block2.NewCore(cfg.Log, cfg.CouchClient)

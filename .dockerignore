@@ -1,3 +1,4 @@
+db-data/
 .circleci/
 zarf/compose/
 zarf/docker/
