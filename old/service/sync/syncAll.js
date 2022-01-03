@@ -255,14 +255,6 @@ async function addBlock(blockNum, currentNum) {
 		return false;
 	}
 
-	// try {
-	// 	console.log('fuck');
-	// 	const hihi = await client.block(blockNum).do();
-	// 	console.log(hihi);
-	// } catch (e) {
-	// 	console.log('hihi: ', e);
-	// }
-
 	try {
 		const { proposer, blockHash } = await getProposerAndBlockHash(client, blockNum);
 		blocks.insert({

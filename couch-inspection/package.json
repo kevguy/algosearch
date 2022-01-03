@@ -1,0 +1,9 @@
+{
+  "name": "fuck",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "isomorphic-fetch": "^3.0.0"
+  }
+}

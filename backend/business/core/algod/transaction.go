@@ -2,7 +2,6 @@ package algod
 
 import (
 	"encoding/base64"
-	"fmt"
 	"github.com/algorand/go-algorand-sdk/client/v2/common/models"
 	"github.com/algorand/go-algorand-sdk/crypto"
 	"github.com/algorand/go-algorand-sdk/types"
@@ -366,7 +365,6 @@ func msigToTransactionMsig(msig types.MultisigSig) *models.TransactionSignatureM
 
 // https://github.com/algorand/indexer/blob/master/api/converter_utils.go#L193
 func lsigToTransactionLsig(lsig types.LogicSig) *models.TransactionSignatureLogicsig {
-	fmt.Println("fuck you ")
 	if isBlank(lsig) {
 		return nil
 	}
@@ -376,7 +374,6 @@ func lsigToTransactionLsig(lsig types.LogicSig) *models.TransactionSignatureLogi
 	//	args = append(args, base64.StdEncoding.EncodeToString(arg))
 	//}
 
-	fmt.Println("fuck you too")
 	txnMSig := msigToTransactionMsig(lsig.Msig)
 	if txnMSig == nil {
 		txnMSig = &models.TransactionSignatureMultisig{
@@ -427,13 +424,8 @@ func stateDeltaToStateDelta(d types.StateDelta) []models.EvalDeltaKeyValue {
 // https://github.com/algorand/indexer/blob/6e4d737f2e4e49088b436a234caee6681435053d/api/converter_utils.go
 func ProcessTransactionInBlock(txn types.SignedTxnInBlock, blockInfo types.Block) models.Transaction {
 
-
-	var genesisHash = [32]byte(txn.Txn.GenesisHash)
-	var genesisHashStr = base64.StdEncoding.EncodeToString(genesisHash[:])
-	fmt.Println("Indexer here")
-	fmt.Println("- Genesis Hash: " + genesisHashStr)
-	fmt.Println("- ID: ")
-	fmt.Println("Bye")
+	//var genesisHash = [32]byte(txn.Txn.GenesisHash)
+	//var genesisHashStr = base64.StdEncoding.EncodeToString(genesisHash[:])
 
 	var payment *models.TransactionPayment
 	var keyreg *models.TransactionKeyreg

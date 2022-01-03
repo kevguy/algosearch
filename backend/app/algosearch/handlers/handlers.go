@@ -89,8 +89,6 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) http.Handler {
 	}
 	app.Handle(http.MethodGet, "", "/swagger/*", f, mid.Cors("*"))
 
-
-
 	// Accept CORS 'OPTIONS' preflight requests if config has been provided.
 	// Don't forget to apply the CORS middleware to the routes that need it.
 	// Example Config: `conf:"default:https://MY_DOMAIN.COM"`
@@ -98,7 +96,7 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) http.Handler {
 		h := func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 			return nil
 		}
-		app.Handle(http.MethodOptions, "", "/*", h)
+		app.Handle(http.MethodOptions, "", "/*", h, mid.Cors("*"))
 	}
 
 	// Load the routes for the different versions of the API.

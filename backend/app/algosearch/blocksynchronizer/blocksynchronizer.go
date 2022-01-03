@@ -113,7 +113,7 @@ func (p *BlockSynchronizer) update() {
 	if err != nil {
 		p.log.Errorw("blocksynchronizer", "status", "get last synced round number", "ERROR", err)
 	}
-	// 111983 is amazing, it has a shit ton of transactions
+	// 111983 is amazing, it has a a ton of transactions
 	//lastSyncedBlockNum = 111980
 
 	currentRoundNum, err := p.algodCore.GetCurrentRoundNum(context.Background())

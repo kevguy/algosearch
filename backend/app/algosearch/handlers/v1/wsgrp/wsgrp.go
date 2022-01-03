@@ -31,7 +31,7 @@ func (h Handlers) ServeHomePage(ctx context.Context, w http.ResponseWriter, r *h
 }
 
 func (h Handlers) SendDummy(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	var message = "Fuck You"
+	var message = "Testing Message"
 	h.Hub.ExternalBroadcast <- []byte(message)
 	return web.Respond(ctx, w, nil, http.StatusOK)
 }
