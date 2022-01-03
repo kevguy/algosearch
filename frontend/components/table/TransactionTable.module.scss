@@ -1,0 +1,51 @@
+.mui-table {
+  th,
+  td {
+    padding: var(--space-s);
+  }
+}
+
+.transaction-table {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.5;
+  font-size: var(--font-size-xs);
+  border-radius: 4px;
+}
+
+.transaction-row {
+  width: 100%;
+  padding: var(--space-s);
+  background-color: white;
+  border: 1px solid var(--grey-lighter);
+  border-radius: 6px;
+  margin-bottom: 6px;
+}
+
+.transaction-subrow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.time {
+  flex: 0 0 auto;
+  margin-left: var(--space-l);
+}
+
+.transaction-id {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.relevant-accounts {
+  display: flex;
+  flex-direction: column;
+}
+
+.transaction-info {
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+}

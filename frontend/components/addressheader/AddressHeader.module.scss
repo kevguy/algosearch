@@ -1,0 +1,72 @@
+.address-header {
+  width: 100%;
+  background-color: #fafcff;
+  border-bottom: 1px solid #e7eaf3;
+
+  > div {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: var(--space-xxxl) 0;
+    margin: auto;
+  }
+
+  > div > div:first-child {
+    h3 {
+      margin-bottom: var(--space-xs);
+      @media screen and (max-width: 768px) {
+        margin-bottom: 0;
+      }
+    }
+
+    div {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      @media screen and (max-width: 768px) {
+        justify-content: flex-start;
+      }
+    }
+
+    span {
+      width: 100%;
+      color: var(--blue-dark);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin: 0;
+      @media screen and (max-width: 768px) {
+        max-width: 40vw;
+      }
+    }
+  }
+
+  h4 {
+    color: var(--blue-dark);
+    text-align: right;
+    text-transform: uppercase;
+    margin-bottom: var(--space-xs);
+  }
+}
+
+.address-button {
+  min-width: auto !important;
+  margin-left: var(--space-xxs) !important;
+}
+
+.balance {
+  font-size: var(--font-size-l);
+
+  span {
+    display: inline-flex;
+    margin-left: var(--space-xxs);
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .address-header > div {
+    max-width: 100%;
+    width: 100%;
+    padding: var(--space-xxxl) var(--space-l);
+  }
+}

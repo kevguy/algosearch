@@ -2,14 +2,18 @@
 
 # dependencies
 /node_modules
+frontend/node_modules
 /.pnp
+frontend/.pnp
 .pnp.js
+frontend/.pnp.js
 
 # testing
 /coverage
 
 # production
 /build
+frontend/build
 
 # misc
 .DS_Store
@@ -75,3 +79,19 @@ _testmain.go
 .vscode/tasks.json
 
 old/node_modules
+
+
+# misc
+frontend/.next
+frontend/.DS_Store
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+frontend/config.mainnet.ts
+
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+
+frontend/.vercel

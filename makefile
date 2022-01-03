@@ -131,6 +131,14 @@ algosearch-backend:
 		--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
 		.
 
+algosearch-frontend:
+	docker build \
+		-f zarf/docker/dockerfile.algosearch-frontend \
+		-t algosearch-frontend-amd64:$(VERSION) \
+		--build-arg BUILD_REF=$(VERSION) \
+		--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
+		.
+
 algosearch-metrics:
 	docker build \
 		-f zarf/docker/dockerfile.metrics \

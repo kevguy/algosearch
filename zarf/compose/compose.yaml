@@ -26,6 +26,17 @@ services:
     depends_on:
       - zipkin
 
+  algosearch-frontend:
+    container_name: algosearch-frontend
+    networks:
+      - shared-network
+    image: algosearch-frontend-amd64:1.1
+    ports:
+#      - 3000:3000 # CRUD API
+#      - 4000:4000 # DEBUG API
+    depends_on:
+      - algosearch-backend
+
   metrics:
     container_name: algosearch-metrics
     networks:
