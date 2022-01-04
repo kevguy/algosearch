@@ -275,7 +275,7 @@ const Block = () => {
       {transactions && transactions.length > 0 ? (
         <div>
           <h3 className={styles["table-header"]}>
-            {transactions.length} Transactions
+            {transactions.length > 1 && transactions.length + " "}Transactions
           </h3>
           <div className={styles["block-table"]}>
             <ReactTable

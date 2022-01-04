@@ -107,7 +107,7 @@ const Address = () => {
       },
     },
     {
-      Header: "Tx id",
+      Header: "Tx ID",
       accessor: "id",
       Cell: ({ value }: { value: string }) => (
         <Link href={`/tx/${value}`}>{value}</Link>
@@ -176,8 +176,12 @@ const Address = () => {
           value={
             <div>
               <AlgoIcon />{" "}
-              {microAlgosToAlgos(
-                (data && data["amount-without-pending-rewards"]) || 0
+              {integerFormatter.format(
+                Number(
+                  microAlgosToAlgos(
+                    (data && data["amount-without-pending-rewards"]) || 0
+                  )
+                )
               )}
             </div>
           }
@@ -189,7 +193,11 @@ const Address = () => {
               <Load />
             ) : (
               <div>
-                <AlgoIcon /> {data && microAlgosToAlgos(data.rewards)}
+                <AlgoIcon />{" "}
+                {data &&
+                  integerFormatter.format(
+                    Number(microAlgosToAlgos(data.rewards))
+                  )}
               </div>
             )
           }
