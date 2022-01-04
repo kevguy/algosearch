@@ -11,7 +11,7 @@ export default function Document() {
           crossOrigin="true"
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=Lexend:wght@100;200;300;400&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Lexend:wght@100;200;300;400;500&display=swap"
           rel="stylesheet"
         ></link>
         <link rel="shortcut icon" href="/favicon.svg" />

@@ -3,6 +3,7 @@
   background-color: #fff;
   border: 1px solid var(--grey-lighter);
   margin-bottom: var(--space-xxxl);
+  overflow: hidden;
 
   table {
     min-width: 100%;
@@ -18,11 +19,14 @@
 
   th {
     text-align: left;
-    border-top: 1px solid var(--grey-lighter);
     border-bottom: 1px solid var(--grey-lighter);
     &:first-child {
       padding-left: 15px;
     }
+  }
+
+  .transactions-table {
+    border: none !important;
   }
 
   @media screen and (max-width: 768px) {

@@ -13,12 +13,11 @@ import { siteName } from "../../utils/constants";
 import styles from "./Block.module.scss";
 import {
   getTxTypeName,
-  integerFormatter,
   microAlgosToAlgos,
-  removeSpace,
   TxType,
 } from "../../utils/stringUtils";
 import { TransactionResponse } from "../tx/[_txid]";
+import { IAsaMap } from "../../components/table/TransactionTable";
 
 interface IBlockData {
   "block-hash": string;
@@ -45,8 +44,58 @@ const Block = () => {
   const { _block } = router.query;
   const [blockNum, setBlockNum] = useState(0);
   const [data, setData] = useState<IBlockData>();
-  const [transactions, setTransactions] = useState([]);
+  const [transactions, setTransactions] = useState<TransactionResponse[]>([]);
   const [loading, setLoading] = useState(true);
+  const [asaMap, setAsaMap] = useState<IAsaMap>([]);
+
+  useEffect(() => {
+    async function getAsas() {
+      const dedupedAsaList = Array.from(
+        new Set(
+          transactions
+            .filter(
+              (tx: TransactionResponse) =>
+                tx["tx-type"] === TxType.AssetTransfer
+            )
+            .map(
+              (tx: TransactionResponse) =>
+                tx["asset-transfer-transaction"]["asset-id"]
+            )
+        )
+      );
+      const _asaList: string[] = await Promise.all(
+        dedupedAsaList.map(
+          async (asaId) =>
+            await axios({
+              method: "get",
+              url: `${siteName}/v1/algod/assets/${asaId}`,
+            })
+              .then((response) => {
+                console.log(
+                  "asa unit name?",
+                  response.data.params["unit-name"]
+                );
+                return response.data.params["unit-name"];
+              })
+              .catch((error) => {
+                console.error("Error when retrieving Algorand ASA");
+              })
+        )
+      );
+      const _asaMap: IAsaMap = dedupedAsaList.reduce(
+        (prev: string, asaId: number, index: number) => ({
+          ...prev,
+          [asaId]: _asaList[index],
+        }),
+        {}
+      );
+      if (_asaMap) {
+        setAsaMap(_asaMap);
+      }
+      console.log("_asaMap: ", _asaMap);
+    }
+    getAsas();
+  }, [transactions]);
 
   const getBlock = (blockNum: number) => {
     axios({
@@ -75,18 +124,6 @@ const Block = () => {
   }, [_block]);
 
   const columns = [
-    {
-      Header: "Block",
-      accessor: "confirmed-round",
-      Cell: ({ value }: { value: number }) => {
-        const _value = removeSpace(value.toString());
-        return (
-          <Link href={`/block/${_value}`}>
-            {integerFormatter.format(Number(_value))}
-          </Link>
-        );
-      },
-    },
     {
       Header: "TX ID",
       accessor: "id",
@@ -118,11 +155,28 @@ const Block = () => {
     {
       Header: "Amount",
       accessor: "payment-transaction.amount",
-      Cell: ({ value }: { value: number }) => (
-        <span>
-          <AlgoIcon /> {microAlgosToAlgos(value)}
-        </span>
-      ),
+      Cell: ({
+        original,
+        value,
+      }: {
+        original: TransactionResponse;
+        value: number;
+      }) => {
+        console.log("props original: ", original);
+        return (
+          <span>
+            {original["tx-type"] === TxType.AssetTransfer ? (
+              `${microAlgosToAlgos(
+                original["asset-transfer-transaction"].amount
+              )} ${asaMap[original["asset-transfer-transaction"]["asset-id"]]}`
+            ) : (
+              <>
+                <AlgoIcon /> {microAlgosToAlgos(value)}
+              </>
+            )}
+          </span>
+        );
+      },
     },
     {
       Header: "Fee",
@@ -155,6 +209,31 @@ const Block = () => {
             <tr>
               <td>Round</td>
               <td>{blockNum}</td>
+            </tr>
+            <tr>
+              <td>Timestamp</td>
+              <td>
+                {loading ? (
+                  <Load />
+                ) : (
+                  data && moment.unix(data.timestamp).format("LLLL")
+                )}
+              </td>
+            </tr>
+            <tr>
+              <td>Reward Rate</td>
+              <td>
+                {loading ? (
+                  <Load />
+                ) : (
+                  data && (
+                    <>
+                      <AlgoIcon />{" "}
+                      {microAlgosToAlgos(data.rewards["rewards-rate"])}
+                    </>
+                  )
+                )}
+              </td>
             </tr>
             <tr>
               <td>Proposer</td>
@@ -190,31 +269,23 @@ const Block = () => {
               <td>Seed</td>
               <td>{loading ? <Load /> : data && data.seed}</td>
             </tr>
-            <tr>
-              <td>Created at</td>
-              <td>
-                {loading ? (
-                  <Load />
-                ) : (
-                  data && moment.unix(data.timestamp).format("LLLL")
-                )}
-              </td>
-            </tr>
           </tbody>
         </table>
       </div>
       {transactions && transactions.length > 0 ? (
         <div>
-          <h3 className={styles["table-header"]}>Transactions</h3>
+          <h3 className={styles["table-header"]}>
+            {transactions.length} Transactions
+          </h3>
           <div className={styles["block-table"]}>
             <ReactTable
               data={transactions}
               columns={columns}
               loading={loading}
-              defaultPageSize={10}
+              defaultPageSize={25}
               pageSizeOptions={[10, 25, 50]}
               sortable={false}
-              className="transactions-table"
+              className={styles["transactions-table"]}
             />
           </div>
         </div>
