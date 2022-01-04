@@ -113,7 +113,7 @@ monitor:
 # $(shell git rev-parse --short HEAD)
 VERSION := 1.1
 
-all: algosearch-backend metrics
+all: algosearch-backend algosearch-metrics algosearch-frontend
 
 algosearch:
 	docker build \

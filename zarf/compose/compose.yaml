@@ -21,7 +21,7 @@ services:
       - shared-network
     image: algosearch-backend-amd64:1.1
     ports:
-      - 3000:3000 # CRUD API
+      - 5000:5000 # CRUD API
       - 4000:4000 # DEBUG API
     depends_on:
       - zipkin
@@ -32,12 +32,11 @@ services:
       - shared-network
     image: algosearch-frontend-amd64:1.1
     ports:
-#      - 3000:3000 # CRUD API
-#      - 4000:4000 # DEBUG API
+      - 3000:3000
     depends_on:
       - algosearch-backend
 
-  metrics:
+  algosearch-metrics:
     container_name: algosearch-metrics
     networks:
       - shared-network

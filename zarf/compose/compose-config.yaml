@@ -5,3 +5,12 @@ version: '3.8'
 #  db:
 #    environment:
 #      - POSTGRES_PASSWORD=postgres
+
+services:
+  algosearch-frontend:
+    environment:
+      NEXT_PUBLIC_API_URL: "algosearch-backend:5000"
+
+  algosearch-metrics:
+    environment:
+      METRICS_COLLECT_FROM: "algosearch-backend:4000"

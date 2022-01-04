@@ -77,8 +77,8 @@ func run(log *zap.SugaredLogger) error {
 		conf.Version
 		Web struct {
 			DeployProtocol	string		  `conf:"default:http,help:the protocol the deployment of this service will be using"`
-			DeployHost		string		  `conf:"default:0.0.0.0:3000,help:the endpoint this service is deployed to"`
-			APIHost         string        `conf:"default:0.0.0.0:3000"`
+			DeployHost		string		  `conf:"default:0.0.0.0:5000,help:the endpoint this service is deployed to"`
+			APIHost         string        `conf:"default:0.0.0.0:5000"`
 			DebugHost       string        `conf:"default:0.0.0.0:4000"`
 			ReadTimeout     time.Duration `conf:"default:5s"`
 			WriteTimeout    time.Duration `conf:"default:10s"`
