@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import AlgoIcon from "../../components/algoicon";
 import {
+  getTxTypeName,
   integerFormatter,
   microAlgosToAlgos,
   removeSpace,
@@ -68,7 +69,9 @@ const TransactionDetails = ({
             <tr>
               <td>Type</td>
               <td>
-                <span className="type noselect">{transaction["tx-type"]}</span>
+                <span className="type noselect">
+                  {getTxTypeName(transaction["tx-type"])}
+                </span>
               </td>
             </tr>
             <tr>
@@ -180,20 +183,20 @@ const TransactionDetails = ({
             </thead>
             <tbody>
               <tr>
-                <td>From rewards</td>
+                <td>Sender rewards</td>
                 <td>
                   <div>
                     <AlgoIcon />{" "}
-                    {microAlgosToAlgos(transaction["sender-rewards"])}
+                    {microAlgosToAlgos(transaction["sender-rewards"] || 0)}
                   </div>
                 </td>
               </tr>
               <tr>
-                <td>To rewards</td>
+                <td>Receiver rewards</td>
                 <td>
                   <div>
                     <AlgoIcon />{" "}
-                    {microAlgosToAlgos(transaction["receiver-rewards"])}
+                    {microAlgosToAlgos(transaction["receiver-rewards"] || 0)}
                   </div>
                 </td>
               </tr>
