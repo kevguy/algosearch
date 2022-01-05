@@ -18,7 +18,7 @@ import {
 import Table from "../../components/table";
 import { useDispatch, useSelector } from "react-redux";
 import { getSupply, selectSupply } from "../../features/applicationSlice";
-import { IBlockResponse } from "../../types/apiResponseTypes";
+import { IBlockResponse, IBlockRewards } from "../../types/apiResponseTypes";
 
 const Blocks = () => {
   const [blocks, setBlocks] = useState([]);
@@ -96,7 +96,11 @@ const Blocks = () => {
         accessor: "round",
         Cell: ({ value }: { value: number }) => {
           const _value = value.toString().replace(" ", "");
-          return <Link href={`/block/${_value}`}>{_value}</Link>;
+          return (
+            <Link href={`/block/${_value}`}>
+              {integerFormatter.format(value)}
+            </Link>
+          );
         },
       },
       {
@@ -118,6 +122,15 @@ const Blocks = () => {
         accessor: "timestamp",
         Cell: ({ value }: { value: number }) => (
           <span>{moment.unix(value).format("D MMM YYYY, h:mm:ss")}</span>
+        ),
+      },
+      {
+        Header: "Rewards Rate",
+        accessor: "rewards",
+        Cell: ({ value }: { value: IBlockRewards }) => (
+          <span>
+            <AlgoIcon /> {microAlgosToAlgos(value["rewards-rate"])}
+          </span>
         ),
       },
     ],

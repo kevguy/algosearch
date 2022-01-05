@@ -76,6 +76,8 @@ export const getTxTypeName = (txType: TxType) => {
       return "Asset Configuration";
     case TxType.AssetTransfer:
       return "Asset Transfer";
+    case TxType.AssetConfig:
+      return "Asset Freeze";
     case TxType.App:
       return "Application Call";
     case TxType.Pay:

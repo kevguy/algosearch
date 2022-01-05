@@ -14,7 +14,7 @@ import {
 import AlgoIcon from "../algoicon";
 import styles from "./TransactionTable.module.scss";
 
-interface IAsaMap {
+export interface IAsaMap {
   [key: number]: string;
 }
 
