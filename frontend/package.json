@@ -9,6 +9,7 @@
     "@mui/icons-material": "^5.2.5",
     "@mui/material": "^5.2.5",
     "@reduxjs/toolkit": "^1.7.1",
+    "@ygoe/msgpack": "^1.0.3",
     "algosdk": "^1.12.0",
     "axios": "^0.24.0",
     "bignumber.js": "^9.0.2",

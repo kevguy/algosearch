@@ -110,3 +110,13 @@
 .block-table table > tbody > tr:last-child > td {
   border-bottom: none;
 }
+
+.notes-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-xxxl);
+
+  @media screen and (max-width: 768px) {
+    flex-direction: column;
+  }
+}

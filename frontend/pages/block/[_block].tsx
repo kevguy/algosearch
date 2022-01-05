@@ -49,6 +49,9 @@ const Block = () => {
   const [asaMap, setAsaMap] = useState<IAsaMap>([]);
 
   useEffect(() => {
+    if (!transactions) {
+      return;
+    }
     async function getAsas() {
       const dedupedAsaList = Array.from(
         new Set(
@@ -83,7 +86,7 @@ const Block = () => {
         )
       );
       const _asaMap: IAsaMap = dedupedAsaList.reduce(
-        (prev: string, asaId: number, index: number) => ({
+        (prev: {}, asaId: number, index: number) => ({
           ...prev,
           [asaId]: _asaList[index],
         }),
