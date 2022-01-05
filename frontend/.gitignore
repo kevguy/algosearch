@@ -14,7 +14,7 @@
 # misc
 /.next
 .DS_Store
-.env.local
+.envv.local
 .env.development.local
 .env.test.local
 .env.production.local

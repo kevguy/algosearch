@@ -507,30 +507,35 @@ func Migrate(ctx context.Context, db *kivik.Client) error {
 	// Block views
 	fmt.Println("Block views")
 	if err := InsertBlockViewsForGlobalDB(ctx, db, GlobalDbName); err != nil {
+		fmt.Printf("database fails to create view(s) for blocks: %s", err)
 		return fmt.Errorf("database fails to create view(s) for blocks: %w", err)
 	}
 
 	// Transaction views
 	fmt.Println("Transaction views")
 	if err := InsertTransactionViewsForGlobalDB(ctx, db, GlobalDbName); err != nil {
+		fmt.Printf("database fails to create view(s) for transactions: %s", err)
 		return fmt.Errorf("database fails to create view(s) for transactions: %w", err)
 	}
 
 	// Account views
 	fmt.Println("Account views")
 	if err := InsertAcctViewsForGlobalDB(ctx, db, GlobalDbName); err != nil {
+		fmt.Printf("database fails to create view(s) for accounts: %s", err)
 		return fmt.Errorf("database fails to create view(s) for accounts: %w", err)
 	}
 
 	// Asset views
 	fmt.Println("Asset views")
 	if err := InsertAssetViewsForGlobalDB(ctx, db, GlobalDbName); err != nil {
+		fmt.Printf("database fails to create view(s) for assets: %s", err)
 		return fmt.Errorf("database fails to create view(s) for assets: %w", err)
 	}
 
 	// Application views
 	fmt.Println("Application views")
 	if err := InsertApplicationViewsForGlobalDB(ctx, db, GlobalDbName); err != nil {
+		fmt.Printf("database fails to create view(s) for applications: %s", err)
 		return fmt.Errorf("database fails to create view(s) for applications: %w", err)
 	}
 

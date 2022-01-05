@@ -1,2 +1,6 @@
 #!/bin/sh
-./admin migrate && ./algosearch && ./metrics
+./admin migrate
+sleep 5s
+./algosearch & ./metrics && node_modules/.bin/next start
+#node_modules/.bin/next start
+
