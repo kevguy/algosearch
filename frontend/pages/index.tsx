@@ -3,7 +3,6 @@ import axios from "axios";
 import moment from "moment";
 import Link from "next/link";
 import TimeAgo from "timeago-react";
-import * as timeago from "timeago.js";
 import Layout from "../components/layout";
 import AlgoIcon from "../components/algoicon";
 import Statscard from "../components/statscard";
@@ -14,7 +13,6 @@ import {
   currencyFormatter,
   ellipseAddress,
   integerFormatter,
-  timeAgoLocale,
 } from "../utils/stringUtils";
 import { BigNumber } from "bignumber.js";
 import Button from "@mui/material/Button";
@@ -39,8 +37,6 @@ const Home = () => {
   const [circulatingSupply, setCirculatingSupply] = useState("");
   const supply = useSelector(selectSupply);
   const dispatch = useDispatch();
-
-  timeago.register("en_short", timeAgoLocale);
 
   BigNumber.config({ DECIMAL_PLACES: 2 });
 
@@ -92,7 +88,6 @@ const Home = () => {
     dispatch(getSupply());
     dispatch(getCurrentRound());
     Promise.all([getPrice(), getCirculatingSupply()]).then((results) => {
-      console.log("Promise.all results: ", results);
       setPrice(results[0]);
       setCirculatingSupply(results[1] || "");
       setLoading(false);
@@ -153,6 +148,7 @@ const Home = () => {
         />
         <Statscard
           stat="Online Stake"
+          info="Total online stake available in the network"
           value={
             loading ? (
               <Load />

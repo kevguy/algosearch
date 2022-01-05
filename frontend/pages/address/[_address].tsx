@@ -10,12 +10,15 @@ import Statscard from "../../components/statscard";
 import AlgoIcon from "../../components/algoicon";
 import styles from "./Address.module.css";
 import ReactTable from "react-table-6";
+import txTableStyles from "../transactions/transactions.module.scss";
 import "react-table-6/react-table.css";
 import statcardStyles from "../../components/statscard/Statscard.module.scss";
 import {
+  getTxTypeName,
   integerFormatter,
   microAlgosToAlgos,
   removeSpace,
+  TxType,
 } from "../../utils/stringUtils";
 import TimeAgo from "timeago-react";
 
@@ -104,7 +107,7 @@ const Address = () => {
       },
     },
     {
-      Header: "Tx id",
+      Header: "Tx ID",
       accessor: "id",
       Cell: ({ value }: { value: string }) => (
         <Link href={`/tx/${value}`}>{value}</Link>
@@ -115,19 +118,9 @@ const Address = () => {
       accessor: "sender",
       Cell: ({ value }: { value: string }) =>
         address === value ? (
-          <span className="nocolor">{value}</span>
+          <span>{value}</span>
         ) : (
           <Link href={`/address/${value}`}>{value}</Link>
-        ),
-    },
-    {
-      Header: "",
-      accessor: "sender",
-      Cell: ({ value }: { value: string }) =>
-        address === value ? (
-          <span className="type noselect">OUT</span>
-        ) : (
-          <span className="type type-width-in noselect">IN</span>
         ),
     },
     {
@@ -135,10 +128,17 @@ const Address = () => {
       accessor: "payment-transaction.receiver",
       Cell: ({ value }: { value: string }) =>
         address === value ? (
-          <span className="nocolor">{value}</span>
+          <span>{value}</span>
         ) : (
           <Link href={`/address/${value}`}>{value}</Link>
         ),
+    },
+    {
+      Header: "Type",
+      accessor: "tx-type",
+      Cell: ({ value }: { value: TxType }) => (
+        <span>{getTxTypeName(value)}</span>
+      ),
     },
     {
       Header: "Amount",
@@ -167,17 +167,25 @@ const Address = () => {
     <Layout
       data={{
         address: address,
-        balance: Number(
-          microAlgosToAlgos(
-            (data && data["amount-without-pending-rewards"]) || 0
-          )
-        ),
       }}
       addresspage
     >
-      <div
-        className={`${statcardStyles["cardcontainer"]} ${statcardStyles["address-cards"]}`}
-      >
+      <div className={`${statcardStyles["card-container"]}`}>
+        <Statscard
+          stat="Balance"
+          value={
+            <div>
+              <AlgoIcon />{" "}
+              {integerFormatter.format(
+                Number(
+                  microAlgosToAlgos(
+                    (data && data["amount-without-pending-rewards"]) || 0
+                  )
+                )
+              )}
+            </div>
+          }
+        />
         <Statscard
           stat="Rewards"
           value={
@@ -185,7 +193,11 @@ const Address = () => {
               <Load />
             ) : (
               <div>
-                <AlgoIcon /> {data && microAlgosToAlgos(data.rewards)}
+                <AlgoIcon />{" "}
+                {data &&
+                  integerFormatter.format(
+                    Number(microAlgosToAlgos(data.rewards))
+                  )}
               </div>
             )
           }
@@ -228,21 +240,18 @@ const Address = () => {
         />
       </div>
       <div className={`block-table ${styles["addresses-table"]}`}>
-        <span>
+        <h4>
           Latest {loading || !accountTxns ? 0 : accountTxns.length} transactions{" "}
-          {loading !== true && accountTxns && accountTxns.length > 24 && (
-            <Link href={`/addresstx/${address}`}>VIEW MORE</Link>
-          )}
-        </span>
+        </h4>
         <div>
           <ReactTable
             data={accountTxns}
             columns={columns}
             loading={loading}
             defaultPageSize={25}
-            showPagination={false}
+            pageSizeOptions={[25, 50, 100]}
             sortable={false}
-            className="transactions-table addresses-table-sizing"
+            className={`${txTableStyles["transactions-table"]} ${txTableStyles["addresses-table-sizing"]}`}
           />
         </div>
       </div>

@@ -2,10 +2,6 @@
   padding: var(--space-m) var(--space-m) var(--space-xxxxl);
 }
 
-.transactions-table {
-  border: none !important;
-}
-
 .transactions-table > div > .rt-thead {
   background-color: #f8fafd;
   border-top: 1px solid rgb(231, 234, 243);
@@ -34,7 +30,6 @@
   > div:first-child
   > div:first-child {
   padding-left: 15px;
-  color: #337afe;
 }
 
 .transactions-table > div > .rt-tbody > .rt-tr-group {

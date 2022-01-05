@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import AlgoIcon from "../../components/algoicon";
 import {
+  getTxTypeName,
   integerFormatter,
   microAlgosToAlgos,
   removeSpace,
@@ -14,6 +15,8 @@ import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
 import TabPanel from "../../components/tabPanel";
+import algosdk from "algosdk";
+import msgpack from "@ygoe/msgpack";
 
 function a11yProps(index: number) {
   return {
@@ -34,6 +37,10 @@ const TransactionDetails = ({
   if (!transaction) {
     return null;
   }
+  const decodedNotes: bigint = algosdk.decodeUint64(
+    Buffer.from(transaction.note, "base64"),
+    "bigint"
+  );
   return (
     <div className={styles["table-wrapper"]}>
       <div className={styles["block-table"]}>
@@ -68,7 +75,9 @@ const TransactionDetails = ({
             <tr>
               <td>Type</td>
               <td>
-                <span className="type noselect">{transaction["tx-type"]}</span>
+                <span className="type noselect">
+                  {getTxTypeName(transaction["tx-type"])}
+                </span>
               </td>
             </tr>
             <tr>
@@ -147,19 +156,32 @@ const TransactionDetails = ({
                       <Tabs
                         value={noteTab}
                         onChange={clickTabHandler}
-                        aria-label="basic tabs example"
+                        aria-label="Note in different encoding"
                       >
-                        <Tab label="Base 64" {...a11yProps(0)} />
-                        <Tab label="Hex" {...a11yProps(1)} />
+                        <Tab label="Base64" {...a11yProps(0)} />
+                        <Tab label="Uint64" {...a11yProps(1)} />
+                        <Tab label="MessagePack" {...a11yProps(2)} />
                       </Tabs>
                     </Box>
                     <TabPanel value={noteTab} index={0}>
                       {transaction.note}
                     </TabPanel>
                     <TabPanel value={noteTab} index={1}>
-                      {Buffer.from(transaction.note, "base64")
-                        .toString("hex")
-                        .toUpperCase()}
+                      <div className={styles["notes-row"]}>
+                        <div>
+                          <h5>Hexadecimal</h5>
+                          <span>{decodedNotes.toString(16)}</span>
+                        </div>
+                        <div>
+                          <h5>Decimal</h5>
+                          <span>{decodedNotes.toString()}</span>
+                        </div>
+                      </div>
+                    </TabPanel>
+                    <TabPanel value={noteTab} index={2}>
+                      {msgpack.deserialize(
+                        Buffer.from(transaction.note, "base64")
+                      )}
                     </TabPanel>
                   </div>
                 )}
@@ -180,20 +202,20 @@ const TransactionDetails = ({
             </thead>
             <tbody>
               <tr>
-                <td>From rewards</td>
+                <td>Sender rewards</td>
                 <td>
                   <div>
                     <AlgoIcon />{" "}
-                    {microAlgosToAlgos(transaction["sender-rewards"])}
+                    {microAlgosToAlgos(transaction["sender-rewards"] || 0)}
                   </div>
                 </td>
               </tr>
               <tr>
-                <td>To rewards</td>
+                <td>Receiver rewards</td>
                 <td>
                   <div>
                     <AlgoIcon />{" "}
-                    {microAlgosToAlgos(transaction["receiver-rewards"])}
+                    {microAlgosToAlgos(transaction["receiver-rewards"] || 0)}
                   </div>
                 </td>
               </tr>

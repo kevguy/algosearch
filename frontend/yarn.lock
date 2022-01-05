@@ -780,6 +780,11 @@
     "@typescript-eslint/types" "5.8.1"
     eslint-visitor-keys "^3.0.0"
 
+"@ygoe/msgpack@^1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@ygoe/msgpack/-/msgpack-1.0.3.tgz#3889f4c0c2d68b2be83e1f6f4444efab02d6f257"
+  integrity sha512-Sjp0O/sNgOJxTOO1c2Zuu7nsHRIGu2iGPYyhUedKKbcHyUl73jbCaomEFJZHNb/6i94B+ZNZHVnFgpo0ENSXxQ==
+
 acorn-jsx@^5.3.1:
   version "5.3.2"
   resolved "https://registry.yarnpkg.com/acorn-jsx/-/acorn-jsx-5.3.2.tgz#7ed5bb55908b3b2f1bc55c6af1653bada7f07937"
