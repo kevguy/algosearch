@@ -80,12 +80,40 @@ it-rain:
 		| go run backend/app/logfmt/main.go
 #	go run backend/app/algosearch/main.go | go run backend/app/logfmt/main.go
 
-it-sandbox:
+# ==============================================================================
+# Help
+
+algosearch-backend-help:
+	go run ./backend/app/algosearch/main.go --help
+
+algosearch-metrics-help:
+	go run ./backend/app/sidecar/metrics/main.go --help
+
+# ==============================================================================
+# Local
+
+start-algosearch-backend:
+	go run backend/app/algosearch/main.go \
+		--web-enable-sync=true \
+		| go run backend/app/logfmt/main.go
+
+start-algosearch-metrics:
+	go run ./backend/app/sidecar/metrics/main.go
+
+# ==============================================================================
+# Sandbox
+
+start-sandbox-algosearch-backend:
 	go run backend/app/algosearch/main.go \
 		--web-enable-sync=true \
 	 	--algorand-indexer-protocol=http \
 	  	--algorand-indexer-addr=localhost:8980 \
 		| go run backend/app/logfmt/main.go
+
+start-sandbox-algosearch-metrics:
+	go run ./backend/app/sidecar/metrics/main.go
+
+
 
 restart-couch: stop-couch start-couch
 
@@ -145,31 +173,23 @@ all: algosearch-backend algosearch-metrics algosearch-frontend
 algosearch:
 	docker build \
 		-f zarf/docker/dockerfile.all \
-		-t algosearch-amd64:$(VERSION) \
+		-t algosearch:$(VERSION) \
 		--build-arg BUILD_REF=$(VERSION) \
+		--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
+		.
+
+algosearch-latest:
+	docker build \
+		-f zarf/docker/dockerfile.all \
+		-t algosearch:latest \
+		--build-arg BUILD_REF=latest \
 		--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
 		.
 
 algosearch-backend:
 	docker build \
 		-f zarf/docker/dockerfile.algosearch-backend \
-		-t algosearch-backend-amd64:$(VERSION) \
-		--build-arg BUILD_REF=$(VERSION) \
-		--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
-		.
-
-algosearch-frontend:
-	docker build \
-		-f zarf/docker/dockerfile.algosearch-frontend \
-		-t algosearch-frontend-amd64:$(VERSION) \
-		--build-arg BUILD_REF=$(VERSION) \
-		--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
-		.
-
-algosearch-metrics:
-	docker build \
-		-f zarf/docker/dockerfile.metrics \
-		-t algosearch-metrics-amd64:$(VERSION) \
+		-t algosearch-backend:$(VERSION) \
 		--build-arg BUILD_REF=$(VERSION) \
 		--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
 		.
@@ -177,7 +197,39 @@ algosearch-metrics:
 algosearch-backend-latest:
 	docker build \
 		-f zarf/docker/dockerfile.algosearch-backend \
-		-t algosearch-backend-amd64:latest \
+		-t algosearch-backend:latest \
+		--build-arg BUILD_REF=latest \
+		--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
+		.
+
+algosearch-metrics:
+	docker build \
+		-f zarf/docker/dockerfile.metrics \
+		-t algosearch-metrics:$(VERSION) \
+		--build-arg BUILD_REF=$(VERSION) \
+		--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
+		.
+
+algosearch-metrics-latest:
+	docker build \
+		-f zarf/docker/dockerfile.metrics \
+		-t algosearch-metrics:latest \
+		--build-arg BUILD_REF=latest \
+		--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
+		.
+
+algosearch-frontend:
+	docker build \
+		-f zarf/docker/dockerfile.algosearch-frontend \
+		-t algosearch-frontend:$(VERSION) \
+		--build-arg BUILD_REF=$(VERSION) \
+		--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
+		.
+
+algosearch-frontend-latest:
+	docker build \
+		-f zarf/docker/dockerfile.algosearch-frontend \
+		-t algosearch-frontend:latest \
 		--build-arg BUILD_REF=latest \
 		--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
 		.
@@ -188,22 +240,6 @@ build-cal-engine-for-m1:
 		-f zarf/docker/dockerfile.cal-engine \
 		--push -t 938897780349.dkr.ecr.ap-southeast-1.amazonaws.com/cal-engine-amd64:$(VERSION) \
 		--build-arg VCS_REF=1.0 \
-		--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
-		.
-
-metrics:
-	docker build \
-		-f zarf/docker/dockerfile.metrics \
-		-t metrics-amd64:$(VERSION) \
-		--build-arg VCS_REF=$(VERSION) \
-		--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
-		.
-
-metrics-latest:
-	docker build \
-		-f zarf/docker/dockerfile.metrics \
-		-t metrics-amd64:latest \
-		--build-arg VCS_REF=latest \
 		--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
 		.
 

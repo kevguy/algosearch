@@ -1,14 +1,19 @@
 version: '3.8'
 
-#services:
-#
-#  db:
-#    environment:
-#      - POSTGRES_PASSWORD=postgres
-
 services:
   algosearch-backend:
     environment:
+      ALGOSEARCH_WEB_ENABLE_SYNC: "true"
+      ALGOSEARCH_WEB_SYNC_INTERNAL: "2s"
+      ALGOSEARCH_ZIPKIN_REPORTER_URI: "http://zipkin:9411/api/v2/spans"
+      # Edit these accordingly
+      #ALGOSEARCH_COUCH_DB_PROTOCOL: "http"
+      #ALGOSEARCH_COUCH_DB_HOST: "234.567.89.0:5984"
+      #ALGOSEARCH_COUCH_DB_USER: "algorand"
+      #ALGOSEARCH_COUCH_DB_PASSWORD: "algorand"
+      #ALGOSEARCH_ALGOD_PROTOCOL: "http"
+      #ALGOSEARCH_ALGOD_ADDR: "234.567.89.0:4001"
+      #ALGOSEARCH_ALGOD_TOKEN: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
       ALGOSEARCH_COUCH_DB_PROTOCOL: "http"
       ALGOSEARCH_COUCH_DB_USER: "kevin"
       ALGOSEARCH_COUCH_DB_PASSWORD: "makechesterproud!"
@@ -16,7 +21,9 @@ services:
       ALGOSEARCH_ALGOD_PROTOCOL: "http"
       ALGOSEARCH_ALGOD_ADDR: "89.39.110.254:4001"
       ALGOSEARCH_ALGOD_TOKEN: "a2d2ac864300588718c6c05ff241a14fad99d30a19806356f3b9c8008559c4c1"
-      ALGOSEARCH_ZIPKIN_REPORTER_URI: "http://zipkin:9411/api/v2/spans"
+      # Optional
+      #ALGOSEARCH_INDEXER_ADDR: "http://indexer:8980"
+      #ALGOSEARCH_INDEXER_TOKEN: ""
 
   algosearch-frontend:
     environment:
@@ -25,3 +32,11 @@ services:
   algosearch-metrics:
     environment:
       METRICS_COLLECT_FROM: "http://algosearch-backend:4000/debug/vars"
+
+  db-init:
+    environment:
+      # These two variables must match ALGOSEARCH_COUCH_DB_USER and ALGOSEARCH_COUCH_DB_PASSWORD
+      COUCH_DB_PROTOCOL: "http"
+      COUCH_DB_HOST: "234.567.89.0:5984"
+      COUCH_DB_USER: "algorand"
+      COUCH_DB_PASSWORD: "algorand"
