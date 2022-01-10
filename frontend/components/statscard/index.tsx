@@ -12,17 +12,19 @@ const Statscard = ({
   info?: string;
   value: JSX.Element;
 }) => {
+  const tooltipId =
+    info && Buffer.from(info, "binary").toString("base64").substring(0, 8);
   return (
     <div className={styles.statscard}>
       <div className={styles.title}>
         <h5>{stat}</h5>
         {info && (
           <>
-            <a data-tip data-for="stats-info">
+            <a data-tip data-for={tooltipId}>
               <Info size="16" />
             </a>
             <ReactTooltip
-              id="stats-info"
+              id={tooltipId}
               type="light"
               effect="solid"
               className={styles.tooltip}

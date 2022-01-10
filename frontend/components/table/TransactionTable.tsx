@@ -3,10 +3,13 @@ import moment from "moment";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import TimeAgo from "timeago-react";
-import { TransactionResponse } from "../../pages/tx/[_txid]";
-import { siteName } from "../../utils/constants";
+import { TransactionResponse } from "../../types/apiResponseTypes";
+import { IASAInfo, IAsaMap } from "../../types/misc";
+import { apiGetASA } from "../../utils/api";
 import {
   ellipseAddress,
+  formatAsaAmountWithDecimal,
+  formatNumber,
   getTxTypeName,
   microAlgosToAlgos,
   TxType,
@@ -14,113 +17,93 @@ import {
 import AlgoIcon from "../algoicon";
 import styles from "./TransactionTable.module.scss";
 
-export interface IAsaMap {
-  [key: number]: string;
-}
-
 const TransactionTable = ({
   transactions,
 }: {
-  transactions: TransactionResponse[];
+  transactions?: TransactionResponse[];
 }) => {
   const [asaMap, setAsaMap] = useState<IAsaMap>([]);
 
   useEffect(() => {
-    async function getAsas() {
-      const dedupedAsaList = Array.from(
-        new Set(
-          transactions
-            .filter((tx) => tx["tx-type"] === TxType.AssetTransfer)
-            .map((tx) => tx["asset-transfer-transaction"]["asset-id"])
-        )
-      );
-      const _asaList: string[] = await Promise.all(
-        dedupedAsaList.map(
-          async (asaId) =>
-            await axios({
-              method: "get",
-              url: `${siteName}/v1/algod/assets/${asaId}`,
-            })
-              .then((response) => {
-                console.log(
-                  "asa unit name?",
-                  response.data.params["unit-name"]
-                );
-                return response.data.params["unit-name"];
-              })
-              .catch((error) => {
-                console.error("Error when retrieving Algorand ASA");
-              })
-        )
-      );
-      const _asaMap: IAsaMap = dedupedAsaList.reduce(
-        (prev, asaId, index) => ({
-          ...prev,
-          [asaId]: _asaList[index],
-        }),
-        {}
-      );
-      if (_asaMap) {
-        setAsaMap(_asaMap);
-      }
-      console.log("_asaMap: ", _asaMap);
-    }
-    getAsas();
+    if (!transactions) return;
+    apiGetASA(transactions).then((result) => {
+      console.log("results? ", result);
+      setAsaMap(result);
+    });
   }, [transactions]);
+
+  if (!transactions) {
+    return <></>;
+  }
 
   return (
     <div className={styles["transaction-table"]}>
-      {transactions.map((tx: TransactionResponse, index: number) => {
-        const _receiver = tx["payment-transaction"].receiver || tx.sender;
-        let _asaUnit = asaMap[tx["asset-transfer-transaction"]["asset-id"]];
+      {transactions &&
+        transactions.map((tx: TransactionResponse, index: number) => {
+          const _receiver = tx["payment-transaction"].receiver || tx.sender;
+          let _asaInfo: IASAInfo =
+            asaMap[tx["asset-transfer-transaction"]["asset-id"]];
 
-        return (
-          <div key={tx.id} className={styles["transaction-row"]}>
-            <div className={styles["transaction-subrow"]}>
-              <span className={styles["transaction-id"]}>
-                <Link href={`/transaction/${tx.id}`}>{tx.id}</Link>
-              </span>
-              <span className={styles.time}>
-                <TimeAgo
-                  datetime={new Date(moment.unix(tx["round-time"]).toDate())}
-                  locale="en_short"
-                />
-              </span>
-            </div>
-            <div className={styles["transaction-subrow"]}>
-              <div className={styles["relevant-accounts"]}>
-                <span>
-                  From:{" "}
-                  <Link href={`/address/${tx.sender}`}>
-                    {ellipseAddress(tx.sender)}
-                  </Link>
+          return (
+            <div key={tx.id} className={styles["transaction-row"]}>
+              <div className={styles["transaction-subrow"]}>
+                <div className={styles["tx-type-label-wrapper"]}>
+                  <span className={styles["tx-type-label"]}>
+                    {getTxTypeName(tx["tx-type"])}
+                  </span>
+                </div>
+                <span className={styles["transaction-id"]}>
+                  <Link href={`/transaction/${tx.id}`}>{tx.id}</Link>
                 </span>
-                <span>
-                  To:{" "}
-                  <Link href={`/address/${_receiver}`}>
-                    {ellipseAddress(_receiver)}
-                  </Link>
+                <span className={styles.time}>
+                  <TimeAgo
+                    datetime={new Date(moment.unix(tx["round-time"]).toDate())}
+                    locale="en_short"
+                  />
                 </span>
               </div>
-              <div className={styles["transaction-info"]}>
-                <span>{getTxTypeName(tx["tx-type"])}</span>
-                <span>
-                  {tx["tx-type"] === TxType.AssetTransfer ? (
-                    `${microAlgosToAlgos(
-                      tx["asset-transfer-transaction"].amount
-                    )} ${_asaUnit}`
-                  ) : (
-                    <>
-                      <AlgoIcon />{" "}
-                      {microAlgosToAlgos(tx["payment-transaction"].amount)}
-                    </>
-                  )}
-                </span>
+              <div className={styles["transaction-subrow"]}>
+                <div className={styles["relevant-accounts"]}>
+                  <span>
+                    From:{" "}
+                    <Link href={`/address/${tx.sender}`}>
+                      {ellipseAddress(tx.sender)}
+                    </Link>
+                  </span>
+                  <span>
+                    To:{" "}
+                    <Link href={`/address/${_receiver}`}>
+                      {ellipseAddress(_receiver)}
+                    </Link>
+                  </span>
+                </div>
+                <div className={styles["transaction-info"]}>
+                  <span>
+                    {tx["tx-type"] === TxType.AssetTransfer && _asaInfo ? (
+                      `${formatNumber(
+                        Number(
+                          formatAsaAmountWithDecimal(
+                            BigInt(tx["asset-transfer-transaction"].amount),
+                            _asaInfo.decimals
+                          )
+                        )
+                      )} ${_asaInfo.unitName}`
+                    ) : (
+                      <>
+                        <AlgoIcon width={12} height={12} />{" "}
+                        {formatNumber(
+                          Number(
+                            microAlgosToAlgos(tx["payment-transaction"].amount)
+                          )
+                        )}
+                      </>
+                    )}
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
     </div>
   );
 };

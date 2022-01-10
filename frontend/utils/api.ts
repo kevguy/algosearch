@@ -1,7 +1,8 @@
 import axios from "axios";
 import { siteName } from "./constants";
-import { ICurrentRoundResponse, ISupply } from "../types/apiResponseTypes";
-import { currencyFormatter, microAlgosToAlgos } from "./stringUtils";
+import { ICurrentRoundResponse, ISupply, TransactionResponse } from "../types/apiResponseTypes";
+import { currencyFormatter, microAlgosToAlgos, TxType } from "./stringUtils";
+import { IASAInfo, IAsaMap } from "../types/misc";
 
 export const apiGetSupply = async () => {
   try {
@@ -47,4 +48,45 @@ export const apiGetLatestBlocks = async (currentRound: number) => {
   } catch(error) {
     console.log("Exception when retrieving last 10 blocks: " + error);
   }
+}
+
+export const apiGetASA = async (transactions: TransactionResponse[]) => {
+  const dedupedAsaList = Array.from(
+    new Set(
+      transactions
+        .filter((tx) => tx["tx-type"] === TxType.AssetTransfer)
+        .map((tx) => tx["asset-transfer-transaction"]["asset-id"])
+    )
+  );
+  const _asaList = await Promise.all(
+    dedupedAsaList.map(
+      async (asaId) =>
+        await axios({
+          method: "get",
+          url: `${siteName}/v1/algod/assets/${asaId}`,
+        })
+          .then((response) => {
+            console.log(
+              "asa unit name?",
+              response.data.params["unit-name"]
+            );
+            const _asaInfo: IASAInfo = {
+              unitName: response.data.params["unit-name"],
+              decimals: response.data.params.decimals,
+            };
+            return _asaInfo;
+          })
+          .catch((error) => {
+            console.error("Error when retrieving Algorand ASA");
+          })
+    )
+  );
+  const _asaMap: IAsaMap = dedupedAsaList.reduce(
+    (prev, asaId, index) => ({
+      ...prev,
+      [asaId]: _asaList[index],
+    }),
+    {}
+  );
+  return _asaMap;
 }

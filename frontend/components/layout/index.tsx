@@ -30,7 +30,7 @@ const Layout = ({ addresspage, data, homepage, children }: LayoutPropsType) => {
       setScroll(!scroll && scroll_position > 500);
     };
     window.addEventListener("scroll", () => renderScrollTop());
-  }, []);
+  });
 
   // Scroll to top button — scroll up behaviour
   const scrollToTop = () => {

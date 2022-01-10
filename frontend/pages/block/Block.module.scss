@@ -5,6 +5,10 @@
   margin-bottom: var(--space-xxxl);
   overflow: hidden;
 
+  div {
+    word-break: break-all;
+  }
+
   table {
     min-width: 100%;
     table-layout: fixed;

@@ -6,44 +6,7 @@ import Load from "../../components/tableloading";
 import { siteName } from "../../utils/constants";
 import { useRouter } from "next/router";
 import TransactionDetails from "./TransactionDetails";
-import { TxType } from "../../utils/stringUtils";
-
-export type TransactionResponse = {
-  id: number;
-  "genesis-id": number;
-  "genesis-hash": string;
-  "confirmed-round": number;
-  "tx-type": TxType;
-  sender: string;
-  "sender-rewards": number;
-  "receiver-rewards": number;
-  "payment-transaction": {
-    amount: number;
-    "close-amount": number;
-    "close=remainder-to": string;
-    receiver: string;
-  };
-  "asset-transfer-transaction": {
-    "asset-id": number;
-    amount: number;
-    receiver: string;
-    "close-to": string;
-    sender: string;
-  };
-  "asset-config-transaction": {
-    params: {
-      creator: string;
-      decimals: number;
-      total: number;
-    };
-  };
-  fee: number;
-  "round-time": number;
-  "first-valid": number;
-  "last-valid": number;
-  timestamp: number;
-  note: string;
-};
+import { TransactionResponse } from "../../types/apiResponseTypes";
 
 const Transaction = () => {
   const router = useRouter();

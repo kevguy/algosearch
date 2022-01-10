@@ -4,15 +4,6 @@ export interface ICurrentRoundResponse {
   transactions?: [];
 }
 
-export interface IBlockRewards {
-  "fee-sink": string;
-  "rewards-calculation-round": number;
-  "rewards-level": number;
-  "rewards-pool": string;
-  "rewards-rate": number;
-  "rewards-residue": number;
-}
-
 export interface IBlockResponse {
   "block-hash": string;
   doc_type: string;
@@ -20,7 +11,14 @@ export interface IBlockResponse {
   "genesis-id": string;
   "previous-block-hash": string;
   proposer: string;
-  rewards: IBlockRewards;
+  rewards: {
+    "fee-sink": string;
+    "rewards-calculation-round": number;
+    "rewards-level": number;
+    "rewards-pool": string;
+    "rewards-rate": number;
+    "rewards-residue": number;
+  };
   round: number;
   seed: string;
   timestamp: number;

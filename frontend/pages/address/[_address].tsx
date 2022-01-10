@@ -17,6 +17,7 @@ import {
   getTxTypeName,
   integerFormatter,
   microAlgosToAlgos,
+  formatNumber,
   removeSpace,
   TxType,
 } from "../../utils/stringUtils";
@@ -36,7 +37,6 @@ const Address = () => {
   const [accountTxNum, setAccountTxNum] = useState(0);
   const [accountTxns, setAccountTxns] = useState([]);
   const [data, setData] = useState<DataType>();
-  const [txData, setTxData] = useState({});
   const [loading, setLoading] = useState(true);
 
   const getAddressData = (address: string) => {
@@ -176,7 +176,7 @@ const Address = () => {
           value={
             <div>
               <AlgoIcon />{" "}
-              {integerFormatter.format(
+              {formatNumber(
                 Number(
                   microAlgosToAlgos(
                     (data && data["amount-without-pending-rewards"]) || 0
@@ -194,10 +194,7 @@ const Address = () => {
             ) : (
               <div>
                 <AlgoIcon />{" "}
-                {data &&
-                  integerFormatter.format(
-                    Number(microAlgosToAlgos(data.rewards))
-                  )}
+                {data && formatNumber(Number(microAlgosToAlgos(data.rewards)))}
               </div>
             )
           }

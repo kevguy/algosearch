@@ -16,6 +16,14 @@ export function microAlgosToAlgos(microAlgos: number) : string | number {
         : new BigNumber(microAlgos).dividedBy(1e6).toNumber();
 }
 
+export function formatAsaAmountWithDecimal(asaAmount: bigint, decimals: number) : string {
+  const singleUnit = BigInt("1" + "0".repeat(decimals));
+  const wholeUnits = asaAmount / singleUnit;
+  const fractionalUnits = asaAmount % singleUnit;
+
+  return wholeUnits.toString() + "." + fractionalUnits.toString().padStart(decimals, "0");
+}
+
 export const timeAgoLocale: timeago.LocaleFunc = (diff, index, totalSec) => {
     // diff: the time ago / time in number;
     // index: the index of array below;
@@ -52,6 +60,22 @@ export const integerFormatter = new Intl.NumberFormat('en-US', {
   maximumFractionDigits: 2
 });
 
+function roundDownSignificantDigits(number: number, decimals: number) {
+  let significantDigits = (parseInt(number.toExponential().split('e-')[1])) || 0;
+  let decimalsUpdated = (decimals || 0) +  significantDigits - 1;
+  decimals = Math.min(decimalsUpdated, number.toString().length);
+
+  return (Math.floor(number * Math.pow(10, decimals)) / Math.pow(10, decimals));
+}
+
+export const formatNumber = (number: number) => {
+  const numberFormatter = new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 10,
+  })
+  return numberFormatter.format(roundDownSignificantDigits(number,10))
+}
+
 export enum TxType {
   Pay = "pay",
   KeyReg = "keyreg",
@@ -61,6 +85,14 @@ export enum TxType {
   App = "appl",
 }
 
+export enum TxTypeTxResKey {
+  "payment-transaction",
+  "asset-transfer-transaction",
+  "asset-freeze-transaction",
+  "asset-config-transaction",
+  "application-transaction"
+}
+
 export const AssetTxTypes = [TxType.AssetConfig, TxType.AssetTransfer, TxType.AssetFreeze]
 
 export const AssetTxMap = {
@@ -68,18 +100,27 @@ export const AssetTxMap = {
   [TxType.AssetFreeze]: "asset-freeze-transaction"
 }
 
+export const TxMapForAmount = {
+  [TxType.Pay]: "payment-transaction",
+  [TxType.KeyReg]: "payment-transaction",
+  [TxType.AssetConfig]: "payment-transaction",
+  [TxType.AssetTransfer]: "asset-transfer-transaction",
+  [TxType.AssetFreeze]: "payment-transaction",
+  [TxType.App]: "payment-transaction",
+}
+
 export const getTxTypeName = (txType: TxType) => {
   switch (txType) {
     case TxType.KeyReg:
-      return "Key Registration";
+      return "Key Reg";
     case TxType.AssetConfig:
-      return "Asset Configuration";
+      return "ASA Config";
     case TxType.AssetTransfer:
-      return "Asset Transfer";
-    case TxType.AssetConfig:
-      return "Asset Freeze";
+      return "ASA Transfer";
+    case TxType.AssetFreeze:
+      return "ASA Freeze";
     case TxType.App:
-      return "Application Call";
+      return "App Call";
     case TxType.Pay:
     default:
       return "Payment";

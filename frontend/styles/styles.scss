@@ -6,6 +6,8 @@
   --blue: #2f83d1;
   --blue-light: #74a7e9;
   --blue-lighter: #a4cef5;
+  --blue-lighter-2: #c8d9f0;
+  --blue-lighter-3: #d1e5f8;
   --blue-lightest: #fafcff;
   --bg-gradient: linear-gradient(
     180deg,
@@ -27,6 +29,7 @@
   --font-size-m: 1rem;
   --font-size-s: 0.875rem;
   --font-size-xs: 0.75rem;
+  --font-size-xxs: 0.625rem;
   --space-xxxxl: 4rem;
   --space-xxxl: 2rem;
   --space-xxl: 1.5rem;
@@ -37,6 +40,11 @@
   --space-xs: 0.375rem;
   --space-xxs: 0.25rem;
   --space-xxxs: 0.125rem;
+  --space-xxxxs: 0.08rem;
+}
+
+::selection {
+  background: rgba(158, 220, 255, 0.3);
 }
 
 html,
@@ -74,6 +82,10 @@ h5,
 h6 {
   font-weight: 500;
   margin: 0;
+}
+
+strong {
+  font-weight: 500;
 }
 
 a {
@@ -213,30 +225,12 @@ code {
 }
 
 .table {
+  font-size: var(--font-size-s);
   background-color: #fff;
   border: 1px solid var(--grey-lighter);
   border-radius: 8px;
   margin-top: 28px;
-  margin-bottom: 50px;
-}
-
-.table > div:first-child {
-  padding-left: 20px;
-}
-
-.table > div:first-child > p:first-child {
-  color: #536d93;
-  font-weight: 500;
-  font-size: 18px;
-  margin-block-end: 5px;
-}
-
-.table > div:first-child > p:last-child {
-  color: #5a728c;
-  font-size: 13px;
-  font-weight: 500;
-  margin-block-start: 0px;
-  margin-block-end: 15px;
+  overflow: auto;
 }
 
 .sizer {
