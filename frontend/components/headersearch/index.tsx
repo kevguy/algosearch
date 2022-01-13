@@ -3,8 +3,20 @@ import axios from "axios";
 import { siteName } from "../../utils/constants";
 import styles from "./HeaderSearch.module.scss";
 import { IconButton, styled } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
 import { useRouter } from "next/router";
+import { Search } from "react-feather";
+
+type SearchType =
+  | "acct_found"
+  | "application_found"
+  | "asset_found"
+  | "block_hash_found"
+  | "block_round_found"
+  | "txn_found";
+
+type SearchResult = {
+  [key in SearchType]: boolean;
+};
 
 const StyledIconButton = styled(IconButton)(({ theme }) => ({
   width: "30px",
@@ -21,30 +33,45 @@ const StyledIconButton = styled(IconButton)(({ theme }) => ({
 const HeaderSearch = () => {
   const router = useRouter();
   const [query, setQuery] = useState("");
+  const [loading, setLoading] = useState(false);
   const search = () => {
     const search = query ? query : "";
+    setLoading(true);
     axios({
       method: "get",
-      url: `${siteName}/detect/${search}`,
+      url: `${siteName}/v1/search?key=${search}`,
     })
       .then((response) => {
-        switch (response.data) {
-          case "block":
+        console.log("search result: ", response.data);
+        const result: SearchResult = response.data;
+        const typeIndex: number | null = Object.values(result)
+          .map((value, index) => (value ? index : null))
+          .filter((value) => value != null)[0];
+        const searchType: SearchType | null = typeIndex
+          ? (Object.keys(result)[typeIndex] as SearchType)
+          : null;
+        switch (searchType) {
+          case "block_round_found":
             router.push(`/block/${search}`);
             break;
-          case "transaction":
+          case "txn_found":
             router.push(`/tx/${search}`);
             break;
-          case "address":
+          case "acct_found":
             router.push(`/address/${search}`);
             break;
+          case "asset_found":
+          // TODO -> allow after introduction of asset page
+          // router.push(`/asset/${search}`);
+          // break;
           default:
             router.push("/error");
             break;
         }
+        setLoading(false);
       })
       .catch(() => {
-        router.push("/error");
+        // router.push("/error");
       });
   };
   return (
@@ -56,8 +83,14 @@ const HeaderSearch = () => {
         onKeyDown={(e) => (e.key === "Enter" ? search() : null)}
         placeholder="Search by Address / Tx ID / Block"
       />
-      <StyledIconButton aria-label="search" size="small">
-        <SearchIcon fontSize="small" />
+      <StyledIconButton aria-label="search" size="small" onClick={search}>
+        {loading ? (
+          <div className={styles["loading-icon"]}>
+            <span></span>
+          </div>
+        ) : (
+          <Search />
+        )}
       </StyledIconButton>
     </div>
   );

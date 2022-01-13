@@ -1,12 +1,9 @@
 import React, { useCallback, useEffect, useState } from "react";
 import axios from "axios";
-import moment from "moment";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import Layout from "../../components/layout";
 import Breadcrumbs from "../../components/breadcrumbs";
-import ReactTable from "react-table-6";
-import "react-table-6/react-table.css";
 import AlgoIcon from "../../components/algoicon";
 import Load from "../../components/tableloading";
 import { siteName } from "../../utils/constants";
@@ -16,7 +13,6 @@ import {
   formatAsaAmountWithDecimal,
   formatNumber,
   getTxTypeName,
-  integerFormatter,
   microAlgosToAlgos,
   TxType,
 } from "../../utils/stringUtils";
@@ -25,6 +21,7 @@ import { TransactionResponse } from "../../types/apiResponseTypes";
 import { IAsaMap } from "../../types/misc";
 import Table from "../../components/table";
 import Head from "next/head";
+import { Row } from "react-table";
 
 interface IBlockData {
   "block-hash": string;
@@ -52,8 +49,10 @@ const Block = () => {
   const [blockNum, setBlockNum] = useState(0);
   const [data, setData] = useState<IBlockData>();
   const [transactions, setTransactions] = useState<TransactionResponse[]>();
+  const [partialTxs, setPartialTxs] = useState<TransactionResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [pageSize, setPageSize] = useState(15);
+  const [page, setPage] = useState(-1);
   const [pageCount, setPageCount] = useState(0);
   const [asaMap, setAsaMap] = useState<IAsaMap>([]);
 
@@ -74,7 +73,6 @@ const Block = () => {
         .then((response) => {
           console.log("block: ", response.data);
           setData(response.data);
-          console.log("txs: ", response.data.transactions);
           setTransactions(response.data.transactions);
           setPageCount(Math.ceil(response.data.transactions.length / pageSize));
           setLoading(false);
@@ -85,7 +83,21 @@ const Block = () => {
           );
         });
     },
-    [blockNum, pageSize]
+    [pageSize]
+  );
+
+  const fetchData = useCallback(
+    ({ pageIndex }) => {
+      if (transactions && page != pageIndex) {
+        setPage(pageIndex);
+        const endIndex =
+          transactions.length < (pageIndex + 1) * pageSize
+            ? transactions.length
+            : (pageIndex + 1) * pageSize;
+        setPartialTxs(transactions.slice(pageIndex * pageSize, endIndex));
+      }
+    },
+    [transactions, page, pageSize]
   );
 
   useEffect(() => {
@@ -121,18 +133,12 @@ const Block = () => {
     {
       Header: "To",
       accessor: "payment-transaction.receiver",
-      Cell: ({
-        data,
-        value,
-      }: {
-        data: TransactionResponse[];
-        value: string;
-      }) => {
-        const tx = data[0];
+      Cell: ({ row }: { row: Row<TransactionResponse> }) => {
+        const tx = row.original;
         const isAsaTransfer = tx["tx-type"] === TxType.AssetTransfer;
         const _value = isAsaTransfer
           ? tx["asset-transfer-transaction"].receiver
-          : value;
+          : tx["payment-transaction"].receiver;
         return _value ? (
           <Link href={`/address/${_value}`}>{ellipseAddress(_value)}</Link>
         ) : (
@@ -143,32 +149,33 @@ const Block = () => {
     {
       Header: "Amount",
       accessor: "payment-transaction.amount",
-      Cell: ({
-        data,
-        value,
-      }: {
-        data: TransactionResponse[];
-        value: number;
-      }) => {
-        const tx = data[0];
+      Cell: ({ row }: { row: Row<TransactionResponse> }) => {
+        const tx = row.original;
+        const _asaAmount =
+          (tx["asset-transfer-transaction"] &&
+            asaMap[tx["asset-transfer-transaction"]["asset-id"]] &&
+            Number(
+              formatAsaAmountWithDecimal(
+                BigInt(tx["asset-transfer-transaction"].amount),
+                asaMap[tx["asset-transfer-transaction"]["asset-id"]].decimals
+              )
+            )) ??
+          0;
+        const _asaUnit =
+          tx["asset-transfer-transaction"] &&
+          asaMap[tx["asset-transfer-transaction"]["asset-id"]] &&
+          asaMap[tx["asset-transfer-transaction"]["asset-id"]].unitName;
+
         return (
           <span>
             {tx["tx-type"] === TxType.AssetTransfer ? (
-              asaMap[tx["asset-transfer-transaction"]["asset-id"]] &&
-              `${integerFormatter.format(
-                Number(
-                  formatAsaAmountWithDecimal(
-                    BigInt(tx["asset-transfer-transaction"].amount),
-                    asaMap[tx["asset-transfer-transaction"]["asset-id"]]
-                      .decimals
-                  )
-                )
-              )} ${
-                asaMap[tx["asset-transfer-transaction"]["asset-id"]].unitName
-              }`
+              `${formatNumber(_asaAmount)} ${_asaUnit}`
             ) : (
               <>
-                <AlgoIcon /> {formatNumber(Number(microAlgosToAlgos(value)))}{" "}
+                <AlgoIcon />{" "}
+                {formatNumber(
+                  Number(microAlgosToAlgos(tx["payment-transaction"].amount))
+                )}
               </>
             )}
           </span>
@@ -279,11 +286,12 @@ const Block = () => {
           <h3 className={styles["table-header"]}>
             {transactions.length > 1 && transactions.length + " "}Transactions
           </h3>
-          <div className={styles["block-table"]}>
+          <div className={`${styles["table-wrapper"]} table`}>
             {transactions && transactions.length > 0 && (
               <Table
                 columns={columns}
-                data={transactions}
+                data={partialTxs}
+                fetchData={fetchData}
                 pageCount={pageCount}
                 loading={loading}
                 className={`${styles["transactions-table"]}`}

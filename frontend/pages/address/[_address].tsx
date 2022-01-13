@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import moment from "moment";
 import { useRouter } from "next/router";
@@ -8,10 +8,7 @@ import { siteName } from "../../utils/constants";
 import Load from "../../components/tableloading";
 import Statscard from "../../components/statscard";
 import AlgoIcon from "../../components/algoicon";
-import styles from "./Address.module.css";
-import ReactTable from "react-table-6";
-import txTableStyles from "../transactions/transactions.module.scss";
-import "react-table-6/react-table.css";
+import blocksTableStyles from "../blocks/blocks.module.scss";
 import statcardStyles from "../../components/statscard/Statscard.module.scss";
 import {
   getTxTypeName,
@@ -20,8 +17,16 @@ import {
   formatNumber,
   removeSpace,
   TxType,
+  ellipseAddress,
+  formatAsaAmountWithDecimal,
 } from "../../utils/stringUtils";
 import TimeAgo from "timeago-react";
+import Table from "../../components/table";
+import { apiGetASA } from "../../utils/api";
+import { TransactionResponse } from "../../types/apiResponseTypes";
+import { Row } from "react-table";
+import { IAsaMap } from "../../types/misc";
+import Head from "next/head";
 
 export type DataType = {
   "amount-without-pending-rewards": number;
@@ -38,6 +43,11 @@ const Address = () => {
   const [accountTxns, setAccountTxns] = useState([]);
   const [data, setData] = useState<DataType>();
   const [loading, setLoading] = useState(true);
+  const [tableLoading, setTableLoading] = useState(true);
+  const [pageSize, setPageSize] = useState(15);
+  const [page, setPage] = useState(-1);
+  const [pageCount, setPageCount] = useState(0);
+  const [asaMap, setAsaMap] = useState<IAsaMap>([]);
 
   const getAddressData = (address: string) => {
     axios({
@@ -45,7 +55,6 @@ const Address = () => {
       url: `${siteName}/v1/accounts/${address}?page=1&limit=10&order=desc`,
     })
       .then((response) => {
-        console.log("address data: ", response.data);
         setData(response.data);
         setLoading(false);
       })
@@ -56,44 +65,56 @@ const Address = () => {
       });
   };
 
-  const getAccountTx = (address: string) => {
-    axios({
-      method: "get",
-      url: `${siteName}/v1/transactions/acct/${address}?page=1&limit=25`,
-    })
-      .then((response) => {
-        console.log("account txns data: ", response.data);
-        setAccountTxNum(response.data.num_of_txns);
-        setAccountTxns(response.data.items);
-        setLoading(false);
+  const getAccountTxs = useCallback(
+    async (pageIndex: number) => {
+      setTableLoading(true);
+      await axios({
+        method: "get",
+        url: `${siteName}/v1/transactions/acct/${address}?page=${
+          pageIndex + 1
+        }&limit=${pageSize}`,
       })
-      .catch((error) => {
-        console.error(
-          "Exception when querying for address transactions: " + error
-        );
-      });
-  };
+        .then((response) => {
+          console.log("account txns data: ", response.data);
+          setPage(pageIndex);
+          setPageCount(response.data.num_of_pages);
+          setAccountTxNum(response.data.num_of_txns);
+          setAccountTxns(response.data.items);
+          setTableLoading(false);
+        })
+        .catch((error) => {
+          console.error(
+            "Exception when querying for address transactions: " + error
+          );
+        });
+    },
+    [address, pageSize]
+  );
+  const fetchData = useCallback(
+    ({ pageIndex }) => {
+      if (address && page != pageIndex) {
+        getAccountTxs(pageIndex);
+      }
+    },
+    [address, page, getAccountTxs]
+  );
+
+  useEffect(() => {
+    if (!accountTxns) return;
+    apiGetASA(accountTxns).then((result) => {
+      setAsaMap(result);
+    });
+  }, [accountTxns]);
 
   useEffect(() => {
     if (!_address) {
       return;
     }
-    console.log("_address: ", _address);
     setAddress(_address.toString());
-    document.title = `AlgoSearch | Address ${_address.toString()}`;
     getAddressData(_address.toString());
-    getAccountTx(_address.toString());
   }, [_address]);
 
   const columns = [
-    {
-      Header: "#",
-      accessor: "confirmed-round",
-      Cell: ({ index }: { index: number }) => (
-        <span className="rownumber">{index + 1}</span>
-      ),
-    },
-
     {
       Header: "Block",
       accessor: "confirmed-round",
@@ -110,7 +131,7 @@ const Address = () => {
       Header: "Tx ID",
       accessor: "id",
       Cell: ({ value }: { value: string }) => (
-        <Link href={`/tx/${value}`}>{value}</Link>
+        <Link href={`/tx/${value}`}>{ellipseAddress(value)}</Link>
       ),
     },
     {
@@ -118,20 +139,31 @@ const Address = () => {
       accessor: "sender",
       Cell: ({ value }: { value: string }) =>
         address === value ? (
-          <span>{value}</span>
+          // The address' account
+          <span>{ellipseAddress(value)}</span>
         ) : (
-          <Link href={`/address/${value}`}>{value}</Link>
+          <Link href={`/address/${value}`}>{ellipseAddress(value)}</Link>
         ),
     },
     {
       Header: "To",
       accessor: "payment-transaction.receiver",
-      Cell: ({ value }: { value: string }) =>
-        address === value ? (
-          <span>{value}</span>
+      Cell: ({ row }: { row: Row<TransactionResponse> }) => {
+        const tx = row.original;
+        const isAsaTransfer = tx["tx-type"] === TxType.AssetTransfer;
+        const _value = isAsaTransfer
+          ? tx["asset-transfer-transaction"].receiver
+          : tx["payment-transaction"].receiver;
+        return _value ? (
+          address === _value ? (
+            <span>{ellipseAddress(_value)}</span>
+          ) : (
+            <Link href={`/address/${_value}`}>{ellipseAddress(_value)}</Link>
+          )
         ) : (
-          <Link href={`/address/${value}`}>{value}</Link>
-        ),
+          "N/A"
+        );
+      },
     },
     {
       Header: "Type",
@@ -143,6 +175,42 @@ const Address = () => {
     {
       Header: "Amount",
       accessor: "payment-transaction.amount",
+      Cell: ({ row }: { row: Row<TransactionResponse> }) => {
+        const tx = row.original;
+        const _asaAmount =
+          (tx["asset-transfer-transaction"] &&
+            asaMap[tx["asset-transfer-transaction"]["asset-id"]] &&
+            Number(
+              formatAsaAmountWithDecimal(
+                BigInt(tx["asset-transfer-transaction"].amount),
+                asaMap[tx["asset-transfer-transaction"]["asset-id"]].decimals
+              )
+            )) ??
+          0;
+        const _asaUnit =
+          tx["asset-transfer-transaction"] &&
+          asaMap[tx["asset-transfer-transaction"]["asset-id"]] &&
+          asaMap[tx["asset-transfer-transaction"]["asset-id"]].unitName;
+
+        return (
+          <span>
+            {tx["tx-type"] === TxType.AssetTransfer ? (
+              `${formatNumber(_asaAmount)} ${_asaUnit}`
+            ) : (
+              <>
+                <AlgoIcon />{" "}
+                {formatNumber(
+                  Number(microAlgosToAlgos(tx["payment-transaction"].amount))
+                )}
+              </>
+            )}
+          </span>
+        );
+      },
+    },
+    {
+      Header: "Fee",
+      accessor: "fee",
       Cell: ({ value }: { value: number }) => (
         <span>
           <AlgoIcon /> {microAlgosToAlgos(value)}
@@ -170,6 +238,9 @@ const Address = () => {
       }}
       addresspage
     >
+      <Head>
+        <title>AlgoSearch | Address {address.toString()}</title>
+      </Head>
       <div className={`${statcardStyles["card-container"]}`}>
         <Statscard
           stat="Balance"
@@ -213,7 +284,22 @@ const Address = () => {
           }
         />
         <Statscard
+          stat="Transactions"
+          value={
+            <div>
+              {loading ? (
+                <Load />
+              ) : !accountTxNum ? (
+                0
+              ) : (
+                integerFormatter.format(accountTxNum)
+              )}
+            </div>
+          }
+        />
+        <Statscard
           stat="Status"
+          info="Whether account is online participating in consensus on a participation node"
           value={
             loading ? (
               <Load />
@@ -236,20 +322,18 @@ const Address = () => {
           }
         />
       </div>
-      <div className={`block-table ${styles["addresses-table"]}`}>
-        <h4>
-          Latest {loading || !accountTxns ? 0 : accountTxns.length} transactions{" "}
-        </h4>
+      <div className="table">
         <div>
-          <ReactTable
-            data={accountTxns}
-            columns={columns}
-            loading={loading}
-            defaultPageSize={25}
-            pageSizeOptions={[25, 50, 100]}
-            sortable={false}
-            className={`${txTableStyles["transactions-table"]} ${txTableStyles["addresses-table-sizing"]}`}
-          />
+          {accountTxns && (
+            <Table
+              columns={columns}
+              loading={tableLoading}
+              data={accountTxns}
+              fetchData={fetchData}
+              pageCount={pageCount}
+              className={`${blocksTableStyles["blocks-table"]}`}
+            ></Table>
+          )}
         </div>
       </div>
     </Layout>

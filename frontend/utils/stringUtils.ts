@@ -32,7 +32,7 @@ export const timeAgoLocale: timeago.LocaleFunc = (diff, index, totalSec) => {
     let datetime = "";
     if (index >= 12) {
       const timestampNow = new Date().getTime()
-      datetime = moment.tz(new Date(timestampNow - (totalSec??0)*1000), tz).format("D MMM YYYY, hh:mmA z");
+      datetime = moment.tz(new Date(timestampNow - (totalSec??0)*1000), tz).format("D MMM YYYY, hh:mm A z");
     }
     return [
       ['just now', 'right now'],
