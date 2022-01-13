@@ -2,15 +2,15 @@ import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import AlgoIcon from "../../components/algoicon";
 import {
+  formatAsaAmountWithDecimal,
+  formatNumber,
   getTxTypeName,
   integerFormatter,
   microAlgosToAlgos,
   removeSpace,
   TxType,
 } from "../../utils/stringUtils";
-import "react-table-6/react-table.css";
 import styles from "../block/Block.module.scss";
-import moment from "moment";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
@@ -18,6 +18,8 @@ import TabPanel from "../../components/tabPanel";
 import algosdk from "algosdk";
 import msgpack from "@ygoe/msgpack";
 import { TransactionResponse } from "../../types/apiResponseTypes";
+import { IAsaMap } from "../../types/misc";
+import { apiGetASA } from "../../utils/api";
 
 function a11yProps(index: number) {
   return {
@@ -33,9 +35,10 @@ const TransactionDetails = ({
 }) => {
   const [noteTab, setNoteTab] = useState(0);
   const [msgpackNotes, setMsgpackNotes] = useState();
-  let txType: TxType | undefined;
-  let receiver;
-  let decodedNotes: bigint | undefined;
+  const [txType, setTxType] = useState<TxType>();
+  const [receiver, setReceiver] = useState<string>();
+  const [asaMap, setAsaMap] = useState<IAsaMap>([]);
+  const [decodedNotes, setDecodedNotes] = useState<bigint>();
   const clickTabHandler = (event: React.SyntheticEvent, newValue: number) => {
     setNoteTab(newValue);
   };
@@ -45,23 +48,33 @@ const TransactionDetails = ({
     } catch (err) {
       return null;
     }
-  }, []);
+  }, [transaction]);
+
   useEffect(() => {
     if (transaction) {
-      txType = transaction["tx-type"];
-      receiver =
-        transaction && txType === TxType.AssetTransfer
+      setTxType(transaction["tx-type"]);
+      setReceiver(
+        transaction && transaction["tx-type"] === TxType.AssetTransfer
           ? transaction["asset-transfer-transaction"].receiver
-          : transaction["payment-transaction"].receiver;
-      if (Buffer.from(transaction.note, "base64").length < 8) {
-        decodedNotes = algosdk.decodeUint64(
-          Buffer.from(transaction.note, "base64"),
-          "bigint"
+          : transaction["payment-transaction"].receiver
+      );
+      apiGetASA([transaction]).then((result) => {
+        setAsaMap(result);
+      });
+      if (
+        transaction.note &&
+        Buffer.from(transaction.note, "base64").length < 8
+      ) {
+        setDecodedNotes(
+          algosdk.decodeUint64(
+            Buffer.from(transaction.note, "base64"),
+            "bigint"
+          )
         );
       }
       setMsgpackNotes(decodeWithMsgpack());
     }
-  }, [decodeWithMsgpack]);
+  }, [decodeWithMsgpack, transaction]);
   if (!transaction) {
     return null;
   }
@@ -124,12 +137,49 @@ const TransactionDetails = ({
               <td>Amount</td>
               <td>
                 <div>
-                  <AlgoIcon />{" "}
-                  {txType === TxType.AssetTransfer
-                    ? transaction["asset-transfer-transaction"].amount // need to divide by decimal
-                    : microAlgosToAlgos(
+                  {txType === TxType.AssetTransfer ? (
+                    <>
+                      {transaction["asset-transfer-transaction"] &&
+                        asaMap[
+                          transaction["asset-transfer-transaction"]["asset-id"]
+                        ] &&
+                        Number(
+                          formatAsaAmountWithDecimal(
+                            BigInt(
+                              transaction["asset-transfer-transaction"].amount
+                            ),
+                            asaMap[
+                              transaction["asset-transfer-transaction"][
+                                "asset-id"
+                              ]
+                            ].decimals
+                          ) ?? 0
+                        )}{" "}
+                      {transaction["asset-transfer-transaction"] &&
+                        asaMap[
+                          transaction["asset-transfer-transaction"]["asset-id"]
+                        ] && (
+                          <Link
+                            href={`/asset/${transaction["asset-transfer-transaction"]["asset-id"]}`}
+                          >
+                            {
+                              asaMap[
+                                transaction["asset-transfer-transaction"][
+                                  "asset-id"
+                                ]
+                              ].unitName
+                            }
+                          </Link>
+                        )}
+                    </>
+                  ) : (
+                    <>
+                      <AlgoIcon />{" "}
+                      {microAlgosToAlgos(
                         transaction["payment-transaction"].amount
                       )}
+                    </>
+                  )}
                 </div>
               </td>
             </tr>
@@ -142,7 +192,7 @@ const TransactionDetails = ({
               </td>
             </tr>
             <tr>
-              <td>First round</td>
+              <td>First Round</td>
               <td>
                 <Link
                   href={`/block/${removeSpace(
@@ -156,7 +206,7 @@ const TransactionDetails = ({
               </td>
             </tr>
             <tr>
-              <td>Last round</td>
+              <td>Last Round</td>
               <td>
                 <Link
                   href={`/block/${removeSpace(
@@ -171,7 +221,7 @@ const TransactionDetails = ({
             </tr>
             <tr>
               <td>Timestamp</td>
-              <td>{moment.unix(transaction["round-time"]).format("LLLL")}</td>
+              <td>{new Date(transaction["round-time"] * 1000).toString()}</td>
             </tr>
             <tr>
               <td>Note</td>
@@ -195,10 +245,12 @@ const TransactionDetails = ({
                       </Tabs>
                     </Box>
                     <TabPanel value={noteTab} index={0}>
-                      {transaction.note}
+                      <div className={styles.notes}>{transaction.note}</div>
                     </TabPanel>
                     <TabPanel value={noteTab} index={1}>
-                      {atob(transaction.note)}
+                      <div className={styles.notes}>
+                        {atob(transaction.note)}
+                      </div>
                     </TabPanel>
                     {decodedNotes && (
                       <TabPanel value={noteTab} index={2}>
@@ -216,7 +268,7 @@ const TransactionDetails = ({
                     )}
                     {msgpackNotes && (
                       <TabPanel value={noteTab} index={decodedNotes ? 3 : 2}>
-                        {msgpackNotes}
+                        <div className={styles.notes}>{msgpackNotes}</div>
                       </TabPanel>
                     )}
                   </div>
@@ -238,7 +290,7 @@ const TransactionDetails = ({
             </thead>
             <tbody>
               <tr>
-                <td>Sender rewards</td>
+                <td>Sender Rewards</td>
                 <td>
                   <div>
                     <AlgoIcon />{" "}
@@ -247,7 +299,7 @@ const TransactionDetails = ({
                 </td>
               </tr>
               <tr>
-                <td>Receiver rewards</td>
+                <td>Receiver Rewards</td>
                 <td>
                   <div>
                     <AlgoIcon />{" "}
@@ -260,9 +312,140 @@ const TransactionDetails = ({
                 <td>{transaction["genesis-id"]}</td>
               </tr>
               <tr>
-                <td>Genesis hash</td>
+                <td>Genesis Hash</td>
                 <td>{transaction["genesis-hash"]}</td>
               </tr>
+              {transaction["tx-type"] === TxType.AssetConfig && (
+                <>
+                  <tr>
+                    <td>Asset Name</td>
+                    <td>
+                      {transaction["asset-config-transaction"].params.url ? (
+                        <a
+                          href={
+                            transaction["asset-config-transaction"].params.url
+                          }
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {transaction["asset-config-transaction"].params.name}
+                        </a>
+                      ) : (
+                        transaction["asset-config-transaction"].params.name
+                      )}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Manager</td>
+                    <td>
+                      {transaction["asset-config-transaction"].params
+                        .manager ? (
+                        <Link
+                          href={`/address/${transaction["asset-config-transaction"].params.manager}`}
+                        >
+                          {
+                            transaction["asset-config-transaction"].params
+                              .manager
+                          }
+                        </Link>
+                      ) : (
+                        "N/A"
+                      )}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Reserve</td>
+                    <td>
+                      {transaction["asset-config-transaction"].params
+                        .reserve ? (
+                        <Link
+                          href={`/address/${transaction["asset-config-transaction"].params.reserve}`}
+                        >
+                          {
+                            transaction["asset-config-transaction"].params
+                              .reserve
+                          }
+                        </Link>
+                      ) : (
+                        "N/A"
+                      )}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Freeze</td>
+                    <td>
+                      {transaction["asset-config-transaction"].params.freeze ? (
+                        <Link
+                          href={`/address/${transaction["asset-config-transaction"].params.freeze}`}
+                        >
+                          {
+                            transaction["asset-config-transaction"].params
+                              .freeze
+                          }
+                        </Link>
+                      ) : (
+                        "N/A"
+                      )}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Clawback</td>
+                    <td>
+                      {transaction["asset-config-transaction"].params
+                        .clawback ? (
+                        <Link
+                          href={`/address/${transaction["asset-config-transaction"].params.clawback}`}
+                        >
+                          {
+                            transaction["asset-config-transaction"].params
+                              .clawback
+                          }
+                        </Link>
+                      ) : (
+                        "N/A"
+                      )}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Decimals</td>
+                    <td>
+                      {transaction["asset-config-transaction"].params.decimals}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Total</td>
+                    <td>
+                      {formatNumber(
+                        Number(
+                          formatAsaAmountWithDecimal(
+                            BigInt(
+                              transaction["asset-config-transaction"].params
+                                .total
+                            ),
+                            transaction["asset-config-transaction"].params
+                              .decimals
+                          )
+                        )
+                      )}{" "}
+                      {
+                        transaction["asset-config-transaction"].params[
+                          "unit-name"
+                        ]
+                      }
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Metadata Hash</td>
+                    <td>
+                      {
+                        transaction["asset-config-transaction"].params[
+                          "metadata-hash"
+                        ]
+                      }
+                    </td>
+                  </tr>
+                </>
+              )}
             </tbody>
           </table>
         </div>

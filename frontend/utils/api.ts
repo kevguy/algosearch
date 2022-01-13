@@ -1,6 +1,6 @@
 import axios from "axios";
 import { siteName } from "./constants";
-import { ICurrentRoundResponse, ISupply, TransactionResponse } from "../types/apiResponseTypes";
+import { IAsaResponse, ICurrentRoundResponse, ISupply, TransactionResponse } from "../types/apiResponseTypes";
 import { currencyFormatter, microAlgosToAlgos, TxType } from "./stringUtils";
 import { IASAInfo, IAsaMap } from "../types/misc";
 
@@ -66,13 +66,10 @@ export const apiGetASA = async (transactions: TransactionResponse[]) => {
           url: `${siteName}/v1/algod/assets/${asaId}`,
         })
           .then((response) => {
-            console.log(
-              "asa unit name?",
-              response.data.params["unit-name"]
-            );
+            const result: IAsaResponse = response.data;
             const _asaInfo: IASAInfo = {
-              unitName: response.data.params["unit-name"],
-              decimals: response.data.params.decimals,
+              unitName: result.params["unit-name"],
+              decimals: result.params.decimals,
             };
             return _asaInfo;
           })

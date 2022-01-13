@@ -20,7 +20,7 @@ import {
 import Table from "../../components/table";
 import Head from "next/head";
 import { TransactionResponse } from "../../types/apiResponseTypes";
-import { Column } from "react-table";
+import { Column, Row } from "react-table";
 import Load from "../../components/tableloading";
 import Statscard from "../../components/statscard";
 import statscardStyles from "../../components/statscard/Statscard.module.scss";
@@ -98,10 +98,10 @@ const Transactions = () => {
   }, []);
 
   useEffect(() => {
-    if (latestTransaction) {
+    if (latestTransaction && page == -1) {
       fetchData({ pageIndex: 0 });
     }
-  }, [latestTransaction, fetchData]);
+  }, [latestTransaction, fetchData, page]);
 
   useEffect(() => {
     if (!transactions) return;
@@ -149,19 +149,13 @@ const Transactions = () => {
     {
       Header: "To",
       accessor: "payment-transaction.receiver",
-      Cell: ({
-        data,
-        value,
-      }: {
-        data: TransactionResponse[];
-        value: string;
-      }) => {
-        const tx = data[0];
+      Cell: ({ row }: { row: Row<TransactionResponse> }) => {
+        const tx = row.original;
         const isAsaTransfer = tx["tx-type"] === TxType.AssetTransfer;
         const _value = isAsaTransfer
           ? tx["asset-transfer-transaction"].receiver
-          : value;
-        return value ? (
+          : tx["payment-transaction"].receiver;
+        return _value ? (
           <Link href={`/address/${_value}`}>{ellipseAddress(_value)}</Link>
         ) : (
           "N/A"
@@ -171,32 +165,33 @@ const Transactions = () => {
     {
       Header: "Amount",
       accessor: "payment-transaction.amount",
-      Cell: ({
-        data,
-        value,
-      }: {
-        data: TransactionResponse[];
-        value: number;
-      }) => {
-        const tx = data[0];
+      Cell: ({ row }: { row: Row<TransactionResponse> }) => {
+        const tx = row.original;
+        const _asaAmount =
+          (tx["asset-transfer-transaction"] &&
+            asaMap[tx["asset-transfer-transaction"]["asset-id"]] &&
+            Number(
+              formatAsaAmountWithDecimal(
+                BigInt(tx["asset-transfer-transaction"].amount),
+                asaMap[tx["asset-transfer-transaction"]["asset-id"]].decimals
+              )
+            )) ??
+          0;
+        const _asaUnit =
+          tx["asset-transfer-transaction"] &&
+          asaMap[tx["asset-transfer-transaction"]["asset-id"]] &&
+          asaMap[tx["asset-transfer-transaction"]["asset-id"]].unitName;
 
         return (
           <span>
             {tx["tx-type"] === TxType.AssetTransfer ? (
-              `${formatNumber(
-                Number(
-                  formatAsaAmountWithDecimal(
-                    BigInt(tx["asset-transfer-transaction"].amount),
-                    asaMap[tx["asset-transfer-transaction"]["asset-id"]]
-                      .decimals
-                  )
-                )
-              )} ${
-                asaMap[tx["asset-transfer-transaction"]["asset-id"]].unitName
-              }`
+              `${formatNumber(_asaAmount)} ${_asaUnit}`
             ) : (
               <>
-                <AlgoIcon /> {formatNumber(Number(microAlgosToAlgos(value)))}
+                <AlgoIcon />{" "}
+                {formatNumber(
+                  Number(microAlgosToAlgos(tx["payment-transaction"].amount))
+                )}
               </>
             )}
           </span>

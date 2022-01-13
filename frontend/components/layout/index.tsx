@@ -21,6 +21,7 @@ type LayoutPropsType = {
 
 const Layout = ({ addresspage, data, homepage, children }: LayoutPropsType) => {
   const [scroll, setScroll] = useState(false);
+  const [hasScrollEventListener, setHasScrollEventListener] = useState(false);
   timeago.register("en_short", timeAgoLocale);
 
   useEffect(() => {
@@ -29,8 +30,11 @@ const Layout = ({ addresspage, data, homepage, children }: LayoutPropsType) => {
       let scroll_position = window.pageYOffset;
       setScroll(!scroll && scroll_position > 500);
     };
-    window.addEventListener("scroll", () => renderScrollTop());
-  });
+    if (!hasScrollEventListener) {
+      window.addEventListener("scroll", () => renderScrollTop());
+      setHasScrollEventListener(true);
+    }
+  }, [scroll, hasScrollEventListener]);
 
   // Scroll to top button — scroll up behaviour
   const scrollToTop = () => {

@@ -5,6 +5,22 @@ export interface ICurrentRoundResponse {
   transactions?: [];
 }
 
+export interface IAsaResponse {
+  index: number;
+  params: {
+    clawback: string;
+    creator: string;
+    decimals: number;
+    freeze: string;
+    manager: string;
+    name: string;
+    reserve: string;
+    total: number;
+    "unit-name": string;
+    url: string;
+  }
+}
+
 export type TransactionResponse = {
   id: number;
   "genesis-id": number;
@@ -32,6 +48,16 @@ export type TransactionResponse = {
       creator: string;
       decimals: number;
       total: number;
+      // more info if type is Asset Config
+      manager?: string;
+      reserve?:string;
+      freeze?: string;
+      clawback?: string;
+      "metadata-hash"?: string;
+      name?:string;
+      total?: number;
+      "unit-name"?: string;
+      url?: string;
     };
   };
   fee: number;
