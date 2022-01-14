@@ -42,6 +42,7 @@ node-status:
 # ==============================================================================
 # Other Utilities
 
+
 kill-postgres:
 	# https://askubuntu.com/questions/547434/how-to-nicely-stop-all-postgres-processes
 	sudo pkill -u postgres
@@ -178,6 +179,12 @@ monitor:
 VERSION := 1.1
 
 all: algosearch-backend algosearch-metrics algosearch-frontend
+
+deploy-to-docker-hub: algosearch algosearch-latest
+	docker tag algosearch:latest kevguy/algosearch:latest
+	docker tag algosearch:$(VERSION) kevguy/algosearch:$(VERSION)
+	docker push kevguy/algosearch:latest
+	docker push kevguy/algosearch:$(VERSION)
 
 algosearch:
 	docker build \
