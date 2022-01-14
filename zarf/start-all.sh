@@ -21,4 +21,5 @@ fi
 
 if [ "$ALGOSEARCH_BACKEND_DISABLED" != "true" ]; then ./algosearch; fi & \
 if [ "$ALGOSEARCH_METRICS_DISABLED" != "true" ]; then ./metrics; fi & \
-if [ "$ALGOSEARCH_FRONTEND_DISABLED" != "true" ]; then node_modules/.bin/next start; fi
+#if [ "$ALGOSEARCH_FRONTEND_DISABLED" != "true" ]; then node_modules/.bin/next start; fi
+if [ "$ALGOSEARCH_FRONTEND_DISABLED" != "true" ]; then node server.js; fi
