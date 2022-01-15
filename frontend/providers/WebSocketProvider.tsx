@@ -3,8 +3,6 @@ import React, {
   ReactElement,
   useCallback,
   useEffect,
-  useMemo,
-  useState,
 } from "react";
 import { useDispatch } from "react-redux";
 import useWebSocket, { ReadyState } from "react-use-websocket";
@@ -39,8 +37,7 @@ export interface IWebSocketData {
 
 export const WebSocketContext = createContext<{
   readyState: ReadyState;
-  latestBlockData: IWebSocketData | null;
-}>({ readyState: -1, latestBlockData: null });
+}>({ readyState: -1 });
 
 const readyStateNameMap: ReadyStateNameMapType = {
   [ReadyState.CONNECTING]: "connecting",
@@ -79,7 +76,6 @@ const WebSocketProvider = ({ children }: { children: ReactElement }) => {
     <WebSocketContext.Provider
       value={{
         readyState: readyState,
-        latestBlockData: lastJsonMessage,
       }}
     >
       {children}

@@ -12,7 +12,7 @@ import { integerFormatter } from "../../utils/stringUtils";
 import styles from "./HomeHeader.module.scss";
 
 const HomeHeader = () => {
-  const { readyState, latestBlockData } = useContext(WebSocketContext);
+  const { readyState } = useContext(WebSocketContext);
   const connectionStatus = getConnectionStatus(readyState);
   const currentRound = useSelector(selectCurrentRound);
   const wsCurrentRound = useSelector(selectWsCurrentRound);
@@ -28,7 +28,7 @@ const HomeHeader = () => {
         integerFormatter.format(Math.abs(currentRound - wsCurrentRound))
       );
     }
-  }, [currentRound, wsCurrentRound, latestBlockData]);
+  }, [currentRound, wsCurrentRound, connectionStatus]);
 
   useEffect(() => checkSynced(), [checkSynced]);
 

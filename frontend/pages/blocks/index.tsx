@@ -77,7 +77,7 @@ const Blocks = () => {
         updateBlocks(pageIndex);
       }
     },
-    [currentRound, page, updateBlocks]
+    [currentRound, updateBlocks] // page,
   );
 
   useEffect(() => {
