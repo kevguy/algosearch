@@ -57,7 +57,7 @@ const BlockTable = ({ blocks }: { blocks: IBlockResponse[] }) => {
                               (tx) => tx["tx-type"] === TxType[txType]
                             ).length;
                           return typeCount ? (
-                            <span>
+                            <span key={txType}>
                               {typeCount} {getTxTypeName(TxType[txType])}
                               {typeCount > 1 && "s"}
                             </span>

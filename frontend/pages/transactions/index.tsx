@@ -27,6 +27,8 @@ import statscardStyles from "../../components/statscard/Statscard.module.scss";
 import { apiGetASA } from "../../utils/api";
 import { IAsaMap } from "../../types/misc";
 import TimeAgo from "timeago-react";
+import { useDispatch, useSelector } from "react-redux";
+import { getLatestTxn, selectLatestTxn } from "../../features/applicationSlice";
 
 const Transactions = () => {
   const [loading, setLoading] = useState(true);
@@ -35,10 +37,10 @@ const Transactions = () => {
   const [pageCount, setPageCount] = useState(0);
   const [page, setPage] = useState(-1);
   const [totalTransactions, setTotalTransactions] = useState(0);
-  const [latestTransaction, setLatestTransaction] =
-    useState<TransactionResponse>();
   const [transactions, setTransactions] = useState([]);
   const [asaMap, setAsaMap] = useState<IAsaMap>([]);
+  const dispatch = useDispatch();
+  const latestTransaction = useSelector(selectLatestTxn);
 
   // Update transactions based on page number
   const getTransactions = useCallback(
@@ -46,12 +48,11 @@ const Transactions = () => {
       if (!latestTransaction) {
         return;
       }
-      setTableLoading(true);
       axios({
         method: "get",
-        url: `${siteName}/v1/transactions?latest_txn=${
-          latestTransaction.id
-        }&page=${pageIndex + 1}&limit=${pageSize}&order=desc`,
+        url: `${siteName}/v1/transactions?latest_txn=${latestTransaction}&page=${
+          pageIndex + 1
+        }&limit=${pageSize}&order=desc`,
       })
         .then((response) => {
           console.log("txs: ", response.data);
@@ -59,9 +60,9 @@ const Transactions = () => {
           setPageCount(response.data.num_of_pages);
           if (pageIndex == 0) {
             setTotalTransactions(response.data.num_of_txns);
+            setLoading(false);
           }
           setTransactions(response.data.items);
-          setTableLoading(false);
         })
         .catch((error) => {
           console.error("Exception when retrieving transactions: " + error);
@@ -75,7 +76,8 @@ const Transactions = () => {
       console.log("latestTransaction: ", latestTransaction);
       console.log("page: ", page);
       console.log("pageIndex: ", pageIndex);
-      if (latestTransaction && page != pageIndex) {
+      if (latestTransaction) {
+        //&& page != pageIndex) // if user doesn't want to auto-update when on same page
         getTransactions(pageIndex);
       }
     },
@@ -83,22 +85,13 @@ const Transactions = () => {
   );
 
   useEffect(() => {
-    axios({
-      method: "get",
-      url: `${siteName}/v1/current-txn`,
-    })
-      .then((response) => {
-        console.log("latest txn: ", response.data);
-        setLoading(false);
-        setLatestTransaction(response.data);
-      })
-      .catch((error) => {
-        console.error("Error when retrieving latest statistics: " + error);
-      });
-  }, []);
+    dispatch(getLatestTxn());
+  }, [dispatch]);
 
   useEffect(() => {
     if (latestTransaction && page == -1) {
+      setLoading(false);
+      setTableLoading(false);
       fetchData({ pageIndex: 0 });
     }
   }, [latestTransaction, fetchData, page]);

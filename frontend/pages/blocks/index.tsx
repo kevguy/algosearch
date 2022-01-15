@@ -17,27 +17,32 @@ import {
 } from "../../utils/stringUtils";
 import Table from "../../components/table";
 import { useDispatch, useSelector } from "react-redux";
-import { getSupply, selectSupply } from "../../features/applicationSlice";
+import {
+  getSupply,
+  selectAvgBlockTxnSpeed,
+  selectSupply,
+  selectWsCurrentRound,
+} from "../../features/applicationSlice";
 import { IBlockResponse, IBlockRewards } from "../../types/apiResponseTypes";
 import Head from "next/head";
 
 const Blocks = () => {
   const [loading, setLoading] = useState(true);
   const [tableLoading, setTableLoading] = useState(true);
-  const [blocks, setBlocks] = useState([]);
+  const [blocks, setBlocks] = useState<IBlockResponse[]>([]);
   const [pageSize, setPageSize] = useState(15);
   const [page, setPage] = useState(-1);
   const [pageCount, setPageCount] = useState(0);
-  const [currentRound, setCurrentRound] = useState(0);
+  const currentRound = useSelector(selectWsCurrentRound);
   const [rewardRate, setRewardRate] = useState<string | number>("");
-  const supply = useSelector(selectSupply);
+  const avgBlockTime = useSelector(selectAvgBlockTxnSpeed);
   const dispatch = useDispatch();
 
   // Get blocks based on page number
   const updateBlocks = useCallback(
     async (pageIndex: number) => {
       // Use current round number to retrieve last 15 blocks
-      setTableLoading(true);
+      if (!currentRound) return;
       await axios({
         method: "get",
         url: `${siteName}/v1/rounds?latest_blk=${currentRound}&limit=${pageSize}&page=${
@@ -57,7 +62,6 @@ const Blocks = () => {
           }
           setPage(pageIndex);
           setPageCount(response.data.num_of_pages);
-          setTableLoading(false);
         })
         .catch((error) => {
           console.log("Exception when retrieving blocks: " + error);
@@ -68,7 +72,8 @@ const Blocks = () => {
 
   const fetchData = useCallback(
     ({ pageIndex }) => {
-      if (currentRound && page != pageIndex) {
+      if (currentRound) {
+        //&& page != pageIndex) { if user doesn't want to auto-update when on same page
         updateBlocks(pageIndex);
       }
     },
@@ -76,17 +81,12 @@ const Blocks = () => {
   );
 
   useEffect(() => {
-    if (currentRound > 0) {
+    if (currentRound) {
+      setLoading(false);
+      setTableLoading(false);
       fetchData({ pageIndex: 0 });
     }
   }, [currentRound, fetchData]);
-
-  useEffect(() => {
-    if (supply) {
-      setLoading(false);
-      setCurrentRound(supply.current_round);
-    }
-  }, [supply]);
 
   useEffect(() => {
     dispatch(getSupply());
@@ -158,9 +158,13 @@ const Blocks = () => {
             loading ? (
               <Load />
             ) : (
-              <span>{integerFormatter.format(supply.current_round)}</span>
+              <div>{currentRound && integerFormatter.format(currentRound)}</div>
             )
           }
+        />
+        <Statscard
+          stat="Average Block Time"
+          value={loading ? <Load /> : <div>{avgBlockTime} seconds</div>}
         />
         <Statscard
           stat="Block Rewards"
@@ -178,12 +182,6 @@ const Blocks = () => {
       </div>
       <div className="table">
         <div>
-          {/* {blocks.length > 0 && <Table
-						pageIndex={0}
-						pages={pages}
-						onPageChange={pageIndex => updateBlocks(pageIndex)}
-						onPageSizeChange={(pageSize, pageIndex) => updatePageSize(pageIndex, pageSize)}
-					/>} */}
           {blocks && blocks.length > 0 && (
             <Table
               columns={columns}

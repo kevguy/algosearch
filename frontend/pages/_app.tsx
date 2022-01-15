@@ -2,13 +2,17 @@ import React from "react";
 import { AppProps } from "next/app";
 import { Provider } from "react-redux";
 import store from "../store";
+import WebSocketProvider from "../providers/WebSocketProvider";
 import "../styles/styles.scss";
 
-// This default export is required in a new `pages/_app.js` file.
+export const isBrowser = typeof window !== "undefined";
+
 export default function MyApp({ Component, pageProps }: AppProps) {
   return (
     <Provider store={store}>
-      <Component {...pageProps} />
+      <WebSocketProvider>
+        <Component {...pageProps} />
+      </WebSocketProvider>
     </Provider>
   );
 }

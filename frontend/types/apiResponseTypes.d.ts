@@ -1,9 +1,4 @@
 import { TxType } from "../utils/stringUtils";
-export interface ICurrentRoundResponse {
-  round: number;
-  "genesis-id": number;
-  transactions?: [];
-}
 
 export interface IAsaResponse {
   index: number;

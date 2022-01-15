@@ -98,10 +98,6 @@ const Table = <T extends Record<string, unknown>>(
     setPageIndex();
   }, [setPageIndex]);
 
-  console.log("table pageIndex: ", pageIndex);
-  console.log("table pageCount: ", controlledPageCount);
-  console.log("table pageOptions: ", pageOptions);
-
   // Render the UI for your table
   return (
     <>

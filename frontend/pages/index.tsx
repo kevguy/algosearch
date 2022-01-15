@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import Link from "next/link";
+import { BigNumber } from "bignumber.js";
+import Button from "@mui/material/Button";
+
 import Layout from "../components/layout";
 import AlgoIcon from "../components/algoicon";
 import Statscard from "../components/statscard";
@@ -8,44 +12,55 @@ import Load from "../components/tableloading";
 import statscardStyles from "../components/statscard/Statscard.module.scss";
 import styles from "./Home.module.scss";
 import { currencyFormatter, integerFormatter } from "../utils/stringUtils";
-import { BigNumber } from "bignumber.js";
-import Button from "@mui/material/Button";
 import TransactionTable from "../components/table/TransactionTable";
-import { useDispatch, useSelector } from "react-redux";
 import {
-  getCurrentRound,
   getLatestBlocks,
   getSupply,
-  selectCurrentRound,
+  selectWsCurrentRound,
   selectLatestBlocks,
   selectSupply,
+  selectLatestTxn,
+  selectAvgBlockTxnSpeed,
 } from "../features/applicationSlice";
 import BlockTable from "../components/table/BlockTable";
 import { TransactionResponse } from "../types/apiResponseTypes";
+import { siteName } from "../utils/constants";
 
 const Home = () => {
   const [transactions, setTransactions] = useState<TransactionResponse[]>();
   const [loading, setLoading] = useState(true);
-  const currentRound = useSelector(selectCurrentRound);
+  const currentRound = useSelector(selectWsCurrentRound);
+  const avgBlockTime = useSelector(selectAvgBlockTxnSpeed);
   const blocks = useSelector(selectLatestBlocks);
   const [price, setPrice] = useState(0);
   const [circulatingSupply, setCirculatingSupply] = useState("");
   const supply = useSelector(selectSupply);
+  const latestTransaction = useSelector(selectLatestTxn);
   const dispatch = useDispatch();
 
   BigNumber.config({ DECIMAL_PLACES: 2 });
 
   useEffect(() => {
-    if (currentRound.transactions && currentRound.transactions.length > 0) {
-      setTransactions([...currentRound.transactions].splice(0, 10));
+    if (latestTransaction) {
+      axios({
+        method: "get",
+        url: `${siteName}/v1/transactions?latest_txn=${latestTransaction}&page=1&limit=10&order=desc`,
+      })
+        .then((response) => {
+          console.log("txs: ", response.data);
+          setTransactions(response.data.items);
+        })
+        .catch((error) => {
+          console.error("Exception when retrieving transactions: " + error);
+        });
     }
-  }, [currentRound]);
+  }, [latestTransaction]);
 
   useEffect(() => {
-    if (supply.current_round > 0) {
-      dispatch(getLatestBlocks(supply.current_round));
+    if (currentRound) {
+      dispatch(getLatestBlocks(currentRound));
     }
-  }, [supply, dispatch]);
+  }, [currentRound, dispatch]);
 
   const getPrice = () => {
     return axios({
@@ -81,7 +96,6 @@ const Home = () => {
   useEffect(() => {
     document.title = "AlgoSearch (ALGO) Blockchain Explorer";
     dispatch(getSupply());
-    dispatch(getCurrentRound());
     Promise.all([getPrice(), getCirculatingSupply()]).then((results) => {
       setPrice(results[0]);
       setCirculatingSupply(results[1] || "");
@@ -128,6 +142,10 @@ const Home = () => {
               </div>
             )
           }
+        />
+        <Statscard
+          stat="Average Block Time"
+          value={loading ? <Load /> : <div>{avgBlockTime} seconds</div>}
         />
         <Statscard
           stat="Algo Price"

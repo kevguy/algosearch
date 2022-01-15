@@ -1,7 +1,37 @@
-import React from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import {
+  selectCurrentRound,
+  selectWsCurrentRound,
+} from "../../features/applicationSlice";
+import {
+  getConnectionStatus,
+  WebSocketContext,
+} from "../../providers/WebSocketProvider";
+import { integerFormatter } from "../../utils/stringUtils";
 import styles from "./HomeHeader.module.scss";
 
 const HomeHeader = () => {
+  const { readyState, latestBlockData } = useContext(WebSocketContext);
+  const connectionStatus = getConnectionStatus(readyState);
+  const currentRound = useSelector(selectCurrentRound);
+  const wsCurrentRound = useSelector(selectWsCurrentRound);
+  const [synced, setSynced] = useState(false);
+  const [outOfSyncNum, setOutOfSyncNum] = useState("");
+
+  const checkSynced = useCallback(() => {
+    if (currentRound && wsCurrentRound) {
+      const isSynced =
+        connectionStatus === "open" && currentRound === wsCurrentRound;
+      setSynced(isSynced);
+      setOutOfSyncNum(
+        integerFormatter.format(Math.abs(currentRound - wsCurrentRound))
+      );
+    }
+  }, [currentRound, wsCurrentRound, latestBlockData]);
+
+  useEffect(() => checkSynced(), [checkSynced]);
+
   return (
     <div className={styles["home-header"]}>
       <div className="sizer">
@@ -28,7 +58,18 @@ const HomeHeader = () => {
             </svg>
             <span>Algorand Block Explorer</span>
           </h1>
-          <span>Open-source block explorer for Algorand</span>
+          <div className={styles.desc}>
+            <span>Open-source block explorer for Algorand</span>
+            <div className={styles["sync-status"]}>
+              {synced ? (
+                <span className={styles.synced}>in sync</span>
+              ) : (
+                <span className={styles["out-of-sync"]}>
+                  out of sync {outOfSyncNum && <>by {outOfSyncNum} blocks</>}
+                </span>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
