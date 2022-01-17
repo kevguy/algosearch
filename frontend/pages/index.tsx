@@ -144,7 +144,8 @@ const Home = () => {
           }
         />
         <Statscard
-          stat="Average Block Time"
+          stat="Block Time"
+          info="Average block time of last 10 blocks"
           value={loading ? <Load /> : <div>{avgBlockTime} seconds</div>}
         />
         <Statscard

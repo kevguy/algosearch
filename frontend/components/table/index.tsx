@@ -5,6 +5,7 @@ import React, {
   useEffect,
   useState,
 } from "react";
+import { useRouter } from "next/router";
 import MaUTable from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -36,6 +37,7 @@ export interface TableProperties<T extends Record<string, unknown>>
   pageCount: number;
   loading: boolean;
   className: string;
+  defaultPage?: number;
 }
 
 const Table = <T extends Record<string, unknown>>(
@@ -48,14 +50,15 @@ const Table = <T extends Record<string, unknown>>(
     pageCount: controlledPageCount,
     loading,
     className,
+    defaultPage,
   } = props;
-  // Use the state and functions returned from useTable to build your UI
+  const router = useRouter();
   const instance = useTable<T>(
     {
       columns,
       data,
       initialState: {
-        pageIndex: 0,
+        pageIndex: defaultPage || 0,
         pageSize: 15,
       },
       manualPagination: true,
@@ -87,9 +90,43 @@ const Table = <T extends Record<string, unknown>>(
     }
   }, [pageIndex, pageIndexDisplayed]);
 
+  const firstPageClickHandler = useCallback(() => {
+    gotoPage(0);
+    router.replace({
+      query: { page: 1 },
+    });
+  }, [gotoPage, router]);
+
+  const prevPageClickHandler = useCallback(() => {
+    previousPage();
+    router.replace({
+      query: { page: pageIndex },
+    });
+  }, [pageIndex, previousPage, router]);
+
+  const pageInputChangeHandler = useCallback(() => {
+    gotoPage(pageIndexDisplayed - 1); //pageIndexDisplayed - 1);
+    router.replace({
+      query: { page: pageIndexDisplayed },
+    });
+  }, [pageIndexDisplayed, gotoPage, router]);
+
+  const nextPageClickHandler = useCallback(() => {
+    nextPage();
+    router.replace({
+      query: { page: pageIndexDisplayed + 1 },
+    });
+  }, [pageIndexDisplayed, nextPage, router]);
+
+  const finalPageClickHandler = useCallback(() => {
+    gotoPage(controlledPageCount - 1);
+    router.replace({
+      query: { page: controlledPageCount },
+    });
+  }, [controlledPageCount, gotoPage, router]);
+
   useEffect(() => {
-    console.log("pageIndex? ", pageIndex);
-    if (fetchData) {
+    if (fetchData && pageIndex + 1 !== pageIndexDisplayed) {
       fetchData({ pageIndex });
     }
   }, [fetchData, pageIndex]);
@@ -98,7 +135,6 @@ const Table = <T extends Record<string, unknown>>(
     setPageIndex();
   }, [setPageIndex]);
 
-  // Render the UI for your table
   return (
     <>
       <MaUTable
@@ -160,10 +196,10 @@ const Table = <T extends Record<string, unknown>>(
       )}
       {fetchData && (
         <div className={styles["pagination"]}>
-          <button onClick={() => gotoPage(0)} disabled={!canPreviousPage}>
+          <button onClick={firstPageClickHandler} disabled={!canPreviousPage}>
             <ChevronsLeft />
           </button>{" "}
-          <button onClick={() => previousPage()} disabled={!canPreviousPage}>
+          <button onClick={prevPageClickHandler} disabled={!canPreviousPage}>
             <ChevronLeft />
           </button>{" "}
           <span>
@@ -176,20 +212,15 @@ const Table = <T extends Record<string, unknown>>(
                 const page = e.target.value ? Number(e.target.value) : 1;
                 setPageIndexDisplayed(page);
               }}
-              onBlur={(e) => {
-                gotoPage(pageIndexDisplayed - 1);
-              }}
+              onBlur={pageInputChangeHandler}
               className={styles["page-input"]}
             />{" "}
             of <strong>{pageOptions.length}</strong>{" "}
           </span>
-          <button onClick={() => nextPage()} disabled={!canNextPage}>
+          <button onClick={nextPageClickHandler} disabled={!canNextPage}>
             <ChevronRight />
           </button>{" "}
-          <button
-            onClick={() => gotoPage(controlledPageCount - 1)}
-            disabled={!canNextPage}
-          >
+          <button onClick={finalPageClickHandler} disabled={!canNextPage}>
             <ChevronsRight />
           </button>{" "}
         </div>

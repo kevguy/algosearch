@@ -1,7 +1,9 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import axios from "axios";
-import moment from "moment";
-import Link from "next/link";
+import Head from "next/head";
+import { useRouter } from "next/router";
+
 import Layout from "../../components/layout";
 import Breadcrumbs from "../../components/breadcrumbs";
 import Statscard from "../../components/statscard";
@@ -10,135 +12,89 @@ import Load from "../../components/tableloading";
 import { siteName } from "../../utils/constants";
 import styles from "./blocks.module.scss";
 import statscardStyles from "../../components/statscard/Statscard.module.scss";
-import {
-  ellipseAddress,
-  integerFormatter,
-  microAlgosToAlgos,
-} from "../../utils/stringUtils";
+import { integerFormatter, microAlgosToAlgos } from "../../utils/stringUtils";
 import Table from "../../components/table";
-import { useDispatch, useSelector } from "react-redux";
 import {
-  getSupply,
   selectAvgBlockTxnSpeed,
-  selectSupply,
   selectWsCurrentRound,
 } from "../../features/applicationSlice";
-import { IBlockResponse, IBlockRewards } from "../../types/apiResponseTypes";
-import Head from "next/head";
+import { IBlockResponse } from "../../types/apiResponseTypes";
+import { blocksColumns } from "./blocksColumns";
 
 const Blocks = () => {
+  const router = useRouter();
+  const { page } = router.query;
   const [loading, setLoading] = useState(true);
   const [tableLoading, setTableLoading] = useState(true);
   const [blocks, setBlocks] = useState<IBlockResponse[]>([]);
   const [pageSize, setPageSize] = useState(15);
-  const [page, setPage] = useState(-1);
+  const [queryPage, setQueryPage] = useState(0);
   const [pageCount, setPageCount] = useState(0);
   const currentRound = useSelector(selectWsCurrentRound);
+  const [blockQueryRound, setBlockQueryRound] = useState<number>();
   const [rewardRate, setRewardRate] = useState<string | number>("");
   const avgBlockTime = useSelector(selectAvgBlockTxnSpeed);
-  const dispatch = useDispatch();
 
   // Get blocks based on page number
   const updateBlocks = useCallback(
     async (pageIndex: number) => {
-      // Use current round number to retrieve last 15 blocks
-      if (!currentRound) return;
-      await axios({
-        method: "get",
-        url: `${siteName}/v1/rounds?latest_blk=${currentRound}&limit=${pageSize}&page=${
-          pageIndex + 1
-        }&order=desc`,
-      })
-        .then((response) => {
-          console.log("block rounds: ", response.data);
-          setBlocks(response.data.items);
-          if (pageIndex == 0) {
-            const rewardRate =
-              response.data.items
-                .map((item: IBlockResponse) => item.rewards["rewards-rate"])
-                .reduce((prev: number, curr: number) => prev + curr) /
-              response.data.items.length;
-            setRewardRate(microAlgosToAlgos(rewardRate));
-          }
-          setPage(pageIndex);
-          setPageCount(response.data.num_of_pages);
+      if (blockQueryRound) {
+        await axios({
+          method: "get",
+          url: `${siteName}/v1/rounds?latest_blk=${blockQueryRound}&limit=${pageSize}&page=${
+            pageIndex + 1
+          }&order=desc`,
         })
-        .catch((error) => {
-          console.log("Exception when retrieving blocks: " + error);
-        });
+          .then((response) => {
+            console.log("block rounds: ", response.data);
+            setBlocks(response.data.items);
+            if (pageIndex == 0) {
+              const rewardRate =
+                response.data.items
+                  .map((item: IBlockResponse) => item.rewards["rewards-rate"])
+                  .reduce((prev: number, curr: number) => prev + curr) /
+                response.data.items.length;
+              setRewardRate(microAlgosToAlgos(rewardRate));
+            }
+            setQueryPage(pageIndex);
+            setPageCount(response.data.num_of_pages);
+          })
+          .catch((error) => {
+            console.log("Exception when retrieving blocks: " + error);
+          });
+      }
     },
-    [pageSize, currentRound]
+    [pageSize, blockQueryRound]
   );
 
   const fetchData = useCallback(
     ({ pageIndex }) => {
-      if (currentRound) {
-        //&& page != pageIndex) { if user doesn't want to auto-update when on same page
-        updateBlocks(pageIndex);
-      }
+      updateBlocks(pageIndex);
     },
-    [currentRound, updateBlocks] // page,
+    [updateBlocks]
   );
+
+  useEffect(() => {
+    fetchData({ pageIndex: 0 });
+  }, [fetchData]);
 
   useEffect(() => {
     if (currentRound) {
       setLoading(false);
       setTableLoading(false);
-      fetchData({ pageIndex: 0 });
+      if (blockQueryRound != currentRound) {
+        if (queryPage == 0 || (queryPage != 0 && !blockQueryRound)) {
+          setBlockQueryRound(currentRound);
+        }
+      }
     }
-  }, [currentRound, fetchData]);
+  }, [currentRound, queryPage, blockQueryRound]);
 
   useEffect(() => {
-    dispatch(getSupply());
-  }, [dispatch]);
-
-  const columns = useMemo(
-    () => [
-      {
-        Header: "Block",
-        accessor: "round",
-        Cell: ({ value }: { value: number }) => {
-          const _value = value.toString().replace(" ", "");
-          return (
-            <Link href={`/block/${_value}`}>
-              {integerFormatter.format(value)}
-            </Link>
-          );
-        },
-      },
-      {
-        Header: "Proposed by",
-        accessor: "proposer",
-        Cell: ({ value }: { value: string }) => (
-          <Link href={`/address/${value}`}>{ellipseAddress(value)}</Link>
-        ),
-      },
-      {
-        Header: "# Tx",
-        accessor: "transactions",
-        Cell: ({ value }: { value: [] }) => (
-          <span>{value ? integerFormatter.format(value.length) : 0}</span>
-        ),
-      },
-      {
-        Header: "Block Rewards",
-        accessor: "rewards",
-        Cell: ({ value }: { value: IBlockRewards }) => (
-          <span>
-            <AlgoIcon /> {microAlgosToAlgos(value["rewards-rate"])}
-          </span>
-        ),
-      },
-      {
-        Header: "Time",
-        accessor: "timestamp",
-        Cell: ({ value }: { value: number }) => (
-          <span>{moment.unix(value).format("D MMM YYYY, h:mm:ss")}</span>
-        ),
-      },
-    ],
-    []
-  );
+    if (page) {
+      setQueryPage(Number(page) - 1);
+    }
+  }, [page]);
 
   return (
     <Layout>
@@ -163,7 +119,8 @@ const Blocks = () => {
           }
         />
         <Statscard
-          stat="Average Block Time"
+          stat="Block Time"
+          info="Average block time of last 10 blocks"
           value={loading ? <Load /> : <div>{avgBlockTime} seconds</div>}
         />
         <Statscard
@@ -184,12 +141,13 @@ const Blocks = () => {
         <div>
           {blocks && blocks.length > 0 && (
             <Table
-              columns={columns}
+              columns={blocksColumns}
               loading={tableLoading}
               data={blocks}
               fetchData={fetchData}
               pageCount={pageCount}
               className={styles["blocks-table"]}
+              defaultPage={queryPage}
             ></Table>
           )}
         </div>

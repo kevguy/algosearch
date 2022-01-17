@@ -13,7 +13,7 @@ const Statscard = ({
   value: JSX.Element;
 }) => {
   const tooltipId =
-    info && Buffer.from(info, "binary").toString("base64").substring(0, 8);
+    info && Buffer.from(stat + info, "binary").toString("base64");
   return (
     <div className={styles.statscard}>
       <div className={styles.title}>

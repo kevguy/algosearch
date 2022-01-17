@@ -25,6 +25,23 @@ export type TransactionResponse = {
   sender: string;
   "sender-rewards": number;
   "receiver-rewards": number;
+  "application-transaction": {
+    accounts: string[];
+    "application-args": [];
+    "application-id": number;
+    "foreign-apps": [];
+    "foreign-assets": number[];
+    "global-state-schema": {
+      "num-byte-slice": number;
+      "num-uint": number;
+    },
+    "local-state-schema": {
+      "num-byte-slice": number;
+      "num-uint": number;
+    },
+    "on-completion": string;
+  };
+  "inner-txns"?: any[];
   "payment-transaction": {
     amount: number;
     "close-amount": number;
@@ -72,7 +89,7 @@ export interface IBlockRewards {
   "rewards-residue": number;
 }
 
-export interface IBlockResponse {
+export type IBlockResponse = {
   "block-hash": string;
   doc_type: string;
   "genesis-hash": string;
