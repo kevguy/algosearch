@@ -61,9 +61,9 @@ const HeaderSearch = () => {
             router.push(`/address/${search}`);
             break;
           case "asset_found":
-          // TODO -> allow after introduction of asset page
-          // router.push(`/asset/${search}`);
-          // break;
+          //   TODO -> enable when it is implemented properly
+          //   router.push(`/asset/${search}`);
+          //   break;
           default:
             router.push("/error");
             break;
@@ -71,7 +71,7 @@ const HeaderSearch = () => {
         setLoading(false);
       })
       .catch(() => {
-        // router.push("/error");
+        router.push("/error");
       });
   };
   return (
