@@ -1,0 +1,15 @@
+.footer {
+  position: sticky;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  background: white;
+  padding: var(--space-s);
+  bottom: 0;
+  border-top: 1px solid var(--grey-lightest);
+
+  p {
+    margin: 0;
+  }
+}
