@@ -1,215 +1,92 @@
 import React, { useCallback, useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import axios from "axios";
-import Link from "next/link";
-import Layout from "../../components/layout";
-import Breadcrumbs from "../../components/breadcrumbs";
+import { Column } from "react-table";
+import { useRouter } from "next/router";
+import Head from "next/head";
 
-import AlgoIcon from "../../components/algoicon";
 import { siteName } from "../../utils/constants";
 import styles from "./transactions.module.scss";
-import {
-  ellipseAddress,
-  formatAsaAmountWithDecimal,
-  formatNumber,
-  getTxTypeName,
-  integerFormatter,
-  microAlgosToAlgos,
-  removeSpace,
-  TxType,
-} from "../../utils/stringUtils";
+import Layout from "../../components/layout";
+import Breadcrumbs from "../../components/breadcrumbs";
 import Table from "../../components/table";
-import Head from "next/head";
-import { TransactionResponse } from "../../types/apiResponseTypes";
-import { Column, Row } from "react-table";
-import Load from "../../components/tableloading";
-import Statscard from "../../components/statscard";
-import statscardStyles from "../../components/statscard/Statscard.module.scss";
 import { apiGetASA } from "../../utils/api";
 import { IAsaMap } from "../../types/misc";
-import TimeAgo from "timeago-react";
-import { useDispatch, useSelector } from "react-redux";
-import { getLatestTxn, selectLatestTxn } from "../../features/applicationSlice";
+import { selectLatestTxn } from "../../features/applicationSlice";
+import { transactionsColumns } from "./transactionsColumns";
 
 const Transactions = () => {
-  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  const { page } = router.query;
   const [tableLoading, setTableLoading] = useState(true);
   const [pageSize, setPageSize] = useState(15);
   const [pageCount, setPageCount] = useState(0);
-  const [page, setPage] = useState(-1);
-  const [totalTransactions, setTotalTransactions] = useState(0);
   const [transactions, setTransactions] = useState([]);
   const [asaMap, setAsaMap] = useState<IAsaMap>([]);
-  const dispatch = useDispatch();
+  const [columns, setColumns] = useState<Column[]>([]);
   const latestTransaction = useSelector(selectLatestTxn);
+  const [lastTxForTxnsQuery, setLastTxForTxnsQuery] = useState<string>();
 
   // Update transactions based on page number
   const getTransactions = useCallback(
-    (pageIndex: number) => {
-      if (!latestTransaction) {
+    async (pageIndex: number) => {
+      if (!lastTxForTxnsQuery) {
         return;
       }
-      axios({
+      await axios({
         method: "get",
-        url: `${siteName}/v1/transactions?latest_txn=${latestTransaction}&page=${
+        url: `${siteName}/v1/transactions?latest_txn=${lastTxForTxnsQuery}&page=${
           pageIndex + 1
         }&limit=${pageSize}&order=desc`,
       })
         .then((response) => {
           console.log("txs: ", response.data);
-          setPage(pageIndex);
+          setTableLoading(false);
           setPageCount(response.data.num_of_pages);
-          if (pageIndex == 0) {
-            setTotalTransactions(response.data.num_of_txns);
-            setLoading(false);
-          }
           setTransactions(response.data.items);
         })
         .catch((error) => {
           console.error("Exception when retrieving transactions: " + error);
         });
     },
-    [latestTransaction, pageSize]
+    [lastTxForTxnsQuery, pageSize]
   );
 
   const fetchData = useCallback(
     ({ pageIndex }) => {
-      console.log("latestTransaction: ", latestTransaction);
-      console.log("page: ", page);
-      console.log("pageIndex: ", pageIndex);
-      if (latestTransaction) {
-        //&& page != pageIndex) // if user doesn't want to auto-update when on same page
-        getTransactions(pageIndex);
-      }
+      getTransactions(pageIndex);
     },
-    [latestTransaction, getTransactions, page]
+    [getTransactions]
   );
 
   useEffect(() => {
-    dispatch(getLatestTxn());
-  }, [dispatch]);
+    setColumns(transactionsColumns(asaMap));
+  }, [asaMap]);
 
   useEffect(() => {
-    if (latestTransaction && page == -1) {
-      setLoading(false);
-      setTableLoading(false);
-      fetchData({ pageIndex: 0 });
+    if (router.isReady && !page) {
+      router.replace({
+        query: Object.assign({}, router.query, { page: "1" }),
+      });
     }
-  }, [latestTransaction, fetchData, page]);
+    if (latestTransaction && lastTxForTxnsQuery != latestTransaction) {
+      if (
+        Number(page) == 1 ||
+        (page && Number(page) != 1 && !lastTxForTxnsQuery)
+      ) {
+        // set last tx for query if the current page is the first page and the last tx head is not same as the latest tx
+        // OR set last tx for query if the user enters the page with a page number and so the last tx head is unset
+        setLastTxForTxnsQuery(latestTransaction);
+      }
+    }
+  }, [latestTransaction, page, router, lastTxForTxnsQuery]);
 
   useEffect(() => {
     if (!transactions) return;
     apiGetASA(transactions).then((result) => {
-      console.log("results? ", result);
       setAsaMap(result);
     });
   }, [transactions]);
-
-  // Table columns
-  const columns: Column[] = [
-    {
-      Header: "Tx ID",
-      accessor: "id",
-      Cell: ({ value }: { value: string }) => (
-        <Link href={`/tx/${value}`}>{ellipseAddress(value)}</Link>
-      ),
-    },
-    {
-      Header: "Block",
-      accessor: "confirmed-round",
-      Cell: ({ value }: { value: number }) => {
-        const _value = removeSpace(value.toString());
-        return (
-          <Link href={`/block/${_value}`}>
-            {integerFormatter.format(Number(_value))}
-          </Link>
-        );
-      },
-    },
-    {
-      Header: "Type",
-      accessor: "tx-type",
-      Cell: ({ value }: { value: TxType }) => (
-        <span className="type noselect">{getTxTypeName(value)}</span>
-      ),
-    },
-    {
-      Header: "From",
-      accessor: "sender",
-      Cell: ({ value }: { value: string }) => (
-        <Link href={`/address/${value}`}>{ellipseAddress(value)}</Link>
-      ),
-    },
-    {
-      Header: "To",
-      accessor: "payment-transaction.receiver",
-      Cell: ({ row }: { row: Row<TransactionResponse> }) => {
-        const tx = row.original;
-        const isAsaTransfer = tx["tx-type"] === TxType.AssetTransfer;
-        const _value = isAsaTransfer
-          ? tx["asset-transfer-transaction"].receiver
-          : tx["payment-transaction"].receiver;
-        return _value ? (
-          <Link href={`/address/${_value}`}>{ellipseAddress(_value)}</Link>
-        ) : (
-          "N/A"
-        );
-      },
-    },
-    {
-      Header: "Amount",
-      accessor: "payment-transaction.amount",
-      Cell: ({ row }: { row: Row<TransactionResponse> }) => {
-        const tx = row.original;
-        const _asaAmount =
-          (tx["asset-transfer-transaction"] &&
-            asaMap[tx["asset-transfer-transaction"]["asset-id"]] &&
-            Number(
-              formatAsaAmountWithDecimal(
-                BigInt(tx["asset-transfer-transaction"].amount),
-                asaMap[tx["asset-transfer-transaction"]["asset-id"]].decimals
-              )
-            )) ??
-          0;
-        const _asaUnit =
-          tx["asset-transfer-transaction"] &&
-          asaMap[tx["asset-transfer-transaction"]["asset-id"]] &&
-          asaMap[tx["asset-transfer-transaction"]["asset-id"]].unitName;
-
-        return (
-          <span>
-            {tx["tx-type"] === TxType.AssetTransfer ? (
-              `${formatNumber(_asaAmount)} ${_asaUnit}`
-            ) : (
-              <>
-                <AlgoIcon />{" "}
-                {formatNumber(
-                  Number(microAlgosToAlgos(tx["payment-transaction"].amount))
-                )}
-              </>
-            )}
-          </span>
-        );
-      },
-    },
-    {
-      Header: "Fee",
-      accessor: "fee",
-      Cell: ({ value }: { value: number }) => (
-        <span>
-          <AlgoIcon /> {microAlgosToAlgos(value)}
-        </span>
-      ),
-    },
-    {
-      Header: "Time",
-      accessor: "round-time",
-      Cell: ({ value }: { value: number }) => (
-        <span>
-          <TimeAgo datetime={new Date(value * 1000)} locale="en_short" />
-        </span>
-      ),
-    },
-  ];
 
   return (
     <Layout>
@@ -223,20 +100,8 @@ const Transactions = () => {
         parentLinkName="Home"
         currentLinkName="All Transactions"
       />
-      <div className={statscardStyles["card-container"]}>
-        <Statscard
-          stat="Total Transactions"
-          value={
-            loading ? (
-              <Load />
-            ) : (
-              <span>{integerFormatter.format(totalTransactions)}</span>
-            )
-          }
-        />
-      </div>
       <div className="table">
-        {transactions && transactions.length > 0 && (
+        {router.isReady && (
           <Table
             columns={columns}
             data={transactions}
@@ -244,6 +109,7 @@ const Transactions = () => {
             pageCount={pageCount}
             loading={tableLoading}
             className={`${styles["transactions-table"]}`}
+            defaultPage={Number(page)}
           ></Table>
         )}
       </div>

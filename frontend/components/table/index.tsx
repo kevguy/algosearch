@@ -58,7 +58,7 @@ const Table = <T extends Record<string, unknown>>(
       columns,
       data,
       initialState: {
-        pageIndex: defaultPage || 0,
+        pageIndex: defaultPage ? defaultPage - 1 : 0,
         pageSize: 15,
       },
       manualPagination: true,
@@ -81,59 +81,62 @@ const Table = <T extends Record<string, unknown>>(
     nextPage,
     previousPage,
   } = instance;
-  const [pageIndexDisplayed, setPageIndexDisplayed] =
-    useState<number>(pageIndex);
-
-  const setPageIndex = useCallback(() => {
-    if (pageIndex + 1 !== pageIndexDisplayed) {
-      setPageIndexDisplayed(pageIndex + 1);
-    }
-  }, [pageIndex, pageIndexDisplayed]);
-
+  const [pageIndexDisplayed, setPageIndexDisplayed] = useState<number>(
+    pageIndex + 1
+  );
   const firstPageClickHandler = useCallback(() => {
     gotoPage(0);
     router.replace({
-      query: { page: 1 },
+      query: Object.assign({}, router.query, { page: 1 }),
     });
+    setPageIndexDisplayed(1);
   }, [gotoPage, router]);
 
   const prevPageClickHandler = useCallback(() => {
     previousPage();
     router.replace({
-      query: { page: pageIndex },
+      query: Object.assign({}, router.query, { page: pageIndexDisplayed - 1 }),
     });
-  }, [pageIndex, previousPage, router]);
+    setPageIndexDisplayed(pageIndexDisplayed - 1);
+  }, [previousPage, pageIndexDisplayed, router]);
 
   const pageInputChangeHandler = useCallback(() => {
-    gotoPage(pageIndexDisplayed - 1); //pageIndexDisplayed - 1);
-    router.replace({
-      query: { page: pageIndexDisplayed },
-    });
-  }, [pageIndexDisplayed, gotoPage, router]);
+    if (pageIndexDisplayed) {
+      router.replace({
+        query: Object.assign({}, router.query, { page: pageIndexDisplayed }),
+      });
+      gotoPage(pageIndexDisplayed - 1);
+    }
+  }, [pageIndexDisplayed, gotoPage]);
 
   const nextPageClickHandler = useCallback(() => {
     nextPage();
     router.replace({
-      query: { page: pageIndexDisplayed + 1 },
+      query: Object.assign({}, router.query, { page: pageIndexDisplayed + 1 }),
     });
+    setPageIndexDisplayed(pageIndexDisplayed + 1);
   }, [pageIndexDisplayed, nextPage, router]);
 
   const finalPageClickHandler = useCallback(() => {
     gotoPage(controlledPageCount - 1);
     router.replace({
-      query: { page: controlledPageCount },
+      query: Object.assign({}, router.query, { page: controlledPageCount }),
     });
+    setPageIndexDisplayed(controlledPageCount);
   }, [controlledPageCount, gotoPage, router]);
 
   useEffect(() => {
-    if (fetchData && pageIndex + 1 !== pageIndexDisplayed) {
-      fetchData({ pageIndex });
+    if (
+      fetchData &&
+      defaultPage === pageIndexDisplayed &&
+      pageIndex + 1 === pageIndexDisplayed
+    ) {
+      // only fetch when page is set correct across the variables
+      fetchData({
+        pageIndex,
+      });
     }
-  }, [fetchData, pageIndex]);
-
-  useEffect(() => {
-    setPageIndex();
-  }, [setPageIndex]);
+  }, [fetchData, pageIndex, defaultPage, router, pageIndexDisplayed]);
 
   return (
     <>
@@ -194,7 +197,7 @@ const Table = <T extends Record<string, unknown>>(
           <Load />
         </div>
       )}
-      {fetchData && (
+      {fetchData && !loading && (
         <div className={styles["pagination"]}>
           <button onClick={firstPageClickHandler} disabled={!canPreviousPage}>
             <ChevronsLeft />
@@ -209,7 +212,10 @@ const Table = <T extends Record<string, unknown>>(
               min={1}
               value={pageIndexDisplayed}
               onChange={(e) => {
-                const page = e.target.value ? Number(e.target.value) : 1;
+                const page =
+                  e.target.value && Number(e.target.value) > 0
+                    ? Number(e.target.value)
+                    : 1;
                 setPageIndexDisplayed(page);
               }}
               onBlur={pageInputChangeHandler}

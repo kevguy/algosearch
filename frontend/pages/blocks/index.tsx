@@ -7,7 +7,6 @@ import { useRouter } from "next/router";
 import Layout from "../../components/layout";
 import Breadcrumbs from "../../components/breadcrumbs";
 import Statscard from "../../components/statscard";
-import AlgoIcon from "../../components/algoicon";
 import Load from "../../components/tableloading";
 import { siteName } from "../../utils/constants";
 import styles from "./blocks.module.scss";
@@ -28,41 +27,30 @@ const Blocks = () => {
   const [tableLoading, setTableLoading] = useState(true);
   const [blocks, setBlocks] = useState<IBlockResponse[]>([]);
   const [pageSize, setPageSize] = useState(15);
-  const [queryPage, setQueryPage] = useState(0);
   const [pageCount, setPageCount] = useState(0);
   const currentRound = useSelector(selectWsCurrentRound);
   const [blockQueryRound, setBlockQueryRound] = useState<number>();
-  const [rewardRate, setRewardRate] = useState<string | number>("");
   const avgBlockTime = useSelector(selectAvgBlockTxnSpeed);
 
   // Get blocks based on page number
   const updateBlocks = useCallback(
     async (pageIndex: number) => {
-      if (blockQueryRound) {
-        await axios({
-          method: "get",
-          url: `${siteName}/v1/rounds?latest_blk=${blockQueryRound}&limit=${pageSize}&page=${
-            pageIndex + 1
-          }&order=desc`,
-        })
-          .then((response) => {
-            console.log("block rounds: ", response.data);
-            setBlocks(response.data.items);
-            if (pageIndex == 0) {
-              const rewardRate =
-                response.data.items
-                  .map((item: IBlockResponse) => item.rewards["rewards-rate"])
-                  .reduce((prev: number, curr: number) => prev + curr) /
-                response.data.items.length;
-              setRewardRate(microAlgosToAlgos(rewardRate));
-            }
-            setQueryPage(pageIndex);
-            setPageCount(response.data.num_of_pages);
-          })
-          .catch((error) => {
-            console.log("Exception when retrieving blocks: " + error);
-          });
+      if (!blockQueryRound) {
+        return;
       }
+      await axios({
+        method: "get",
+        url: `${siteName}/v1/rounds?latest_blk=${blockQueryRound}&limit=${pageSize}&page=${
+          pageIndex + 1
+        }&order=desc`,
+      })
+        .then((response) => {
+          setBlocks(response.data.items);
+          setPageCount(response.data.num_of_pages);
+        })
+        .catch((error) => {
+          console.log("Exception when retrieving blocks: " + error);
+        });
     },
     [pageSize, blockQueryRound]
   );
@@ -75,26 +63,24 @@ const Blocks = () => {
   );
 
   useEffect(() => {
-    fetchData({ pageIndex: 0 });
-  }, [fetchData]);
-
-  useEffect(() => {
-    if (currentRound) {
+    if (router.isReady && !page) {
+      router.replace({
+        query: Object.assign({}, router.query, { page: "1" }),
+      });
+    }
+    if (currentRound && currentRound != blockQueryRound) {
       setLoading(false);
       setTableLoading(false);
       if (blockQueryRound != currentRound) {
-        if (queryPage == 0 || (queryPage != 0 && !blockQueryRound)) {
+        if (
+          Number(page) == 1 ||
+          (page && Number(page) != 1 && !blockQueryRound)
+        ) {
           setBlockQueryRound(currentRound);
         }
       }
     }
-  }, [currentRound, queryPage, blockQueryRound]);
-
-  useEffect(() => {
-    if (page) {
-      setQueryPage(Number(page) - 1);
-    }
-  }, [page]);
+  }, [currentRound, page, router, blockQueryRound]);
 
   return (
     <Layout>
@@ -123,23 +109,10 @@ const Blocks = () => {
           info="Average block time of last 10 blocks"
           value={loading ? <Load /> : <div>{avgBlockTime} seconds</div>}
         />
-        <Statscard
-          stat="Block Rewards"
-          info={`Average block rewards in last ${pageSize} blocks`}
-          value={
-            loading || !currentRound ? (
-              <Load />
-            ) : (
-              <div>
-                <AlgoIcon /> {rewardRate}
-              </div>
-            )
-          }
-        />
       </div>
       <div className="table">
         <div>
-          {blocks && blocks.length > 0 && (
+          {router.isReady && (
             <Table
               columns={blocksColumns}
               loading={tableLoading}
@@ -147,7 +120,7 @@ const Blocks = () => {
               fetchData={fetchData}
               pageCount={pageCount}
               className={styles["blocks-table"]}
-              defaultPage={queryPage}
+              defaultPage={Number(page)}
             ></Table>
           )}
         </div>

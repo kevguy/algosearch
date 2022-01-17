@@ -37,15 +37,14 @@ export type DataType = {
 
 const Address = () => {
   const router = useRouter();
-  const { _address } = router.query;
+  const { _address, page } = router.query;
   const [address, setAddress] = useState("");
   const [accountTxNum, setAccountTxNum] = useState(0);
-  const [accountTxns, setAccountTxns] = useState([]);
+  const [accountTxns, setAccountTxns] = useState();
   const [data, setData] = useState<DataType>();
   const [loading, setLoading] = useState(true);
   const [tableLoading, setTableLoading] = useState(true);
   const [pageSize, setPageSize] = useState(15);
-  const [page, setPage] = useState(-1);
   const [pageCount, setPageCount] = useState(0);
   const [asaMap, setAsaMap] = useState<IAsaMap>([]);
 
@@ -67,7 +66,6 @@ const Address = () => {
 
   const getAccountTxs = useCallback(
     async (pageIndex: number) => {
-      setTableLoading(true);
       await axios({
         method: "get",
         url: `${siteName}/v1/transactions/acct/${address}?page=${
@@ -76,11 +74,9 @@ const Address = () => {
       })
         .then((response) => {
           console.log("account txns data: ", response.data);
-          setPage(pageIndex);
           setPageCount(response.data.num_of_pages);
           setAccountTxNum(response.data.num_of_txns);
           setAccountTxns(response.data.items);
-          setTableLoading(false);
         })
         .catch((error) => {
           console.error(
@@ -92,11 +88,11 @@ const Address = () => {
   );
   const fetchData = useCallback(
     ({ pageIndex }) => {
-      if (address && page != pageIndex) {
+      if (address) {
         getAccountTxs(pageIndex);
       }
     },
-    [address, page, getAccountTxs]
+    [address, getAccountTxs]
   );
 
   useEffect(() => {
@@ -107,12 +103,27 @@ const Address = () => {
   }, [accountTxns]);
 
   useEffect(() => {
-    if (!_address) {
+    console.log("_address: ", _address);
+    console.log("page: ", page);
+    if (!router.isReady || !_address) {
       return;
     }
+    if (router.isReady && !page) {
+      router.replace({
+        query: Object.assign({}, router.query, { page: "1" }),
+      });
+    }
+    setLoading(false);
+    setTableLoading(false);
     setAddress(_address.toString());
     getAddressData(_address.toString());
-  }, [_address]);
+  }, [_address, page, router]);
+
+  // useEffect(() => {
+  //   if (address && page) {
+  //     fetchData({ pageIndex: Number(page) - 1 });
+  //   }
+  // }, [address, page]);
 
   const columns = [
     {
@@ -322,20 +333,18 @@ const Address = () => {
           }
         />
       </div>
-      <div className="table">
-        <div>
-          {accountTxns && (
-            <Table
-              columns={columns}
-              loading={tableLoading}
-              data={accountTxns}
-              fetchData={fetchData}
-              pageCount={pageCount}
-              className={`${blocksTableStyles["blocks-table"]}`}
-            ></Table>
-          )}
+      {accountTxns && (
+        <div className="table">
+          <Table
+            columns={columns}
+            loading={tableLoading}
+            data={accountTxns}
+            fetchData={fetchData}
+            pageCount={pageCount}
+            className={`${blocksTableStyles["blocks-table"]}`}
+          ></Table>
         </div>
-      </div>
+      )}
     </Layout>
   );
 };

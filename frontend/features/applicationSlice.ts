@@ -8,7 +8,7 @@ export interface IApplicationState {
   avgBlockTxnSpeedInSec: number;
   wsCurrentRound: number;
   latestBlocks: [];
-  latestTxn: number;
+  latestTxn: string;
   supply: {
     current_round: number;
     "online-money": string;
@@ -20,7 +20,7 @@ const initialState: IApplicationState = {
   avgBlockTxnSpeedInSec: 0,
   wsCurrentRound: 0,
   latestBlocks: [],
-  latestTxn: 0,
+  latestTxn: "",
   supply: {
     current_round: 0,
     "online-money": ""

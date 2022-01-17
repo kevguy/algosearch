@@ -45,14 +45,13 @@ interface IBlockData {
 
 const Block = () => {
   const router = useRouter();
-  const { _block } = router.query;
+  const { _block, page } = router.query;
   const [blockNum, setBlockNum] = useState(0);
   const [data, setData] = useState<IBlockData>();
   const [transactions, setTransactions] = useState<TransactionResponse[]>();
   const [partialTxs, setPartialTxs] = useState<TransactionResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [pageSize, setPageSize] = useState(15);
-  const [page, setPage] = useState(-1);
   const [pageCount, setPageCount] = useState(0);
   const [asaMap, setAsaMap] = useState<IAsaMap>([]);
 
@@ -88,8 +87,7 @@ const Block = () => {
 
   const fetchData = useCallback(
     ({ pageIndex }) => {
-      if (transactions && page != pageIndex) {
-        setPage(pageIndex);
+      if (transactions) {
         const endIndex =
           transactions.length < (pageIndex + 1) * pageSize
             ? transactions.length
@@ -97,12 +95,17 @@ const Block = () => {
         setPartialTxs(transactions.slice(pageIndex * pageSize, endIndex));
       }
     },
-    [transactions, page, pageSize]
+    [transactions, pageSize]
   );
 
   useEffect(() => {
     if (!_block) {
       return;
+    }
+    if (router.isReady && !page) {
+      router.replace({
+        query: Object.assign({}, router.query, { page: "1" }),
+      });
     }
     getBlock(Number(_block));
     setBlockNum(Number(_block));
@@ -295,6 +298,7 @@ const Block = () => {
                 pageCount={pageCount}
                 loading={loading}
                 className={`${styles["transactions-table"]}`}
+                defaultPage={Number(page)}
               ></Table>
             )}
           </div>

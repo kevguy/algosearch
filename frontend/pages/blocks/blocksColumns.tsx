@@ -27,7 +27,7 @@ export const blocksColumns = [
     Header: "Proposed by",
     accessor: "proposer",
     Cell: ({ value }: { value: string }) => (
-      <Link href={`/address/${value}`}>{ellipseAddress(value)}</Link>
+      <Link href={`/address/${value}?page=1`}>{ellipseAddress(value)}</Link>
     ),
   },
   {

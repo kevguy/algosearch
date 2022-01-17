@@ -17,7 +17,7 @@ export interface IAsaResponse {
 }
 
 export type TransactionResponse = {
-  id: number;
+  id: string;
   "genesis-id": number;
   "genesis-hash": string;
   "confirmed-round": number;
