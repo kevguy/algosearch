@@ -19,6 +19,11 @@ then
   sleep 5s
 fi
 
+if [ "$ALGOSEARCH_IS_HEROKU" = "true" ]; then
+  export ALGOSEARCH_WEB_DEPLOY_HOST="0.0.0.0:${PORT}"
+  export ALGOSEARCH_WEB_API_HOST="0.0.0.0:${PORT}"
+fi
+
 if [ "$ALGOSEARCH_BACKEND_DISABLED" != "true" ]; then ./algosearch; fi & \
 if [ "$ALGOSEARCH_METRICS_DISABLED" != "true" ]; then ./metrics; fi & \
 #if [ "$ALGOSEARCH_FRONTEND_DISABLED" != "true" ]; then node_modules/.bin/next start; fi

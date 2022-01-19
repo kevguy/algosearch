@@ -183,8 +183,12 @@ all: algosearch-backend algosearch-metrics algosearch-frontend
 deploy-to-docker-hub: algosearch algosearch-latest
 	docker tag algosearch:latest kevguy/algosearch:latest
 	docker tag algosearch:$(VERSION) kevguy/algosearch:$(VERSION)
+	docker tag algosearch-backend:latest kevguy/algosearch-backend:latest
+	docker tag algosearch-backend:$(VERSION) kevguy/algosearch-backend:$(VERSION)
 	docker push kevguy/algosearch:latest
 	docker push kevguy/algosearch:$(VERSION)
+	docker push kevguy/algosearch-backend:latest
+	docker push kevguy/algosearch-backend:$(VERSION)
 
 algosearch:
 	docker build \
