@@ -10,8 +10,9 @@ import Statscard from "../../components/statscard";
 import Load from "../../components/tableloading";
 import { siteName } from "../../utils/constants";
 import styles from "./blocks.module.scss";
+import tableStyles from "../../components/Table/Table.module.scss";
 import statscardStyles from "../../components/statscard/Statscard.module.scss";
-import { integerFormatter, microAlgosToAlgos } from "../../utils/stringUtils";
+import { integerFormatter } from "../../utils/stringUtils";
 import Table from "../../components/table";
 import {
   selectAvgBlockTxnSpeed,
@@ -28,6 +29,7 @@ const Blocks = () => {
   const [blocks, setBlocks] = useState<IBlockResponse[]>([]);
   const [pageSize, setPageSize] = useState(15);
   const [pageCount, setPageCount] = useState(0);
+  const [displayPageNum, setDisplayPageNum] = useState(0);
   const currentRound = useSelector(selectWsCurrentRound);
   const [blockQueryRound, setBlockQueryRound] = useState<number>();
   const avgBlockTime = useSelector(selectAvgBlockTxnSpeed);
@@ -35,9 +37,7 @@ const Blocks = () => {
   // Get blocks based on page number
   const updateBlocks = useCallback(
     async (pageIndex: number) => {
-      if (!blockQueryRound) {
-        return;
-      }
+      if (!blockQueryRound) return;
       await axios({
         method: "get",
         url: `${siteName}/v1/rounds?latest_blk=${blockQueryRound}&limit=${pageSize}&page=${
@@ -45,7 +45,12 @@ const Blocks = () => {
         }&order=desc`,
       })
         .then((response) => {
-          setBlocks(response.data.items);
+          if (response.data.items) {
+            setBlocks(response.data.items);
+          } else {
+            // no blocks with this page number, reset to first page
+            setDisplayPageNum(1);
+          }
           setPageCount(response.data.num_of_pages);
         })
         .catch((error) => {
@@ -63,21 +68,35 @@ const Blocks = () => {
   );
 
   useEffect(() => {
-    if (router.isReady && !page) {
-      router.replace({
-        query: Object.assign({}, router.query, { page: "1" }),
-      });
+    console.log(displayPageNum);
+    if (router.isReady && displayPageNum !== Number(page)) {
+      if (!page) {
+        router.replace({
+          query: Object.assign({}, router.query, { page: 1 }),
+        });
+      } else {
+        if (blockQueryRound) {
+          if (
+            Number(page) > Math.ceil(blockQueryRound / pageSize) ||
+            Number(page) < 1
+          ) {
+            // set URL page number param value to default 1 if URL page param is out of range
+            setDisplayPageNum(1);
+          } else {
+            // set URL page number param value as table page number if URL page param is in range
+            setDisplayPageNum(Number(page));
+          }
+        }
+      }
     }
-    if (currentRound && currentRound != blockQueryRound) {
+    if (currentRound && currentRound !== blockQueryRound) {
       setLoading(false);
       setTableLoading(false);
-      if (blockQueryRound != currentRound) {
-        if (
-          Number(page) == 1 ||
-          (page && Number(page) != 1 && !blockQueryRound)
-        ) {
-          setBlockQueryRound(currentRound);
-        }
+      if (
+        Number(page) == 1 ||
+        (page && Number(page) !== 1 && !blockQueryRound)
+      ) {
+        setBlockQueryRound(currentRound);
       }
     }
   }, [currentRound, page, router, blockQueryRound]);
@@ -112,7 +131,7 @@ const Blocks = () => {
       </div>
       <div className="table">
         <div>
-          {router.isReady && (
+          {router.isReady && displayPageNum ? (
             <Table
               columns={blocksColumns}
               loading={tableLoading}
@@ -120,8 +139,12 @@ const Blocks = () => {
               fetchData={fetchData}
               pageCount={pageCount}
               className={styles["blocks-table"]}
-              defaultPage={Number(page)}
+              defaultPage={displayPageNum}
             ></Table>
+          ) : (
+            <div className={tableStyles["table-loader-wrapper"]}>
+              <Load />
+            </div>
           )}
         </div>
       </div>

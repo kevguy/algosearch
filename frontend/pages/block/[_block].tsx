@@ -21,7 +21,9 @@ import { TransactionResponse } from "../../types/apiResponseTypes";
 import { IAsaMap } from "../../types/misc";
 import Table from "../../components/table";
 import Head from "next/head";
-import { Row } from "react-table";
+import { Column, Row } from "react-table";
+import Transactions from "../transactions";
+import { transactionsColumns } from "../transactions/transactionsColumns";
 
 interface IBlockData {
   "block-hash": string;
@@ -54,6 +56,7 @@ const Block = () => {
   const [pageSize, setPageSize] = useState(15);
   const [pageCount, setPageCount] = useState(0);
   const [asaMap, setAsaMap] = useState<IAsaMap>([]);
+  const [columns, setColumns] = useState<Column[]>([]);
 
   useEffect(() => {
     if (!transactions) return;
@@ -72,9 +75,12 @@ const Block = () => {
         .then((response) => {
           console.log("block: ", response.data);
           setData(response.data);
-          setTransactions(response.data.transactions);
-          setPageCount(Math.ceil(response.data.transactions.length / pageSize));
+          response.data.transactions &&
+            setPageCount(
+              Math.ceil(response.data.transactions.length / pageSize)
+            );
           setLoading(false);
+          setTransactions(response.data.transactions);
         })
         .catch((error) => {
           console.error(
@@ -92,7 +98,8 @@ const Block = () => {
           transactions.length < (pageIndex + 1) * pageSize
             ? transactions.length
             : (pageIndex + 1) * pageSize;
-        setPartialTxs(transactions.slice(pageIndex * pageSize, endIndex));
+        const newTxs = transactions.slice(pageIndex * pageSize, endIndex);
+        setPartialTxs(newTxs);
       }
     },
     [transactions, pageSize]
@@ -109,92 +116,27 @@ const Block = () => {
     }
     getBlock(Number(_block));
     setBlockNum(Number(_block));
-  }, [_block, getBlock]);
+  }, [_block, getBlock, page]);
 
-  const columns = [
-    {
-      Header: "Tx ID",
-      accessor: "id",
-      Cell: ({ value }: { value: string }) => (
-        <Link href={`/tx/${value}`}>{ellipseAddress(value)}</Link>
-      ),
-    },
-    {
-      Header: "Type",
-      accessor: "tx-type",
-      Cell: ({ value }: { value: TxType }) => (
-        <span className="type noselect">{getTxTypeName(value)}</span>
-      ),
-    },
-    {
-      Header: "From",
-      accessor: "sender",
-      Cell: ({ value }: { value: string }) => (
-        <Link href={`/address/${value}`}>{ellipseAddress(value)}</Link>
-      ),
-    },
-    {
-      Header: "To",
-      accessor: "payment-transaction.receiver",
-      Cell: ({ row }: { row: Row<TransactionResponse> }) => {
-        const tx = row.original;
-        const isAsaTransfer = tx["tx-type"] === TxType.AssetTransfer;
-        const _value = isAsaTransfer
-          ? tx["asset-transfer-transaction"].receiver
-          : tx["payment-transaction"].receiver;
-        return _value ? (
-          <Link href={`/address/${_value}`}>{ellipseAddress(_value)}</Link>
-        ) : (
-          "N/A"
-        );
-      },
-    },
-    {
-      Header: "Amount",
-      accessor: "payment-transaction.amount",
-      Cell: ({ row }: { row: Row<TransactionResponse> }) => {
-        const tx = row.original;
-        const _asaAmount =
-          (tx["asset-transfer-transaction"] &&
-            asaMap[tx["asset-transfer-transaction"]["asset-id"]] &&
-            Number(
-              formatAsaAmountWithDecimal(
-                BigInt(tx["asset-transfer-transaction"].amount),
-                asaMap[tx["asset-transfer-transaction"]["asset-id"]].decimals
-              )
-            )) ??
-          0;
-        const _asaUnit =
-          tx["asset-transfer-transaction"] &&
-          asaMap[tx["asset-transfer-transaction"]["asset-id"]] &&
-          asaMap[tx["asset-transfer-transaction"]["asset-id"]].unitName;
+  useEffect(() => {
+    if (page && transactions) {
+      if (Math.ceil(transactions.length / pageSize) < Number(page)) {
+        // no account transactions with this page number, reset to first page
+        const newPageNum = Math.ceil(transactions.length / pageSize);
+        router.replace({
+          query: Object.assign({}, router.query, {
+            page: `${newPageNum}`,
+          }),
+        });
+      } else {
+        fetchData({ pageIndex: Number(page) - 1 });
+      }
+    }
+  }, [transactions, page]);
 
-        return (
-          <span>
-            {tx["tx-type"] === TxType.AssetTransfer ? (
-              `${formatNumber(_asaAmount)} ${_asaUnit}`
-            ) : (
-              <>
-                <AlgoIcon />{" "}
-                {formatNumber(
-                  Number(microAlgosToAlgos(tx["payment-transaction"].amount))
-                )}
-              </>
-            )}
-          </span>
-        );
-      },
-    },
-    {
-      Header: "Fee",
-      accessor: "fee",
-      Cell: ({ value }: { value: number }) => (
-        <span>
-          <AlgoIcon /> {microAlgosToAlgos(value)}
-        </span>
-      ),
-    },
-  ];
+  useEffect(() => {
+    setColumns(transactionsColumns(asaMap, [1, 7]));
+  }, [asaMap]);
 
   return (
     <Layout>
@@ -281,6 +223,10 @@ const Block = () => {
               <td>Seed</td>
               <td>{loading ? <Load /> : data && data.seed}</td>
             </tr>
+            <tr>
+              <td>Transactions</td>
+              <td>{transactions ? transactions.length : 0}</td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -298,7 +244,6 @@ const Block = () => {
                 pageCount={pageCount}
                 loading={loading}
                 className={`${styles["transactions-table"]}`}
-                defaultPage={Number(page)}
               ></Table>
             )}
           </div>

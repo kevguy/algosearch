@@ -102,10 +102,18 @@ const Table = <T extends Record<string, unknown>>(
 
   const pageInputChangeHandler = useCallback(() => {
     if (pageIndexDisplayed) {
-      router.replace({
-        query: Object.assign({}, router.query, { page: pageIndexDisplayed }),
-      });
-      gotoPage(pageIndexDisplayed - 1);
+      if (pageIndexDisplayed <= pageOptions.length) {
+        router.replace({
+          query: Object.assign({}, router.query, { page: pageIndexDisplayed }),
+        });
+        gotoPage(pageIndexDisplayed - 1);
+      } else {
+        router.replace({
+          query: Object.assign({}, router.query, { page: pageOptions.length }),
+        });
+        setPageIndexDisplayed(pageOptions.length);
+        gotoPage(pageOptions.length - 1);
+      }
     }
   }, [pageIndexDisplayed, gotoPage]);
 

@@ -59,7 +59,6 @@ const WebSocketProvider = ({ children }: { children: ReactElement }) => {
   const dispatch = useDispatch();
 
   const getJsonMessage = useCallback(() => {
-    console.log("lastJsonMessage: ", lastJsonMessage);
     if (readyState == ReadyState.OPEN && lastJsonMessage !== null) {
       dispatch(setAvgBlockTxnSpeed(lastJsonMessage.avg_block_txn_speed));
       dispatch(setWsCurrentRound(lastJsonMessage.block.round));
