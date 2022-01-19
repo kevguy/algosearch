@@ -8,22 +8,14 @@ import AlgoIcon from "../../components/algoicon";
 import Load from "../../components/tableloading";
 import { siteName } from "../../utils/constants";
 import styles from "./Block.module.scss";
-import {
-  ellipseAddress,
-  formatAsaAmountWithDecimal,
-  formatNumber,
-  getTxTypeName,
-  microAlgosToAlgos,
-  TxType,
-} from "../../utils/stringUtils";
+import { microAlgosToAlgos } from "../../utils/stringUtils";
 import { apiGetASA } from "../../utils/api";
 import { TransactionResponse } from "../../types/apiResponseTypes";
 import { IAsaMap } from "../../types/misc";
 import Table from "../../components/table";
 import Head from "next/head";
 import { Column, Row } from "react-table";
-import Transactions from "../transactions";
-import { transactionsColumns } from "../transactions/transactionsColumns";
+import { transactionsColumns } from "../../components/tableColumns/transactionsColumns";
 
 interface IBlockData {
   "block-hash": string;
@@ -73,7 +65,6 @@ const Block = () => {
         url: `${siteName}/v1/algod/rounds/${blockNum}`,
       })
         .then((response) => {
-          console.log("block: ", response.data);
           setData(response.data);
           response.data.transactions &&
             setPageCount(
@@ -116,7 +107,7 @@ const Block = () => {
     }
     getBlock(Number(_block));
     setBlockNum(Number(_block));
-  }, [_block, getBlock, page]);
+  }, [_block, getBlock, page, router]);
 
   useEffect(() => {
     if (page && transactions) {
@@ -132,7 +123,7 @@ const Block = () => {
         fetchData({ pageIndex: Number(page) - 1 });
       }
     }
-  }, [transactions, page]);
+  }, [transactions, page, pageSize, router, fetchData]);
 
   useEffect(() => {
     setColumns(transactionsColumns(asaMap, [1, 7]));

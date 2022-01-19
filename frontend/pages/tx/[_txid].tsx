@@ -21,7 +21,6 @@ const Transaction = () => {
       url: `${siteName}/v1/transactions/${txid}`,
     })
       .then((response) => {
-        console.log("transaction id data: ", response.data);
         setTransaction(response.data);
         setLoading(false);
       })

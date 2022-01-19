@@ -9,8 +9,7 @@ import Breadcrumbs from "../../components/breadcrumbs";
 import Statscard from "../../components/statscard";
 import Load from "../../components/tableloading";
 import { siteName } from "../../utils/constants";
-import styles from "./blocks.module.scss";
-import tableStyles from "../../components/Table/Table.module.scss";
+import tableStyles from "../../components/Table/CustomTable.module.scss";
 import statscardStyles from "../../components/statscard/Statscard.module.scss";
 import { integerFormatter } from "../../utils/stringUtils";
 import Table from "../../components/table";
@@ -19,7 +18,7 @@ import {
   selectWsCurrentRound,
 } from "../../features/applicationSlice";
 import { IBlockResponse } from "../../types/apiResponseTypes";
-import { blocksColumns } from "./blocksColumns";
+import { blocksColumns } from "../../components/tableColumns/blocksColumns";
 
 const Blocks = () => {
   const router = useRouter();
@@ -68,7 +67,6 @@ const Blocks = () => {
   );
 
   useEffect(() => {
-    console.log(displayPageNum);
     if (router.isReady && displayPageNum !== Number(page)) {
       if (!page) {
         router.replace({
@@ -99,7 +97,7 @@ const Blocks = () => {
         setBlockQueryRound(currentRound);
       }
     }
-  }, [currentRound, page, router, blockQueryRound]);
+  }, [currentRound, page, router, blockQueryRound, displayPageNum, pageSize]);
 
   return (
     <Layout>

@@ -20,7 +20,7 @@ import {
   useExpanded,
   TableOptions,
 } from "react-table";
-import styles from "./Table.module.scss";
+import styles from "./CustomTable.module.scss";
 import Load from "../tableloading";
 import {
   ChevronLeft,
@@ -115,7 +115,7 @@ const Table = <T extends Record<string, unknown>>(
         gotoPage(pageOptions.length - 1);
       }
     }
-  }, [pageIndexDisplayed, gotoPage]);
+  }, [pageIndexDisplayed, gotoPage, pageOptions, router]);
 
   const nextPageClickHandler = useCallback(() => {
     nextPage();

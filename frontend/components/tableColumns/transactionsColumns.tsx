@@ -1,7 +1,8 @@
+import React from "react";
 import Link from "next/link";
 import { Column, Row } from "react-table";
 import TimeAgo from "timeago-react";
-import AlgoIcon from "../../components/algoicon";
+import AlgoIcon from "../algoicon";
 import { TransactionResponse } from "../../types/apiResponseTypes";
 import { IAsaMap } from "../../types/misc";
 import {

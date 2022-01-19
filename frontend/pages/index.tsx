@@ -47,7 +47,6 @@ const Home = () => {
         url: `${siteName}/v1/transactions?latest_txn=${latestTransaction}&page=1&limit=10&order=desc`,
       })
         .then((response) => {
-          console.log("txs: ", response.data);
           setTransactions(response.data.items);
         })
         .catch((error) => {

@@ -42,7 +42,6 @@ const HeaderSearch = () => {
       url: `${siteName}/v1/search?key=${search}`,
     })
       .then((response) => {
-        console.log("search result: ", response.data);
         const result: SearchResult = response.data;
         const typeIndex: number | null = Object.values(result)
           .map((value, index) => (value ? index : null))

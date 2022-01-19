@@ -27,7 +27,6 @@ const Asset = () => {
         url: `${siteName}/v1/algod/assets/${assetId}`,
       })
         .then((response) => {
-          console.log("asa: ", response.data);
           setData(response.data);
           setLoading(false);
         })

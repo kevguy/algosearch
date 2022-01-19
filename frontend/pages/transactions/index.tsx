@@ -6,15 +6,14 @@ import { useRouter } from "next/router";
 import Head from "next/head";
 
 import { siteName } from "../../utils/constants";
-import styles from "./transactions.module.scss";
-import tableStyles from "../../components/Table/Table.module.scss";
+import tableStyles from "../../components/Table/CustomTable.module.scss";
 import Layout from "../../components/layout";
 import Breadcrumbs from "../../components/breadcrumbs";
 import Table from "../../components/table";
 import { apiGetASA } from "../../utils/api";
 import { IAsaMap } from "../../types/misc";
 import { selectLatestTxn } from "../../features/applicationSlice";
-import { transactionsColumns } from "./transactionsColumns";
+import { transactionsColumns } from "../../components/tableColumns/transactionsColumns";
 import Load from "../../components/tableloading";
 
 const Transactions = () => {
@@ -111,14 +110,21 @@ const Transactions = () => {
         setLastTxForTxnsQuery(latestTransaction);
       }
     }
-  }, [latestTransaction, page, router, lastTxForTxnsQuery, pageCount]);
+  }, [
+    latestTransaction,
+    page,
+    router,
+    lastTxForTxnsQuery,
+    pageCount,
+    displayPageNum,
+  ]);
 
   useEffect(() => {
     if (!pageCount && lastTxForTxnsQuery) {
       // first call to get pageCount
       fetchData({ pageIndex: 0 });
     }
-  }, [lastTxForTxnsQuery, pageCount]);
+  }, [lastTxForTxnsQuery, pageCount, fetchData]);
 
   return (
     <Layout>
@@ -139,7 +145,6 @@ const Transactions = () => {
             data={transactions}
             fetchData={fetchData}
             pageCount={pageCount}
-            className={styles["transactions-table"]}
             defaultPage={displayPageNum}
           ></Table>
         </div>

@@ -6,7 +6,7 @@ import { siteName } from "../../utils/constants";
 import Load from "../../components/tableloading";
 import Statscard from "../../components/statscard";
 import AlgoIcon from "../../components/algoicon";
-import blocksTableStyles from "../blocks/blocks.module.scss";
+import blocksTableStyles from "../../components/tableColumns/blocks.module.scss";
 import statcardStyles from "../../components/statscard/Statscard.module.scss";
 import {
   integerFormatter,
@@ -18,7 +18,7 @@ import { apiGetASA } from "../../utils/api";
 import { Column } from "react-table";
 import { IAsaMap } from "../../types/misc";
 import Head from "next/head";
-import { transactionsColumns } from "../transactions/transactionsColumns";
+import { transactionsColumns } from "../../components/tableColumns/transactionsColumns";
 
 export type DataType = {
   "amount-without-pending-rewards": number;
@@ -84,7 +84,7 @@ const Address = () => {
           );
         });
     },
-    [address, pageSize]
+    [address, pageSize, router]
   );
 
   const fetchData = useCallback(
@@ -118,10 +118,9 @@ const Address = () => {
 
   useEffect(() => {
     if (address && page) {
-      console.log("page here? ", page);
       fetchData({ pageIndex: Number(page) - 1 });
     }
-  }, [address, page]);
+  }, [address, page, fetchData]);
 
   useEffect(() => {
     setColumns(transactionsColumns(asaMap));
