@@ -154,3 +154,13 @@ make migrate-couch
 # start the service
 make it-rain
 ```
+
+# Heroku
+
+https://devcenter.heroku.com/articles/container-registry-and-runtime#dockerfile-commands-and-runtime
+
+docker tag algosearch-backend:latest kevguy/algosearch-backend:latest
+docker push kevguy/algosearch-backend:latest
+docker tag kevguy/algosearch-backend:latest registry.heroku.com/algosrch/web
+docker push registry.heroku.com/algosrch/web
+heroku container:release web --app algosrch
