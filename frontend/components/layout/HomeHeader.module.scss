@@ -14,18 +14,54 @@
   span {
     display: inline-flex;
     color: var(--blue-darker);
-    margin: var(--space-xs) 0 0;
+    margin: var(--space-xxs) 0 0;
   }
 
   h1 {
     display: flex;
     justify-content: center;
     align-items: flex-end;
+    line-height: 1.2;
   }
   svg {
     width: 3.2rem;
     height: 3.2rem;
     margin-right: var(--space-xs);
     margin-bottom: 0.1rem;
+  }
+}
+
+.desc {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.sync-status {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: var(--font-size-s);
+
+  span {
+    position: relative;
+    font-size: var(--font-size-xs);
+    line-height: 1;
+    padding: var(--space-xxxs) var(--space-xs);
+    border: 1px solid;
+    border-radius: 0.8rem;
+    margin-left: var(--space-xxs);
+
+    &.synced {
+      color: var(--grey-darkest);
+      background-color: #6de26d;
+      border-color: #3dc53b;
+    }
+
+    &.out-of-sync {
+      color: var(--grey-darker);
+      background-color: var(--grey-lighter);
+      border-color: var(--grey);
+    }
   }
 }

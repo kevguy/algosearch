@@ -5,6 +5,7 @@ import React, {
   useEffect,
   useState,
 } from "react";
+import { useRouter } from "next/router";
 import MaUTable from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -19,7 +20,7 @@ import {
   useExpanded,
   TableOptions,
 } from "react-table";
-import styles from "./Table.module.scss";
+import styles from "./CustomTable.module.scss";
 import Load from "../tableloading";
 import {
   ChevronLeft,
@@ -35,7 +36,8 @@ export interface TableProperties<T extends Record<string, unknown>>
   fetchData?: Function;
   pageCount: number;
   loading: boolean;
-  className: string;
+  className?: string;
+  defaultPage?: number;
 }
 
 const Table = <T extends Record<string, unknown>>(
@@ -48,14 +50,15 @@ const Table = <T extends Record<string, unknown>>(
     pageCount: controlledPageCount,
     loading,
     className,
+    defaultPage,
   } = props;
-  // Use the state and functions returned from useTable to build your UI
+  const router = useRouter();
   const instance = useTable<T>(
     {
       columns,
       data,
       initialState: {
-        pageIndex: 0,
+        pageIndex: defaultPage ? defaultPage - 1 : 0,
         pageSize: 15,
       },
       manualPagination: true,
@@ -78,31 +81,71 @@ const Table = <T extends Record<string, unknown>>(
     nextPage,
     previousPage,
   } = instance;
-  const [pageIndexDisplayed, setPageIndexDisplayed] =
-    useState<number>(pageIndex);
+  const [pageIndexDisplayed, setPageIndexDisplayed] = useState<number>(
+    pageIndex + 1
+  );
+  const firstPageClickHandler = useCallback(() => {
+    gotoPage(0);
+    router.replace({
+      query: Object.assign({}, router.query, { page: 1 }),
+    });
+    setPageIndexDisplayed(1);
+  }, [gotoPage, router]);
 
-  const setPageIndex = useCallback(() => {
-    if (pageIndex + 1 !== pageIndexDisplayed) {
-      setPageIndexDisplayed(pageIndex + 1);
+  const prevPageClickHandler = useCallback(() => {
+    previousPage();
+    router.replace({
+      query: Object.assign({}, router.query, { page: pageIndexDisplayed - 1 }),
+    });
+    setPageIndexDisplayed(pageIndexDisplayed - 1);
+  }, [previousPage, pageIndexDisplayed, router]);
+
+  const pageInputChangeHandler = useCallback(() => {
+    if (pageIndexDisplayed) {
+      if (pageIndexDisplayed <= pageOptions.length) {
+        router.replace({
+          query: Object.assign({}, router.query, { page: pageIndexDisplayed }),
+        });
+        gotoPage(pageIndexDisplayed - 1);
+      } else {
+        router.replace({
+          query: Object.assign({}, router.query, { page: pageOptions.length }),
+        });
+        setPageIndexDisplayed(pageOptions.length);
+        gotoPage(pageOptions.length - 1);
+      }
     }
-  }, [pageIndex, pageIndexDisplayed]);
+  }, [pageIndexDisplayed, gotoPage, pageOptions, router]);
+
+  const nextPageClickHandler = useCallback(() => {
+    nextPage();
+    router.replace({
+      query: Object.assign({}, router.query, { page: pageIndexDisplayed + 1 }),
+    });
+    setPageIndexDisplayed(pageIndexDisplayed + 1);
+  }, [pageIndexDisplayed, nextPage, router]);
+
+  const finalPageClickHandler = useCallback(() => {
+    gotoPage(controlledPageCount - 1);
+    router.replace({
+      query: Object.assign({}, router.query, { page: controlledPageCount }),
+    });
+    setPageIndexDisplayed(controlledPageCount);
+  }, [controlledPageCount, gotoPage, router]);
 
   useEffect(() => {
-    console.log("pageIndex? ", pageIndex);
-    if (fetchData) {
-      fetchData({ pageIndex });
+    if (
+      fetchData &&
+      defaultPage === pageIndexDisplayed &&
+      pageIndex + 1 === pageIndexDisplayed
+    ) {
+      // only fetch when page is set correct across the variables
+      fetchData({
+        pageIndex,
+      });
     }
-  }, [fetchData, pageIndex]);
+  }, [fetchData, pageIndex, defaultPage, router, pageIndexDisplayed]);
 
-  useEffect(() => {
-    setPageIndex();
-  }, [setPageIndex]);
-
-  console.log("table pageIndex: ", pageIndex);
-  console.log("table pageCount: ", controlledPageCount);
-  console.log("table pageOptions: ", pageOptions);
-
-  // Render the UI for your table
   return (
     <>
       <MaUTable
@@ -162,12 +205,12 @@ const Table = <T extends Record<string, unknown>>(
           <Load />
         </div>
       )}
-      {fetchData && (
+      {fetchData && !loading && (
         <div className={styles["pagination"]}>
-          <button onClick={() => gotoPage(0)} disabled={!canPreviousPage}>
+          <button onClick={firstPageClickHandler} disabled={!canPreviousPage}>
             <ChevronsLeft />
           </button>{" "}
-          <button onClick={() => previousPage()} disabled={!canPreviousPage}>
+          <button onClick={prevPageClickHandler} disabled={!canPreviousPage}>
             <ChevronLeft />
           </button>{" "}
           <span>
@@ -177,23 +220,21 @@ const Table = <T extends Record<string, unknown>>(
               min={1}
               value={pageIndexDisplayed}
               onChange={(e) => {
-                const page = e.target.value ? Number(e.target.value) : 1;
+                const page =
+                  e.target.value && Number(e.target.value) > 0
+                    ? Number(e.target.value)
+                    : 1;
                 setPageIndexDisplayed(page);
               }}
-              onBlur={(e) => {
-                gotoPage(pageIndexDisplayed - 1);
-              }}
+              onBlur={pageInputChangeHandler}
               className={styles["page-input"]}
             />{" "}
             of <strong>{pageOptions.length}</strong>{" "}
           </span>
-          <button onClick={() => nextPage()} disabled={!canNextPage}>
+          <button onClick={nextPageClickHandler} disabled={!canNextPage}>
             <ChevronRight />
           </button>{" "}
-          <button
-            onClick={() => gotoPage(controlledPageCount - 1)}
-            disabled={!canNextPage}
-          >
+          <button onClick={finalPageClickHandler} disabled={!canNextPage}>
             <ChevronsRight />
           </button>{" "}
         </div>

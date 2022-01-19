@@ -1,259 +1,158 @@
 import React, { useCallback, useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import axios from "axios";
-import Link from "next/link";
+import { Column } from "react-table";
+import { useRouter } from "next/router";
+import Head from "next/head";
+
+import { siteName } from "../../utils/constants";
+import tableStyles from "../../components/Table/CustomTable.module.scss";
 import Layout from "../../components/layout";
 import Breadcrumbs from "../../components/breadcrumbs";
-
-import AlgoIcon from "../../components/algoicon";
-import { siteName } from "../../utils/constants";
-import styles from "./transactions.module.scss";
-import {
-  ellipseAddress,
-  formatAsaAmountWithDecimal,
-  formatNumber,
-  getTxTypeName,
-  integerFormatter,
-  microAlgosToAlgos,
-  removeSpace,
-  TxType,
-} from "../../utils/stringUtils";
 import Table from "../../components/table";
-import Head from "next/head";
-import { TransactionResponse } from "../../types/apiResponseTypes";
-import { Column, Row } from "react-table";
-import Load from "../../components/tableloading";
-import Statscard from "../../components/statscard";
-import statscardStyles from "../../components/statscard/Statscard.module.scss";
 import { apiGetASA } from "../../utils/api";
 import { IAsaMap } from "../../types/misc";
-import TimeAgo from "timeago-react";
+import { selectLatestTxn } from "../../features/applicationSlice";
+import { transactionsColumns } from "../../components/tableColumns/transactionsColumns";
+import Load from "../../components/tableloading";
 
 const Transactions = () => {
-  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  const { page } = router.query;
   const [tableLoading, setTableLoading] = useState(true);
   const [pageSize, setPageSize] = useState(15);
   const [pageCount, setPageCount] = useState(0);
-  const [page, setPage] = useState(-1);
-  const [totalTransactions, setTotalTransactions] = useState(0);
-  const [latestTransaction, setLatestTransaction] =
-    useState<TransactionResponse>();
+  const [displayPageNum, setDisplayPageNum] = useState(0);
   const [transactions, setTransactions] = useState([]);
   const [asaMap, setAsaMap] = useState<IAsaMap>([]);
+  const [columns, setColumns] = useState<Column[]>([]);
+  const latestTransaction = useSelector(selectLatestTxn);
+  const [lastTxForTxnsQuery, setLastTxForTxnsQuery] = useState<string>();
 
   // Update transactions based on page number
   const getTransactions = useCallback(
-    (pageIndex: number) => {
-      if (!latestTransaction) {
-        return;
-      }
-      setTableLoading(true);
-      axios({
+    async (pageIndex: number) => {
+      if (!lastTxForTxnsQuery) return;
+      await axios({
         method: "get",
-        url: `${siteName}/v1/transactions?latest_txn=${
-          latestTransaction.id
-        }&page=${pageIndex + 1}&limit=${pageSize}&order=desc`,
+        url: `${siteName}/v1/transactions?latest_txn=${lastTxForTxnsQuery}&page=${
+          pageIndex + 1
+        }&limit=${pageSize}&order=desc`,
       })
         .then((response) => {
-          console.log("txs: ", response.data);
-          setPage(pageIndex);
-          setPageCount(response.data.num_of_pages);
-          if (pageIndex == 0) {
-            setTotalTransactions(response.data.num_of_txns);
+          if (pageCount) {
+            // if it's the first call solely for getting pageCount, keep showing loading
+            setTableLoading(false);
           }
-          setTransactions(response.data.items);
-          setTableLoading(false);
+          if (response.data.items) {
+            setTransactions(response.data.items);
+          } else {
+            // no transactions with this page number, reset to first page
+            setDisplayPageNum(1);
+            setTableLoading(true);
+          }
+          setPageCount(response.data.num_of_pages);
         })
         .catch((error) => {
           console.error("Exception when retrieving transactions: " + error);
         });
     },
-    [latestTransaction, pageSize]
+    [lastTxForTxnsQuery, pageSize, pageCount]
   );
 
   const fetchData = useCallback(
     ({ pageIndex }) => {
-      console.log("latestTransaction: ", latestTransaction);
-      console.log("page: ", page);
-      console.log("pageIndex: ", pageIndex);
-      if (latestTransaction && page != pageIndex) {
-        getTransactions(pageIndex);
-      }
+      getTransactions(pageIndex);
     },
-    [latestTransaction, getTransactions, page]
+    [getTransactions]
   );
 
   useEffect(() => {
-    axios({
-      method: "get",
-      url: `${siteName}/v1/current-txn`,
-    })
-      .then((response) => {
-        console.log("latest txn: ", response.data);
-        setLoading(false);
-        setLatestTransaction(response.data);
-      })
-      .catch((error) => {
-        console.error("Error when retrieving latest statistics: " + error);
-      });
-  }, []);
-
-  useEffect(() => {
-    if (latestTransaction && page == -1) {
-      fetchData({ pageIndex: 0 });
-    }
-  }, [latestTransaction, fetchData, page]);
+    setColumns(transactionsColumns(asaMap));
+  }, [asaMap]);
 
   useEffect(() => {
     if (!transactions) return;
     apiGetASA(transactions).then((result) => {
-      console.log("results? ", result);
       setAsaMap(result);
     });
   }, [transactions]);
 
-  // Table columns
-  const columns: Column[] = [
-    {
-      Header: "Tx ID",
-      accessor: "id",
-      Cell: ({ value }: { value: string }) => (
-        <Link href={`/tx/${value}`}>{ellipseAddress(value)}</Link>
-      ),
-    },
-    {
-      Header: "Block",
-      accessor: "confirmed-round",
-      Cell: ({ value }: { value: number }) => {
-        const _value = removeSpace(value.toString());
-        return (
-          <Link href={`/block/${_value}`}>
-            {integerFormatter.format(Number(_value))}
-          </Link>
-        );
-      },
-    },
-    {
-      Header: "Type",
-      accessor: "tx-type",
-      Cell: ({ value }: { value: TxType }) => (
-        <span className="type noselect">{getTxTypeName(value)}</span>
-      ),
-    },
-    {
-      Header: "From",
-      accessor: "sender",
-      Cell: ({ value }: { value: string }) => (
-        <Link href={`/address/${value}`}>{ellipseAddress(value)}</Link>
-      ),
-    },
-    {
-      Header: "To",
-      accessor: "payment-transaction.receiver",
-      Cell: ({ row }: { row: Row<TransactionResponse> }) => {
-        const tx = row.original;
-        const isAsaTransfer = tx["tx-type"] === TxType.AssetTransfer;
-        const _value = isAsaTransfer
-          ? tx["asset-transfer-transaction"].receiver
-          : tx["payment-transaction"].receiver;
-        return _value ? (
-          <Link href={`/address/${_value}`}>{ellipseAddress(_value)}</Link>
-        ) : (
-          "N/A"
-        );
-      },
-    },
-    {
-      Header: "Amount",
-      accessor: "payment-transaction.amount",
-      Cell: ({ row }: { row: Row<TransactionResponse> }) => {
-        const tx = row.original;
-        const _asaAmount =
-          (tx["asset-transfer-transaction"] &&
-            asaMap[tx["asset-transfer-transaction"]["asset-id"]] &&
-            Number(
-              formatAsaAmountWithDecimal(
-                BigInt(tx["asset-transfer-transaction"].amount),
-                asaMap[tx["asset-transfer-transaction"]["asset-id"]].decimals
-              )
-            )) ??
-          0;
-        const _asaUnit =
-          tx["asset-transfer-transaction"] &&
-          asaMap[tx["asset-transfer-transaction"]["asset-id"]] &&
-          asaMap[tx["asset-transfer-transaction"]["asset-id"]].unitName;
+  useEffect(() => {
+    if (router.isReady && displayPageNum !== Number(page)) {
+      if (!page) {
+        router.replace({
+          query: Object.assign({}, router.query, { page: 1 }),
+        });
+      } else {
+        if (pageCount) {
+          if (Number(page) > pageCount || Number(page) < 1) {
+            // set URL page number param value to default 1 if URL page param is out of range
+            setTableLoading(true);
+            setDisplayPageNum(1);
+            router.replace({
+              query: Object.assign({}, router.query, { page: 1 }),
+            });
+          } else {
+            // set URL page number param value as table page number if URL page param is in range
+            setDisplayPageNum(Number(page));
+          }
+        }
+      }
+    }
+    if (latestTransaction && latestTransaction !== lastTxForTxnsQuery) {
+      if (
+        Number(page) == 1 ||
+        (page && Number(page) !== 1 && !lastTxForTxnsQuery)
+      ) {
+        // set last tx for query if the current page is the first page and the last tx head is not same as the latest tx
+        // OR set last tx for query if the user enters the page with a page number and so the last tx head is unset
+        setLastTxForTxnsQuery(latestTransaction);
+      }
+    }
+  }, [
+    latestTransaction,
+    page,
+    router,
+    lastTxForTxnsQuery,
+    pageCount,
+    displayPageNum,
+  ]);
 
-        return (
-          <span>
-            {tx["tx-type"] === TxType.AssetTransfer ? (
-              `${formatNumber(_asaAmount)} ${_asaUnit}`
-            ) : (
-              <>
-                <AlgoIcon />{" "}
-                {formatNumber(
-                  Number(microAlgosToAlgos(tx["payment-transaction"].amount))
-                )}
-              </>
-            )}
-          </span>
-        );
-      },
-    },
-    {
-      Header: "Fee",
-      accessor: "fee",
-      Cell: ({ value }: { value: number }) => (
-        <span>
-          <AlgoIcon /> {microAlgosToAlgos(value)}
-        </span>
-      ),
-    },
-    {
-      Header: "Time",
-      accessor: "round-time",
-      Cell: ({ value }: { value: number }) => (
-        <span>
-          <TimeAgo datetime={new Date(value * 1000)} locale="en_short" />
-        </span>
-      ),
-    },
-  ];
+  useEffect(() => {
+    if (!pageCount && lastTxForTxnsQuery) {
+      // first call to get pageCount
+      fetchData({ pageIndex: 0 });
+    }
+  }, [lastTxForTxnsQuery, pageCount, fetchData]);
 
   return (
     <Layout>
       <Head>
         <title>AlgoSearch | Transactions</title>
       </Head>
-
       <Breadcrumbs
         name="Transactions"
         parentLink="/"
         parentLinkName="Home"
         currentLinkName="All Transactions"
       />
-      <div className={statscardStyles["card-container"]}>
-        <Statscard
-          stat="Total Transactions"
-          value={
-            loading ? (
-              <Load />
-            ) : (
-              <span>{integerFormatter.format(totalTransactions)}</span>
-            )
-          }
-        />
-      </div>
-      <div className="table">
-        {transactions && transactions.length > 0 && (
+      {pageCount && displayPageNum ? (
+        <div className="table">
           <Table
             columns={columns}
+            loading={tableLoading}
             data={transactions}
             fetchData={fetchData}
             pageCount={pageCount}
-            loading={tableLoading}
-            className={`${styles["transactions-table"]}`}
+            defaultPage={displayPageNum}
           ></Table>
-        )}
-      </div>
+        </div>
+      ) : (
+        <div className={tableStyles["table-loader-wrapper"]}>
+          <Load />
+        </div>
+      )}
     </Layout>
   );
 };

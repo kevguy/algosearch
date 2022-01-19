@@ -1,6 +1,6 @@
 import axios from "axios";
 import { siteName } from "./constants";
-import { IAsaResponse, ICurrentRoundResponse, ISupply, TransactionResponse } from "../types/apiResponseTypes";
+import { IAsaResponse,  ISupply, TransactionResponse } from "../types/apiResponseTypes";
 import { currencyFormatter, microAlgosToAlgos, TxType } from "./stringUtils";
 import { IASAInfo, IAsaMap } from "../types/misc";
 
@@ -25,19 +25,6 @@ export const apiGetSupply = async () => {
   }
 }
 
-export const apiGetCurrentRound = async () => {
-  try {
-    const currentRound = await axios({
-      method: "get",
-      url: `${siteName}/v1/algod/current-round`,
-    });
-    const currentRoundData: ICurrentRoundResponse = currentRound.data;
-    return currentRoundData;
-  } catch(error) {
-    console.error("Error when retrieving latest statistics: " + error);
-  }
-};
-
 export const apiGetLatestBlocks = async (currentRound: number) => {
   try {
     const latestBlocks = await axios({
@@ -47,6 +34,18 @@ export const apiGetLatestBlocks = async (currentRound: number) => {
     return latestBlocks.data;
   } catch(error) {
     console.log("Exception when retrieving last 10 blocks: " + error);
+  }
+}
+
+export const apiGetLatestTxn = async () => {
+  try {
+    const latestTxn = await axios({
+      method: "get",
+      url: `${siteName}/v1/current-txn`,
+    })
+    return latestTxn.data;
+  } catch(error) {
+    console.log("Exception when retrieving latest transaction: " + error);
   }
 }
 

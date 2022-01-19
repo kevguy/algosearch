@@ -27,7 +27,6 @@ const TransactionTable = ({
   useEffect(() => {
     if (!transactions) return;
     apiGetASA(transactions).then((result) => {
-      console.log("results? ", result);
       setAsaMap(result);
     });
   }, [transactions]);

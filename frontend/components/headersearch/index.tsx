@@ -42,7 +42,6 @@ const HeaderSearch = () => {
       url: `${siteName}/v1/search?key=${search}`,
     })
       .then((response) => {
-        console.log("search result: ", response.data);
         const result: SearchResult = response.data;
         const typeIndex: number | null = Object.values(result)
           .map((value, index) => (value ? index : null))
@@ -61,9 +60,9 @@ const HeaderSearch = () => {
             router.push(`/address/${search}`);
             break;
           case "asset_found":
-          // TODO -> allow after introduction of asset page
-          // router.push(`/asset/${search}`);
-          // break;
+          //   TODO -> enable when it is implemented properly
+          //   router.push(`/asset/${search}`);
+          //   break;
           default:
             router.push("/error");
             break;
@@ -71,7 +70,7 @@ const HeaderSearch = () => {
         setLoading(false);
       })
       .catch(() => {
-        // router.push("/error");
+        router.push("/error");
       });
   };
   return (
