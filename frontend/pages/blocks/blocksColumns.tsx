@@ -1,4 +1,3 @@
-import moment from "moment";
 import Link from "next/link";
 import { Row } from "react-table";
 import TimeAgo from "timeago-react";
@@ -11,6 +10,7 @@ import {
   microAlgosToAlgos,
   TxType,
 } from "../../utils/stringUtils";
+import styles from "./blocks.module.scss";
 
 export const blocksColumns = [
   {
@@ -42,27 +42,21 @@ export const blocksColumns = [
     accessor: "transaction-root",
     Cell: ({ row }: { row: Row<IBlockResponse> }) => {
       const txs = row.original.transactions;
-      return (
-        <span>
-          {txs && txs.length && (
-            <div>
-              {(Object.keys(TxType) as Array<keyof typeof TxType>).map(
-                (txType) => {
-                  const typeCount =
-                    txs &&
-                    txs.filter((tx) => tx["tx-type"] === TxType[txType]).length;
-                  return typeCount ? (
-                    <span key={txType}>
-                      {typeCount} {getTxTypeName(TxType[txType])}
-                      {typeCount > 1 && "s"}
-                    </span>
-                  ) : null;
-                }
-              )}
-            </div>
-          )}
-        </span>
-      );
+      return txs && txs.length ? (
+        <div className={styles["tx-type-wrapper"]}>
+          {(Object.keys(TxType) as Array<keyof typeof TxType>).map((txType) => {
+            const typeCount =
+              txs &&
+              txs.filter((tx) => tx["tx-type"] === TxType[txType]).length;
+            return typeCount ? (
+              <span key={txType}>
+                {typeCount} {getTxTypeName(TxType[txType])}
+                {typeCount > 1 && "s"}
+              </span>
+            ) : null;
+          })}
+        </div>
+      ) : null;
     },
   },
   {

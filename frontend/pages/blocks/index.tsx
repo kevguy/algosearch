@@ -138,7 +138,6 @@ const Blocks = () => {
               data={blocks}
               fetchData={fetchData}
               pageCount={pageCount}
-              className={styles["blocks-table"]}
               defaultPage={displayPageNum}
             ></Table>
           ) : (

@@ -47,6 +47,19 @@
   background: rgba(158, 220, 255, 0.3);
 }
 
+::-webkit-scrollbar {
+  width: 0.6rem;
+}
+
+::-webkit-scrollbar-track {
+  background-color: var(--blue-lighter-3);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--blue);
+  border-radius: 6px;
+}
+
 html,
 body {
   font-family: var(--font-family);

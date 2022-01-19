@@ -36,7 +36,7 @@ export interface TableProperties<T extends Record<string, unknown>>
   fetchData?: Function;
   pageCount: number;
   loading: boolean;
-  className: string;
+  className?: string;
   defaultPage?: number;
 }
 
