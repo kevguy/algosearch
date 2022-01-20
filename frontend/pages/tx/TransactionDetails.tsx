@@ -321,7 +321,14 @@ const TransactionDetails = ({
                       const _addr = algosdk.encodeAddress(
                         Buffer.from(sig["public-key"], "base64")
                       );
-                      return <Link href={`/address/${_addr}`}>{_addr}</Link>;
+                      return (
+                        <Link
+                          href={`/address/${_addr}`}
+                          key={sig["public-key"]}
+                        >
+                          {_addr}
+                        </Link>
+                      );
                     })}
                   </td>
                 </tr>
