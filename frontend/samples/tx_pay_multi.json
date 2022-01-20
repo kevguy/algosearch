@@ -1,0 +1,51 @@
+{
+  "application-transaction": {
+    "application-id": 0,
+    "global-state-schema": { "num-byte-slice": 0, "num-uint": 0 },
+    "local-state-schema": { "num-byte-slice": 0, "num-uint": 0 }
+  },
+  "asset-config-transaction": {
+    "params": { "creator": "", "decimals": 0, "total": 0 }
+  },
+  "asset-freeze-transaction": {
+    "address": "",
+    "asset-id": 0,
+    "new-freeze-status": false
+  },
+  "asset-transfer-transaction": { "amount": 0, "asset-id": 0, "receiver": "" },
+  "auth-addr": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ",
+  "confirmed-round": 6611869,
+  "fee": 1000,
+  "first-valid": 6611867,
+  "genesis-hash": "wGHE2Pwdvd7S12BL5FaOP20EGYesN73ktiC1qzkkit8=",
+  "genesis-id": "mainnet-v1.0",
+  "group": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+  "id": "7GCCBF4LIVFVADLWV3TQHZYH7BS3ROUISJZHUI675WGGP5YVGH4Q",
+  "keyreg-transaction": {},
+  "last-valid": 6612867,
+  "lease": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+  "note": "gqFk3gARol90pnJlcG9ydKJfdqExp2NvbnNlbnTDomdhHqJnY6JVU6JncqJNQaJnc6Fto2d6cKMwMjGibXr/onEyw6JxNMOjcWRuw6NxZHOqMjAyMC0wNC0wMaJxbAGicXoBonN6/6J0ev+hc9ksWDZJaU5Ib2xvNmtFTFBGSXl6OFFXdE9JSlI0bTNYQWQyRThtVEtFejFoWT0=",
+  "payment-transaction": {
+    "amount": 0,
+    "close-remainder-to": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ",
+    "receiver": "COVIDR5MYE757XMDCFOCS5BXFF4SKD5RTOF4RTA67F47YTJSBR5U7TKBNU"
+  },
+  "rekey-to": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ",
+  "round-time": 1589278459,
+  "sender": "COVIDR5MYE757XMDCFOCS5BXFF4SKD5RTOF4RTA67F47YTJSBR5U7TKBNU",
+  "signature": {
+    "logicsig": { "logic": null, "multisig-signature": {} },
+    "multisig": {
+      "subsignature": [
+        {
+          "public-key": "ftlqe29jlDraJTZZq99CRAXIko3X/wbC2cjb/OuN9K0=",
+          "signature": "NTTr2JB9TlOdrPdFVkC19v1Vf8xfVPdboKJRpYQ2/BtaY/3C1rsRcV5dRi8HNooBuOWme7TJ6hdqjsprJ6qRAQ=="
+        },
+        { "public-key": "NKWuxulbFU+FLOeCmD6/Ta0agyyBuYVODCzHiBDGA5o=" }
+      ],
+      "threshold": 1,
+      "version": 1
+    }
+  },
+  "tx-type": "pay"
+}

@@ -150,7 +150,7 @@ const Block = () => {
           </thead>
           <tbody>
             <tr>
-              <td>Round</td>
+              <td>Block</td>
               <td>{blockNum}</td>
             </tr>
             <tr>

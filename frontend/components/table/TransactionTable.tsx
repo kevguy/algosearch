@@ -50,7 +50,7 @@ const TransactionTable = ({
                   </span>
                 </div>
                 <span className={styles["transaction-id"]}>
-                  <Link href={`/transaction/${tx.id}`}>{tx.id}</Link>
+                  <Link href={`/tx/${tx.id}`}>{tx.id}</Link>
                 </span>
                 <span className={styles.time}>
                   <TimeAgo

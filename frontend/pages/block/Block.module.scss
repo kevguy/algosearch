@@ -102,16 +102,6 @@
   }
 }
 
-.block-table table > tbody > tr > td > a {
-  text-decoration: none;
-  color: #337afe;
-  transition: 100ms ease-in-out;
-}
-
-.block-table table > tbody > tr > td > a:hover {
-  color: #0150e3;
-}
-
 .block-table table > tbody > tr:last-child > td {
   border-bottom: none;
 }

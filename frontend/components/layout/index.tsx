@@ -33,13 +33,11 @@ const Layout = ({ addresspage, data, homepage, children }: LayoutPropsType) => {
 
   useEffect(() => {
     if (!hasScrollEventListener) {
-      console.log("add scroll event listener");
       window.addEventListener("scroll", renderScrollTop);
       setHasScrollEventListener(true);
     }
     return () => {
       if (!scroll && hasScrollEventListener) {
-        console.log("remove scroll event listener");
         window.removeEventListener("scroll", renderScrollTop);
       }
     };

@@ -1,4 +1,4 @@
-.notes-identifier {
+.valign-top-identifier {
   vertical-align: top;
 }
 
@@ -18,12 +18,21 @@
   gap: var(--space-s);
   margin-bottom: var(--space-m);
 
+  @media screen and (max-width: 768px) {
+    margin: var(--space-xs) 0;
+  }
+
   button {
     font-family: var(--font-family);
     background: var(--grey-lighter);
     padding: var(--space-xxs) var(--space-s);
     border: none;
     cursor: pointer;
+
+    @media screen and (max-width: 768px) {
+      font-size: var(--font-size-s);
+      padding: var(--space-xxxs) var(--space-xs);
+    }
 
     &:hover {
       background: var(--blue-lighter);
@@ -33,6 +42,11 @@
       color: white;
       background: var(--blue);
     }
+  }
+
+  pre {
+    max-width: calc(100% - var(--space-m) * 2);
+    overflow: auto;
   }
 }
 
@@ -45,5 +59,15 @@
 .notes {
   pre {
     margin: 0;
+  }
+}
+
+.multisig-details {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+
+  a {
+    margin-bottom: var(--space-xxs);
   }
 }

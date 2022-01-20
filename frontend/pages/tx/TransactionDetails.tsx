@@ -39,7 +39,6 @@ const TransactionDetails = ({
       let message = msgpack.deserialize(
         Buffer.from(transaction.note, "base64")
       );
-      console.log("msgpack? ", message);
       if (typeof message === "object") {
         message = JSON.stringify(message, undefined, 2);
       }
@@ -62,7 +61,7 @@ const TransactionDetails = ({
       });
       if (
         transaction.note &&
-        Buffer.from(transaction.note, "base64").length < 8
+        Buffer.from(transaction.note, "base64").length <= 8
       ) {
         setDecodedNotes(
           algosdk.decodeUint64(
@@ -93,7 +92,7 @@ const TransactionDetails = ({
               <td>{transaction.id}</td>
             </tr>
             <tr>
-              <td>Round</td>
+              <td>Block</td>
               <td>
                 <Link
                   href={`/block/${removeSpace(
@@ -142,17 +141,19 @@ const TransactionDetails = ({
                         asaMap[
                           transaction["asset-transfer-transaction"]["asset-id"]
                         ] &&
-                        Number(
-                          formatAsaAmountWithDecimal(
-                            BigInt(
-                              transaction["asset-transfer-transaction"].amount
-                            ),
-                            asaMap[
-                              transaction["asset-transfer-transaction"][
-                                "asset-id"
-                              ]
-                            ].decimals
-                          ) ?? 0
+                        formatNumber(
+                          Number(
+                            formatAsaAmountWithDecimal(
+                              BigInt(
+                                transaction["asset-transfer-transaction"].amount
+                              ),
+                              asaMap[
+                                transaction["asset-transfer-transaction"][
+                                  "asset-id"
+                                ]
+                              ].decimals
+                            ) ?? 0
+                          )
                         )}{" "}
                       {transaction["asset-transfer-transaction"] &&
                         asaMap[
@@ -174,8 +175,12 @@ const TransactionDetails = ({
                   ) : (
                     <>
                       <AlgoIcon />{" "}
-                      {microAlgosToAlgos(
-                        transaction["payment-transaction"].amount
+                      {formatNumber(
+                        Number(
+                          microAlgosToAlgos(
+                            transaction["payment-transaction"].amount
+                          )
+                        )
                       )}
                     </>
                   )}
@@ -191,39 +196,11 @@ const TransactionDetails = ({
               </td>
             </tr>
             <tr>
-              <td>First Round</td>
-              <td>
-                <Link
-                  href={`/block/${removeSpace(
-                    transaction["first-valid"].toString()
-                  )}`}
-                >
-                  {integerFormatter.format(
-                    Number(removeSpace(transaction["first-valid"].toString()))
-                  )}
-                </Link>
-              </td>
-            </tr>
-            <tr>
-              <td>Last Round</td>
-              <td>
-                <Link
-                  href={`/block/${removeSpace(
-                    transaction["last-valid"].toString()
-                  )}`}
-                >
-                  {integerFormatter.format(
-                    Number(removeSpace(transaction["last-valid"].toString()))
-                  )}
-                </Link>
-              </td>
-            </tr>
-            <tr>
               <td>Timestamp</td>
               <td>{new Date(transaction["round-time"] * 1000).toString()}</td>
             </tr>
             <tr>
-              <td className={styles["notes-identifier"]}>Note</td>
+              <td className={styles["valign-top-identifier"]}>Note</td>
               <td>
                 {transaction.note && transaction.note !== "" && (
                   <div>
@@ -231,7 +208,7 @@ const TransactionDetails = ({
                       <TabsListUnstyled className={styles.tabs}>
                         <TabUnstyled>Base64</TabUnstyled>
                         <TabUnstyled>ASCII</TabUnstyled>
-                        {decodedNotes && <TabUnstyled>Uint64</TabUnstyled>}
+                        {decodedNotes && <TabUnstyled>UInt64</TabUnstyled>}
                         {msgpackNotes && <TabUnstyled>MessagePack</TabUnstyled>}
                       </TabsListUnstyled>
                       <TabPanelUnstyled value={0}>
@@ -273,7 +250,7 @@ const TransactionDetails = ({
         </table>
       </div>
       <div>
-        <h4>Miscellaneous Details</h4>
+        <h4>Additional Information</h4>
         <div className={blockStyles["block-table"]}>
           <table cellSpacing="0">
             <thead>
@@ -283,6 +260,34 @@ const TransactionDetails = ({
               </tr>
             </thead>
             <tbody>
+              <tr>
+                <td>First Round</td>
+                <td>
+                  <Link
+                    href={`/block/${removeSpace(
+                      transaction["first-valid"].toString()
+                    )}`}
+                  >
+                    {integerFormatter.format(
+                      Number(removeSpace(transaction["first-valid"].toString()))
+                    )}
+                  </Link>
+                </td>
+              </tr>
+              <tr>
+                <td>Last Round</td>
+                <td>
+                  <Link
+                    href={`/block/${removeSpace(
+                      transaction["last-valid"].toString()
+                    )}`}
+                  >
+                    {integerFormatter.format(
+                      Number(removeSpace(transaction["last-valid"].toString()))
+                    )}
+                  </Link>
+                </td>
+              </tr>
               <tr>
                 <td>Sender Rewards</td>
                 <td>
@@ -301,6 +306,26 @@ const TransactionDetails = ({
                   </div>
                 </td>
               </tr>
+              {Object.keys(transaction.signature.multisig).length > 0 && (
+                <tr>
+                  <td className={styles["valign-top-identifier"]}>Multisig</td>
+                  <td className={styles["multisig-details"]}>
+                    <div>Version {transaction.signature.multisig.version}</div>
+                    <div>
+                      Threshold: {transaction.signature.multisig.threshold}{" "}
+                      signature
+                      {transaction.signature.multisig.threshold! > 1 && "s"}
+                    </div>
+                    <h4>Subsignatures</h4>
+                    {transaction.signature.multisig.subsignature?.map((sig) => {
+                      const _addr = algosdk.encodeAddress(
+                        Buffer.from(sig["public-key"], "base64")
+                      );
+                      return <Link href={`/address/${_addr}`}>{_addr}</Link>;
+                    })}
+                  </td>
+                </tr>
+              )}
               <tr>
                 <td>Genesis ID</td>
                 <td>{transaction["genesis-id"]}</td>
