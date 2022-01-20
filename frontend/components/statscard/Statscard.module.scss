@@ -56,18 +56,9 @@
 }
 
 .tooltip-button {
-  min-width: auto;
-  padding: 0;
-  margin-left: var(--space-xs);
-}
-
-@media screen and (max-width: 600px) {
-  .address-cards {
-    flex-wrap: wrap;
-  }
-  .address-cards > div {
-    width: 100% !important;
-  }
+  min-width: auto !important;
+  padding: 0 !important;
+  margin-left: var(--space-xs) !important;
 }
 
 @media screen and (max-width: 850px) {
@@ -76,25 +67,5 @@
   }
   .cardcontainer > div:nth-child(3) {
     margin-bottom: 0px;
-  }
-  .address-cards > div:nth-child(3),
-  .address-cards > div:nth-child(4) {
-    margin-bottom: 0px;
-  }
-  .address-cards {
-    flex-direction: row !important;
-  }
-}
-
-@media screen and (max-width: 1000px) {
-  .address-cards > div {
-    width: calc(47.25% - 17px);
-  }
-  .address-cards > div:nth-child(1),
-  .address-cards > div:nth-child(2) {
-    margin-bottom: 15px;
-  }
-  .address-cards {
-    flex-wrap: wrap;
   }
 }
