@@ -9,7 +9,7 @@ import Breadcrumbs from "../../components/breadcrumbs";
 import Statscard from "../../components/statscard";
 import Load from "../../components/tableloading";
 import { siteName } from "../../utils/constants";
-import tableStyles from "../../components/Table/CustomTable.module.scss";
+import tableStyles from "../../components/table/CustomTable.module.scss";
 import statscardStyles from "../../components/statscard/Statscard.module.scss";
 import { integerFormatter } from "../../utils/stringUtils";
 import Table from "../../components/table";

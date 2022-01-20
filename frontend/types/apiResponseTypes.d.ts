@@ -16,6 +16,11 @@ export interface IAsaResponse {
   }
 }
 
+type multisigSubsig = {
+  "public-key": string;
+  signature?: string;
+}
+
 export type TransactionResponse = {
   id: string;
   "genesis-id": number;
@@ -78,6 +83,15 @@ export type TransactionResponse = {
   "last-valid": number;
   timestamp: number;
   note: string;
+  signature: {
+    logicsig: {};
+    multisig: {
+      subsignature?: multisigSubsig[],
+      threshold?: number;
+      version?: number;
+    };
+    sig?: string;
+  };
 };
 
 export interface IBlockRewards {
@@ -114,7 +128,7 @@ export type IBlockResponse = {
 export interface ILatestBlocksResponse {
   num_of_blks: number;
   num_of_pages: number;
-  items: [];
+  items: IBlockResponse[];
 }
 
 export interface ISupply {

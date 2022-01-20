@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import Link from "next/link";
-import { BigNumber } from "bignumber.js";
 import Button from "@mui/material/Button";
 
 import Layout from "../components/layout";
@@ -37,8 +36,6 @@ const Home = () => {
   const supply = useSelector(selectSupply);
   const latestTransaction = useSelector(selectLatestTxn);
   const dispatch = useDispatch();
-
-  BigNumber.config({ DECIMAL_PLACES: 2 });
 
   useEffect(() => {
     if (latestTransaction) {
@@ -132,6 +129,15 @@ const Home = () => {
         />
         <Statscard
           stat="Circulating supply"
+          info={
+            <a
+              href="https://metricsapi.algorand.foundation/v1/supply/circulating?unit=algo"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              https://metricsapi.algorand.foundation/v1/supply/circulating?unit=algo
+            </a>
+          }
           value={
             loading ? (
               <Load />
@@ -161,7 +167,7 @@ const Home = () => {
               <Link href="/blocks">View more</Link>
             </Button>
           </div>
-          <BlockTable blocks={blocks} />
+          {blocks ? <BlockTable blocks={blocks} /> : <Load />}
         </div>
         <div className={styles["block-table"]}>
           <div>
@@ -170,7 +176,11 @@ const Home = () => {
               <Link href="/transactions">View more</Link>
             </Button>
           </div>
-          <TransactionTable transactions={transactions} />
+          {transactions ? (
+            <TransactionTable transactions={transactions} />
+          ) : (
+            <Load />
+          )}
         </div>
       </div>
     </Layout>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Head from "next/head";
 import * as timeago from "timeago.js";
 import styles from "./Layout.module.scss";
@@ -9,6 +9,7 @@ import Footer from "../footer";
 import HomeHeader from "./HomeHeader";
 import HomeFooter from "./HomeFooter";
 import { timeAgoLocale } from "../../utils/stringUtils";
+import { ArrowUp } from "react-feather";
 
 type LayoutPropsType = {
   addresspage?: boolean;
@@ -24,17 +25,23 @@ const Layout = ({ addresspage, data, homepage, children }: LayoutPropsType) => {
   const [hasScrollEventListener, setHasScrollEventListener] = useState(false);
   timeago.register("en_short", timeAgoLocale);
 
+  // Scroll to top button — render behaviour
+  const renderScrollTop = useCallback(() => {
+    let scroll_position = window.pageYOffset;
+    setScroll(!scroll && scroll_position > 500);
+  }, [scroll]);
+
   useEffect(() => {
-    // Scroll to top button — render behaviour
-    const renderScrollTop = () => {
-      let scroll_position = window.pageYOffset;
-      setScroll(!scroll && scroll_position > 500);
-    };
     if (!hasScrollEventListener) {
-      window.addEventListener("scroll", () => renderScrollTop());
+      window.addEventListener("scroll", renderScrollTop);
       setHasScrollEventListener(true);
     }
-  }, [scroll, hasScrollEventListener]);
+    return () => {
+      if (!scroll && hasScrollEventListener) {
+        window.removeEventListener("scroll", renderScrollTop);
+      }
+    };
+  }, [scroll, hasScrollEventListener, renderScrollTop]);
 
   // Scroll to top button — scroll up behaviour
   const scrollToTop = () => {
@@ -65,7 +72,7 @@ const Layout = ({ addresspage, data, homepage, children }: LayoutPropsType) => {
         className={`${styles.scrolltop} ${scroll ? "" : styles.hiddenscroll}`}
         onClick={scrollToTop}
       >
-        ➜
+        <ArrowUp />
       </button>
     </div>
   );

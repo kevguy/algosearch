@@ -10,41 +10,39 @@ import {
   removeSpace,
   TxType,
 } from "../../utils/stringUtils";
-import styles from "../block/Block.module.scss";
-import Tabs from "@mui/material/Tabs";
-import Tab from "@mui/material/Tab";
-import Box from "@mui/material/Box";
-import TabPanel from "../../components/tabPanel";
+import styles from "./TransactionDetails.module.scss";
+import blockStyles from "../block/Block.module.scss";
 import algosdk from "algosdk";
 import msgpack from "@ygoe/msgpack";
 import { TransactionResponse } from "../../types/apiResponseTypes";
 import { IAsaMap } from "../../types/misc";
 import { apiGetASA } from "../../utils/api";
-
-function a11yProps(index: number) {
-  return {
-    id: `simple-tab-${index}`,
-    "aria-controls": `simple-tabpanel-${index}`,
-  };
-}
+import {
+  TabPanelUnstyled,
+  TabsListUnstyled,
+  TabsUnstyled,
+  TabUnstyled,
+} from "@mui/material";
 
 const TransactionDetails = ({
   transaction,
 }: {
   transaction: TransactionResponse;
 }) => {
-  const [noteTab, setNoteTab] = useState(0);
   const [msgpackNotes, setMsgpackNotes] = useState();
   const [txType, setTxType] = useState<TxType>();
   const [receiver, setReceiver] = useState<string>();
   const [asaMap, setAsaMap] = useState<IAsaMap>([]);
   const [decodedNotes, setDecodedNotes] = useState<bigint>();
-  const clickTabHandler = (event: React.SyntheticEvent, newValue: number) => {
-    setNoteTab(newValue);
-  };
   const decodeWithMsgpack = useCallback(() => {
     try {
-      return msgpack.deserialize(Buffer.from(transaction.note, "base64"));
+      let message = msgpack.deserialize(
+        Buffer.from(transaction.note, "base64")
+      );
+      if (typeof message === "object") {
+        message = JSON.stringify(message, undefined, 2);
+      }
+      setMsgpackNotes(message);
     } catch (err) {
       return null;
     }
@@ -63,7 +61,7 @@ const TransactionDetails = ({
       });
       if (
         transaction.note &&
-        Buffer.from(transaction.note, "base64").length < 8
+        Buffer.from(transaction.note, "base64").length <= 8
       ) {
         setDecodedNotes(
           algosdk.decodeUint64(
@@ -72,15 +70,15 @@ const TransactionDetails = ({
           )
         );
       }
-      setMsgpackNotes(decodeWithMsgpack());
+      decodeWithMsgpack();
     }
   }, [decodeWithMsgpack, transaction]);
   if (!transaction) {
     return null;
   }
   return (
-    <div className={styles["table-wrapper"]}>
-      <div className={styles["block-table"]}>
+    <div className={blockStyles["table-wrapper"]}>
+      <div className={blockStyles["block-table"]}>
         <table cellSpacing="0">
           <thead>
             <tr>
@@ -94,7 +92,7 @@ const TransactionDetails = ({
               <td>{transaction.id}</td>
             </tr>
             <tr>
-              <td>Round</td>
+              <td>Block</td>
               <td>
                 <Link
                   href={`/block/${removeSpace(
@@ -143,17 +141,19 @@ const TransactionDetails = ({
                         asaMap[
                           transaction["asset-transfer-transaction"]["asset-id"]
                         ] &&
-                        Number(
-                          formatAsaAmountWithDecimal(
-                            BigInt(
-                              transaction["asset-transfer-transaction"].amount
-                            ),
-                            asaMap[
-                              transaction["asset-transfer-transaction"][
-                                "asset-id"
-                              ]
-                            ].decimals
-                          ) ?? 0
+                        formatNumber(
+                          Number(
+                            formatAsaAmountWithDecimal(
+                              BigInt(
+                                transaction["asset-transfer-transaction"].amount
+                              ),
+                              asaMap[
+                                transaction["asset-transfer-transaction"][
+                                  "asset-id"
+                                ]
+                              ].decimals
+                            ) ?? 0
+                          )
                         )}{" "}
                       {transaction["asset-transfer-transaction"] &&
                         asaMap[
@@ -175,8 +175,12 @@ const TransactionDetails = ({
                   ) : (
                     <>
                       <AlgoIcon />{" "}
-                      {microAlgosToAlgos(
-                        transaction["payment-transaction"].amount
+                      {formatNumber(
+                        Number(
+                          microAlgosToAlgos(
+                            transaction["payment-transaction"].amount
+                          )
+                        )
                       )}
                     </>
                   )}
@@ -192,85 +196,52 @@ const TransactionDetails = ({
               </td>
             </tr>
             <tr>
-              <td>First Round</td>
-              <td>
-                <Link
-                  href={`/block/${removeSpace(
-                    transaction["first-valid"].toString()
-                  )}`}
-                >
-                  {integerFormatter.format(
-                    Number(removeSpace(transaction["first-valid"].toString()))
-                  )}
-                </Link>
-              </td>
-            </tr>
-            <tr>
-              <td>Last Round</td>
-              <td>
-                <Link
-                  href={`/block/${removeSpace(
-                    transaction["last-valid"].toString()
-                  )}`}
-                >
-                  {integerFormatter.format(
-                    Number(removeSpace(transaction["last-valid"].toString()))
-                  )}
-                </Link>
-              </td>
-            </tr>
-            <tr>
               <td>Timestamp</td>
               <td>{new Date(transaction["round-time"] * 1000).toString()}</td>
             </tr>
             <tr>
-              <td>Note</td>
+              <td className={styles["valign-top-identifier"]}>Note</td>
               <td>
                 {transaction.note && transaction.note !== "" && (
                   <div>
-                    <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-                      <Tabs
-                        value={noteTab}
-                        onChange={clickTabHandler}
-                        aria-label="Note in different encoding"
-                      >
-                        <Tab label="Base64" {...a11yProps(0)} />
-                        <Tab label="ASCII" {...a11yProps(1)} />
-                        {decodedNotes && (
-                          <Tab label="Uint64" {...a11yProps(2)} />
-                        )}
-                        {msgpackNotes && (
-                          <Tab label="MessagePack" {...a11yProps(3)} />
-                        )}
-                      </Tabs>
-                    </Box>
-                    <TabPanel value={noteTab} index={0}>
-                      <div className={styles.notes}>{transaction.note}</div>
-                    </TabPanel>
-                    <TabPanel value={noteTab} index={1}>
-                      <div className={styles.notes}>
-                        {atob(transaction.note)}
-                      </div>
-                    </TabPanel>
-                    {decodedNotes && (
-                      <TabPanel value={noteTab} index={2}>
-                        <div className={styles["notes-row"]}>
-                          <div>
-                            <h5>Hexadecimal</h5>
-                            <span>{decodedNotes!.toString(16)}</span>
-                          </div>
-                          <div>
-                            <h5>Decimal</h5>
-                            <span>{decodedNotes!.toString()}</span>
-                          </div>
+                    <TabsUnstyled defaultValue={0}>
+                      <TabsListUnstyled className={styles.tabs}>
+                        <TabUnstyled>Base64</TabUnstyled>
+                        <TabUnstyled>ASCII</TabUnstyled>
+                        {decodedNotes && <TabUnstyled>UInt64</TabUnstyled>}
+                        {msgpackNotes && <TabUnstyled>MessagePack</TabUnstyled>}
+                      </TabsListUnstyled>
+                      <TabPanelUnstyled value={0}>
+                        <div className={styles.notes}>{transaction.note}</div>
+                      </TabPanelUnstyled>
+                      <TabPanelUnstyled value={1}>
+                        <div className={styles.notes}>
+                          {atob(transaction.note)}
                         </div>
-                      </TabPanel>
-                    )}
-                    {msgpackNotes && (
-                      <TabPanel value={noteTab} index={decodedNotes ? 3 : 2}>
-                        <div className={styles.notes}>{msgpackNotes}</div>
-                      </TabPanel>
-                    )}
+                      </TabPanelUnstyled>
+                      {decodedNotes && (
+                        <TabPanelUnstyled value={2}>
+                          <div className={styles["notes-row"]}>
+                            <div>
+                              <h5>Hexadecimal</h5>
+                              <span>{decodedNotes!.toString(16)}</span>
+                            </div>
+                            <div>
+                              <h5>Decimal</h5>
+                              <span>{decodedNotes!.toString()}</span>
+                            </div>
+                          </div>
+                        </TabPanelUnstyled>
+                      )}
+                      {msgpackNotes && (
+                        <TabPanelUnstyled
+                          value={!!decodedNotes ? 3 : 2}
+                          className={styles.notes}
+                        >
+                          <pre>{msgpackNotes}</pre>
+                        </TabPanelUnstyled>
+                      )}
+                    </TabsUnstyled>
                   </div>
                 )}
               </td>
@@ -279,8 +250,8 @@ const TransactionDetails = ({
         </table>
       </div>
       <div>
-        <h4>Miscellaneous Details</h4>
-        <div className={styles["block-table"]}>
+        <h4>Additional Information</h4>
+        <div className={blockStyles["block-table"]}>
           <table cellSpacing="0">
             <thead>
               <tr>
@@ -289,6 +260,34 @@ const TransactionDetails = ({
               </tr>
             </thead>
             <tbody>
+              <tr>
+                <td>First Round</td>
+                <td>
+                  <Link
+                    href={`/block/${removeSpace(
+                      transaction["first-valid"].toString()
+                    )}`}
+                  >
+                    {integerFormatter.format(
+                      Number(removeSpace(transaction["first-valid"].toString()))
+                    )}
+                  </Link>
+                </td>
+              </tr>
+              <tr>
+                <td>Last Round</td>
+                <td>
+                  <Link
+                    href={`/block/${removeSpace(
+                      transaction["last-valid"].toString()
+                    )}`}
+                  >
+                    {integerFormatter.format(
+                      Number(removeSpace(transaction["last-valid"].toString()))
+                    )}
+                  </Link>
+                </td>
+              </tr>
               <tr>
                 <td>Sender Rewards</td>
                 <td>
@@ -307,6 +306,33 @@ const TransactionDetails = ({
                   </div>
                 </td>
               </tr>
+              {Object.keys(transaction.signature.multisig).length > 0 && (
+                <tr>
+                  <td className={styles["valign-top-identifier"]}>Multisig</td>
+                  <td className={styles["multisig-details"]}>
+                    <div>Version {transaction.signature.multisig.version}</div>
+                    <div>
+                      Threshold: {transaction.signature.multisig.threshold}{" "}
+                      signature
+                      {transaction.signature.multisig.threshold! > 1 && "s"}
+                    </div>
+                    <h4>Subsignatures</h4>
+                    {transaction.signature.multisig.subsignature?.map((sig) => {
+                      const _addr = algosdk.encodeAddress(
+                        Buffer.from(sig["public-key"], "base64")
+                      );
+                      return (
+                        <Link
+                          href={`/address/${_addr}`}
+                          key={sig["public-key"]}
+                        >
+                          {_addr}
+                        </Link>
+                      );
+                    })}
+                  </td>
+                </tr>
+              )}
               <tr>
                 <td>Genesis ID</td>
                 <td>{transaction["genesis-id"]}</td>

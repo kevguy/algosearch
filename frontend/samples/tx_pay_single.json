@@ -1,0 +1,43 @@
+{
+  "application-transaction": {
+    "application-id": 0,
+    "global-state-schema": { "num-byte-slice": 0, "num-uint": 0 },
+    "local-state-schema": { "num-byte-slice": 0, "num-uint": 0 }
+  },
+  "asset-config-transaction": {
+    "params": { "creator": "", "decimals": 0, "total": 0 }
+  },
+  "asset-freeze-transaction": {
+    "address": "",
+    "asset-id": 0,
+    "new-freeze-status": false
+  },
+  "asset-transfer-transaction": { "amount": 0, "asset-id": 0, "receiver": "" },
+  "auth-addr": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ",
+  "confirmed-round": 6611812,
+  "fee": 1000,
+  "first-valid": 6611809,
+  "genesis-hash": "wGHE2Pwdvd7S12BL5FaOP20EGYesN73ktiC1qzkkit8=",
+  "genesis-id": "mainnet-v1.0",
+  "group": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+  "id": "NTIU26TLJ6XMMBV6YQJB6SUPG5FBKCMHG2EQ5R5AGJDQ7OXK7PKQ",
+  "keyreg-transaction": {},
+  "last-valid": 6612809,
+  "lease": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+  "note": "FszNghkCXmo=",
+  "payment-transaction": {
+    "amount": 28883027883,
+    "close-remainder-to": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ",
+    "receiver": "SP745JJR4KPRQEXJZHVIEN736LYTL2T2DFMG3OIIFJBV66K73PHNMDCZVM"
+  },
+  "rekey-to": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ",
+  "round-time": 1589278206,
+  "sender": "TKEVVXMEEBRZQG5PP6CPJTHNK3MVHPTRA5M3ATER5GIL36EAPUMX5MR37U",
+  "sender-rewards": 28883,
+  "signature": {
+    "logicsig": { "logic": null, "multisig-signature": {} },
+    "multisig": {},
+    "sig": "mVQ0qtct4mMY/15usAw1BbRWw6FZYO9gr5GQg+j68IO3vLpSIpmcte6CbNAdsjQHWe+CrAC0+oDFS+37HuxSDQ=="
+  },
+  "tx-type": "pay"
+}

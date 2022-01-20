@@ -26,21 +26,19 @@
 
 .scrolltop {
   position: fixed;
-  width: 40px !important;
-  height: 40px !important;
-  bottom: 15px;
-  right: 15px;
-  border-radius: 4px;
-  background-color: #337afe;
-  opacity: 0.5;
-  z-index: 9999;
   display: inline-block;
+  width: 40px;
+  height: 40px;
+  bottom: var(--space-m);
+  right: var(--space-m);
+  color: white;
+  background-color: var(--blue);
   transition: 200ms ease-in-out;
-  color: #fff;
   border: none;
+  border-radius: 4px;
+  opacity: 0.6;
+  z-index: 9999;
   cursor: pointer;
-  font-size: 15px;
-  transform: rotate(-90deg);
 }
 
 .scrolltop:hover {

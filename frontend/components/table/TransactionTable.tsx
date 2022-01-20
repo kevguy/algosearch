@@ -1,5 +1,3 @@
-import axios from "axios";
-import moment from "moment";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import TimeAgo from "timeago-react";
@@ -52,11 +50,11 @@ const TransactionTable = ({
                   </span>
                 </div>
                 <span className={styles["transaction-id"]}>
-                  <Link href={`/transaction/${tx.id}`}>{tx.id}</Link>
+                  <Link href={`/tx/${tx.id}`}>{tx.id}</Link>
                 </span>
                 <span className={styles.time}>
                   <TimeAgo
-                    datetime={new Date(moment.unix(tx["round-time"]).toDate())}
+                    datetime={new Date(tx["round-time"] * 1000)}
                     locale="en_short"
                   />
                 </span>

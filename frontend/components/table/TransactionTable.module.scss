@@ -21,6 +21,7 @@
 }
 
 .tx-type-label-wrapper {
+  flex: 0 0 auto;
   width: 5rem;
 }
 
@@ -30,6 +31,7 @@
   padding: var(--space-xxxxs) var(--space-xxs);
   background: var(--blue-lightest);
   border: 1px solid var(--blue-lighter-2);
+  white-space: nowrap;
 }
 
 .transaction-id {

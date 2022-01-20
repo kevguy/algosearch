@@ -7,7 +7,7 @@ export interface IApplicationState {
   currentRound: number;
   avgBlockTxnSpeedInSec: number;
   wsCurrentRound: number;
-  latestBlocks: [];
+  latestBlocks: IBlockResponse[] | undefined;
   latestTxn: string;
   supply: {
     current_round: number;
@@ -19,7 +19,7 @@ const initialState: IApplicationState = {
   currentRound: 0,
   avgBlockTxnSpeedInSec: 0,
   wsCurrentRound: 0,
-  latestBlocks: [],
+  latestBlocks: undefined,
   latestTxn: "",
   supply: {
     current_round: 0,
@@ -56,7 +56,7 @@ export const applicationSlice = createSlice({
   extraReducers(builder) {
     builder
       .addCase(getLatestBlocks.fulfilled, (state, action: PayloadAction<ILatestBlocksResponse>) => {
-        state.latestBlocks = action.payload.items;
+        state.latestBlocks = action.payload && action.payload.items;
       })
       .addCase(getSupply.fulfilled, (state, action: PayloadAction<ISupply>) => {
         state.supply = action.payload;

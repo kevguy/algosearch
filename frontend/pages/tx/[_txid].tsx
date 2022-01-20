@@ -7,6 +7,7 @@ import { siteName } from "../../utils/constants";
 import { useRouter } from "next/router";
 import TransactionDetails from "./TransactionDetails";
 import { TransactionResponse } from "../../types/apiResponseTypes";
+import Head from "next/head";
 
 const Transaction = () => {
   const router = useRouter();
@@ -30,10 +31,6 @@ const Transaction = () => {
   };
 
   useEffect(() => {
-    document.title = `AlgoSearch | Transaction ${txid}`;
-  }, [txid]);
-
-  useEffect(() => {
     if (!_txid) {
       return;
     }
@@ -43,6 +40,9 @@ const Transaction = () => {
 
   return (
     <Layout>
+      <Head>
+        <title>{`AlgoSearch | Transaction ${txid}`}</title>
+      </Head>
       <Breadcrumbs
         name={`Transaction Details`}
         parentLink="/transactions"

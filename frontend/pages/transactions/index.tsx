@@ -6,7 +6,7 @@ import { useRouter } from "next/router";
 import Head from "next/head";
 
 import { siteName } from "../../utils/constants";
-import tableStyles from "../../components/Table/CustomTable.module.scss";
+import tableStyles from "../../components/table/CustomTable.module.scss";
 import Layout from "../../components/layout";
 import Breadcrumbs from "../../components/breadcrumbs";
 import Table from "../../components/table";

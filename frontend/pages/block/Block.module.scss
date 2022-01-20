@@ -102,34 +102,8 @@
   }
 }
 
-.block-table table > tbody > tr > td > a {
-  text-decoration: none;
-  color: #337afe;
-  transition: 100ms ease-in-out;
-}
-
-.block-table table > tbody > tr > td > a:hover {
-  color: #0150e3;
-}
-
 .block-table table > tbody > tr:last-child > td {
   border-bottom: none;
-}
-
-.notes-row {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-xxxl);
-
-  @media screen and (max-width: 768px) {
-    flex-direction: column;
-  }
-}
-
-.notes,
-.notes-row {
-  font-weight: 300;
-  font-family: monospace;
 }
 
 .table-header {
