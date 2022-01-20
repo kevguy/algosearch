@@ -1,0 +1,49 @@
+.notes-identifier {
+  vertical-align: top;
+}
+
+.notes-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-xxxl);
+
+  @media screen and (max-width: 768px) {
+    flex-direction: column;
+  }
+}
+
+.tabs {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-s);
+  margin-bottom: var(--space-m);
+
+  button {
+    font-family: var(--font-family);
+    background: var(--grey-lighter);
+    padding: var(--space-xxs) var(--space-s);
+    border: none;
+    cursor: pointer;
+
+    &:hover {
+      background: var(--blue-lighter);
+    }
+
+    &[tabindex="0"] {
+      color: white;
+      background: var(--blue);
+    }
+  }
+}
+
+.notes,
+.notes-row {
+  font-weight: 300;
+  font-family: monospace;
+}
+
+.notes {
+  pre {
+    margin: 0;
+  }
+}

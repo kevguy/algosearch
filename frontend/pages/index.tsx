@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import Link from "next/link";
-import { BigNumber } from "bignumber.js";
 import Button from "@mui/material/Button";
 
 import Layout from "../components/layout";
@@ -37,8 +36,6 @@ const Home = () => {
   const supply = useSelector(selectSupply);
   const latestTransaction = useSelector(selectLatestTxn);
   const dispatch = useDispatch();
-
-  BigNumber.config({ DECIMAL_PLACES: 2 });
 
   useEffect(() => {
     if (latestTransaction) {

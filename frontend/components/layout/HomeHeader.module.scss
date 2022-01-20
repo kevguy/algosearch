@@ -35,6 +35,10 @@
   display: flex;
   justify-content: center;
   align-items: center;
+
+  @media screen and (max-width: 768px) {
+    flex-direction: column;
+  }
 }
 
 .sync-status {
@@ -42,7 +46,9 @@
   justify-content: center;
   align-items: center;
   font-size: var(--font-size-s);
-
+  @media screen and (max-width: 768px) {
+    margin-top: var(--space-xxs);
+  }
   span {
     position: relative;
     font-size: var(--font-size-xs);
