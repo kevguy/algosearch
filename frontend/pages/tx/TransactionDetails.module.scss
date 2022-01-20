@@ -58,7 +58,9 @@
 
 .notes {
   pre {
+    width: calc(100% - var(--space-m) * 2);
     margin: 0;
+    overflow: auto;
   }
 }
 
