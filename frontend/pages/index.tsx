@@ -132,6 +132,15 @@ const Home = () => {
         />
         <Statscard
           stat="Circulating supply"
+          info={
+            <a
+              href="https://metricsapi.algorand.foundation/v1/supply/circulating?unit=algo"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              https://metricsapi.algorand.foundation/v1/supply/circulating?unit=algo
+            </a>
+          }
           value={
             loading ? (
               <Load />
@@ -161,7 +170,7 @@ const Home = () => {
               <Link href="/blocks">View more</Link>
             </Button>
           </div>
-          <BlockTable blocks={blocks} />
+          {blocks ? <BlockTable blocks={blocks} /> : <Load />}
         </div>
         <div className={styles["block-table"]}>
           <div>
@@ -170,7 +179,11 @@ const Home = () => {
               <Link href="/transactions">View more</Link>
             </Button>
           </div>
-          <TransactionTable transactions={transactions} />
+          {transactions ? (
+            <TransactionTable transactions={transactions} />
+          ) : (
+            <Load />
+          )}
         </div>
       </div>
     </Layout>

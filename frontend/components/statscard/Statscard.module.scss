@@ -39,17 +39,6 @@
   display: inline-block;
 }
 
-.tooltip {
-  padding: var(--space-xs) var(--space-s) !important;
-  background: rgba(223, 240, 255, 0.7) !important;
-  &.place-top,
-  &:after {
-    border-top-color: rgba(223, 240, 255, 0.7) !important;
-    border-top-style: solid !important;
-    border-top-width: 5px !important;
-  }
-}
-
 .statscard > span > div > img {
   padding-left: 2px;
   height: 14px;
@@ -64,6 +53,12 @@
   border-radius: 50%;
   transform: scale(1);
   vertical-align: top;
+}
+
+.tooltip-button {
+  min-width: auto;
+  padding: 0;
+  margin-left: var(--space-xs);
 }
 
 @media screen and (max-width: 600px) {

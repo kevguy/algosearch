@@ -1,7 +1,27 @@
 import React from "react";
 import { Info } from "react-feather";
-import ReactTooltip from "react-tooltip";
+import Tooltip, { TooltipProps, tooltipClasses } from "@mui/material/Tooltip";
 import styles from "./Statscard.module.scss";
+import Button from "@mui/material/Button";
+import { styled } from "@mui/material/styles";
+
+const StyledTooltip = styled(({ className, ...props }: TooltipProps) => (
+  <Tooltip {...props} classes={{ popper: className }} />
+))(({ theme }) => ({
+  [`& .${tooltipClasses.arrow}`]: {
+    color: "rgba(223, 240, 255, 0.7)",
+  },
+  [`& .${tooltipClasses.tooltip}`]: {
+    backgroundColor: "rgba(223, 240, 255, 0.7)",
+    color: "var(--grey-darker)",
+    maxWidth: 220,
+    fontFamily: "var(--font-family)",
+    fontSize: "var(--font-size-xs)",
+    fontWeight: "normal",
+    padding: "var(--space-xs) var(--space-s)",
+    border: "1px solid #dadde9",
+  },
+}));
 
 const Statscard = ({
   stat,
@@ -9,29 +29,19 @@ const Statscard = ({
   value,
 }: {
   stat: string;
-  info?: string;
+  info?: string | JSX.Element;
   value: JSX.Element;
 }) => {
-  const tooltipId =
-    info && Buffer.from(stat + info, "binary").toString("base64");
   return (
     <div className={styles.statscard}>
       <div className={styles.title}>
         <h5>{stat}</h5>
         {info && (
-          <>
-            <a data-tip data-for={tooltipId}>
+          <StyledTooltip title={info} placement="top" arrow>
+            <Button className={styles["tooltip-button"]}>
               <Info size="16" />
-            </a>
-            <ReactTooltip
-              id={tooltipId}
-              type="light"
-              effect="solid"
-              className={styles.tooltip}
-            >
-              <span>{info}</span>
-            </ReactTooltip>
-          </>
+            </Button>
+          </StyledTooltip>
         )}
       </div>
       {value}

@@ -114,7 +114,7 @@ export type IBlockResponse = {
 export interface ILatestBlocksResponse {
   num_of_blks: number;
   num_of_pages: number;
-  items: [];
+  items: IBlockResponse[];
 }
 
 export interface ISupply {
