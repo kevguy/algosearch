@@ -126,7 +126,7 @@ const Block = () => {
   }, [transactions, page, pageSize, router, fetchData]);
 
   useEffect(() => {
-    setColumns(transactionsColumns(asaMap, [1, 7]));
+    setColumns(transactionsColumns(asaMap, undefined, [1, 7]));
   }, [asaMap]);
 
   return (

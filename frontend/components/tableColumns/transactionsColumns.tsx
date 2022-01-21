@@ -18,6 +18,7 @@ import {
 
 export const transactionsColumns = (
   asaMap: IAsaMap,
+  addr?: string,
   hideCols?: number[]
 ): Column[] => {
   let cols: Object[] | null[] = [
@@ -50,9 +51,12 @@ export const transactionsColumns = (
     {
       Header: "From",
       accessor: "sender",
-      Cell: ({ value }: { value: string }) => (
-        <Link href={`/address/${value}`}>{ellipseAddress(value)}</Link>
-      ),
+      Cell: ({ value }: { value: string }) =>
+        value === addr ? (
+          <span>{ellipseAddress(value)}</span>
+        ) : (
+          <Link href={`/address/${value}`}>{ellipseAddress(value)}</Link>
+        ),
     },
     {
       Header: "To",
@@ -62,7 +66,12 @@ export const transactionsColumns = (
         const isAsaTransfer = tx["tx-type"] === TxType.AssetTransfer;
         const _value = isAsaTransfer
           ? tx["asset-transfer-transaction"].receiver
-          : tx["payment-transaction"].receiver;
+          : tx["payment-transaction"]
+          ? tx["payment-transaction"].receiver
+          : null;
+        if (_value === addr) {
+          return <span>{ellipseAddress(_value)}</span>;
+        }
         return _value ? (
           <Link href={`/address/${_value}`}>{ellipseAddress(_value)}</Link>
         ) : (
@@ -94,13 +103,15 @@ export const transactionsColumns = (
           <span>
             {tx["tx-type"] === TxType.AssetTransfer ? (
               `${formatNumber(_asaAmount)} ${_asaUnit}`
-            ) : (
+            ) : tx["payment-transaction"] ? (
               <>
                 <AlgoIcon />{" "}
                 {formatNumber(
                   Number(microAlgosToAlgos(tx["payment-transaction"].amount))
                 )}
               </>
+            ) : (
+              "N/A"
             )}
           </span>
         );

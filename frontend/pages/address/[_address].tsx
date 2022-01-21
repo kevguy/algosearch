@@ -123,8 +123,10 @@ const Address = () => {
   }, [address, page, fetchData]);
 
   useEffect(() => {
-    setColumns(transactionsColumns(asaMap));
-  }, [asaMap]);
+    if (asaMap && address) {
+      setColumns(transactionsColumns(asaMap, address));
+    }
+  }, [asaMap, address]);
 
   return (
     <Layout
