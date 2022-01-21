@@ -24,10 +24,8 @@
 
   th {
     text-align: left;
+    padding: var(--space-s);
     border-bottom: 1px solid var(--grey-lighter);
-    &:first-child {
-      padding-left: 15px;
-    }
   }
 
   .transactions-table {
@@ -38,10 +36,6 @@
     tr {
       display: flex;
       flex-direction: column;
-    }
-    th,
-    th:first-child {
-      padding: var(--space-s);
     }
   }
 }
@@ -58,11 +52,9 @@
 .block-table table > thead {
   tr {
     background-color: #f8fafd;
-    height: 40px;
-    font-size: 13px;
+    font-size: var(--font-size-xs);
     text-transform: uppercase;
-    color: #5a728c;
-    font-weight: 700;
+    color: var(--blue-dark);
   }
   @media screen and (max-width: 768px) {
     display: none;
@@ -81,7 +73,6 @@
   padding: var(--space-s);
   border-bottom: 1px solid rgb(231, 234, 243);
   &:first-child {
-    padding-left: 15px;
     min-width: 220px;
     width: 220px;
     font-weight: 500;

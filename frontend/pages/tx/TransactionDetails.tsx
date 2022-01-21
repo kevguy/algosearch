@@ -2,8 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import AlgoIcon from "../../components/algoicon";
 import {
-  formatAsaAmountWithDecimal,
-  formatNumber,
+  ellipseAddress,
   getTxTypeName,
   integerFormatter,
   microAlgosToAlgos,
@@ -23,6 +22,14 @@ import {
   TabsUnstyled,
   TabUnstyled,
 } from "@mui/material";
+import TransactionAdditionalInfo from "./TransactionAdditionalInfo";
+import ApplicationTransactionInfo from "./ApplicationTransactionInfo";
+import {
+  getAmount,
+  getCloseAmount,
+  getInnerTxCloseTo,
+  getInnerTxReceiver,
+} from "./TransactionContentComponents";
 
 const TransactionDetails = ({
   transaction,
@@ -54,11 +61,22 @@ const TransactionDetails = ({
       setReceiver(
         transaction && transaction["tx-type"] === TxType.AssetTransfer
           ? transaction["asset-transfer-transaction"].receiver
-          : transaction["payment-transaction"].receiver
+          : transaction["payment-transaction"]
+          ? transaction["payment-transaction"].receiver
+          : "N/A"
       );
       apiGetASA([transaction]).then((result) => {
         setAsaMap(result);
       });
+      if (
+        transaction["tx-type"] === TxType.App &&
+        transaction["inner-txns"] &&
+        transaction["inner-txns"].length > 0
+      ) {
+        apiGetASA(transaction["inner-txns"]).then((result) => {
+          setAsaMap(result);
+        });
+      }
       if (
         transaction.note &&
         Buffer.from(transaction.note, "base64").length <= 8
@@ -87,6 +105,12 @@ const TransactionDetails = ({
             </tr>
           </thead>
           <tbody>
+            {transaction.group && (
+              <tr>
+                <td>Group ID</td>
+                <td>{transaction.group}</td>
+              </tr>
+            )}
             <tr>
               <td>ID</td>
               <td>{transaction.id}</td>
@@ -121,72 +145,26 @@ const TransactionDetails = ({
                 </Link>
               </td>
             </tr>
-            <tr>
-              <td>Receiver</td>
-              <td>
-                {receiver ? (
-                  <Link href={`/address/${receiver}`}>{receiver}</Link>
-                ) : (
-                  "N/A"
-                )}
-              </td>
-            </tr>
-            <tr>
-              <td>Amount</td>
-              <td>
-                <div>
-                  {txType === TxType.AssetTransfer ? (
-                    <>
-                      {transaction["asset-transfer-transaction"] &&
-                        asaMap[
-                          transaction["asset-transfer-transaction"]["asset-id"]
-                        ] &&
-                        formatNumber(
-                          Number(
-                            formatAsaAmountWithDecimal(
-                              BigInt(
-                                transaction["asset-transfer-transaction"].amount
-                              ),
-                              asaMap[
-                                transaction["asset-transfer-transaction"][
-                                  "asset-id"
-                                ]
-                              ].decimals
-                            ) ?? 0
-                          )
-                        )}{" "}
-                      {transaction["asset-transfer-transaction"] &&
-                        asaMap[
-                          transaction["asset-transfer-transaction"]["asset-id"]
-                        ] && (
-                          <Link
-                            href={`/asset/${transaction["asset-transfer-transaction"]["asset-id"]}`}
-                          >
-                            {
-                              asaMap[
-                                transaction["asset-transfer-transaction"][
-                                  "asset-id"
-                                ]
-                              ].unitName
-                            }
-                          </Link>
-                        )}
-                    </>
+            {txType !== TxType.App && (
+              <tr>
+                <td>Receiver</td>
+                <td>
+                  {receiver ? (
+                    <Link href={`/address/${receiver}`}>{receiver}</Link>
                   ) : (
-                    <>
-                      <AlgoIcon />{" "}
-                      {formatNumber(
-                        Number(
-                          microAlgosToAlgos(
-                            transaction["payment-transaction"].amount
-                          )
-                        )
-                      )}
-                    </>
+                    "N/A"
                   )}
-                </div>
-              </td>
-            </tr>
+                </td>
+              </tr>
+            )}
+            {txType !== TxType.App && (
+              <tr>
+                <td>Amount</td>
+                <td>
+                  <div>{getAmount(txType, transaction, asaMap)}</div>
+                </td>
+              </tr>
+            )}
             <tr>
               <td>Fee</td>
               <td>
@@ -199,10 +177,10 @@ const TransactionDetails = ({
               <td>Timestamp</td>
               <td>{new Date(transaction["round-time"] * 1000).toString()}</td>
             </tr>
-            <tr>
-              <td className={styles["valign-top-identifier"]}>Note</td>
-              <td>
-                {transaction.note && transaction.note !== "" && (
+            {transaction.note && transaction.note !== "" && (
+              <tr>
+                <td className={styles["valign-top-identifier"]}>Note</td>
+                <td>
                   <div>
                     <TabsUnstyled defaultValue={0}>
                       <TabsListUnstyled className={styles.tabs}>
@@ -243,239 +221,74 @@ const TransactionDetails = ({
                       )}
                     </TabsUnstyled>
                   </div>
-                )}
-              </td>
-            </tr>
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
-      <div>
-        <h4>Additional Information</h4>
-        <div className={blockStyles["block-table"]}>
-          <table cellSpacing="0">
-            <thead>
-              <tr>
-                <th>Identifier</th>
-                <th>Value</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>First Round</td>
-                <td>
-                  <Link
-                    href={`/block/${removeSpace(
-                      transaction["first-valid"].toString()
-                    )}`}
-                  >
-                    {integerFormatter.format(
-                      Number(removeSpace(transaction["first-valid"].toString()))
-                    )}
-                  </Link>
-                </td>
-              </tr>
-              <tr>
-                <td>Last Round</td>
-                <td>
-                  <Link
-                    href={`/block/${removeSpace(
-                      transaction["last-valid"].toString()
-                    )}`}
-                  >
-                    {integerFormatter.format(
-                      Number(removeSpace(transaction["last-valid"].toString()))
-                    )}
-                  </Link>
-                </td>
-              </tr>
-              <tr>
-                <td>Sender Rewards</td>
-                <td>
-                  <div>
-                    <AlgoIcon />{" "}
-                    {microAlgosToAlgos(transaction["sender-rewards"] || 0)}
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td>Receiver Rewards</td>
-                <td>
-                  <div>
-                    <AlgoIcon />{" "}
-                    {microAlgosToAlgos(transaction["receiver-rewards"] || 0)}
-                  </div>
-                </td>
-              </tr>
-              {Object.keys(transaction.signature.multisig).length > 0 && (
+      {transaction["inner-txns"] && (
+        <div>
+          <h4>Inner Transactions</h4>
+          <div
+            className={`${blockStyles["block-table"]} ${styles["inner-txs-table"]}`}
+          >
+            <table cellSpacing="0">
+              <thead>
                 <tr>
-                  <td className={styles["valign-top-identifier"]}>Multisig</td>
-                  <td className={styles["multisig-details"]}>
-                    <div>Version {transaction.signature.multisig.version}</div>
-                    <div>
-                      Threshold: {transaction.signature.multisig.threshold}{" "}
-                      signature
-                      {transaction.signature.multisig.threshold! > 1 && "s"}
-                    </div>
-                    <h4>Subsignatures</h4>
-                    {transaction.signature.multisig.subsignature?.map((sig) => {
-                      const _addr = algosdk.encodeAddress(
-                        Buffer.from(sig["public-key"], "base64")
-                      );
-                      return (
-                        <Link
-                          href={`/address/${_addr}`}
-                          key={sig["public-key"]}
-                        >
-                          {_addr}
-                        </Link>
-                      );
-                    })}
-                  </td>
+                  <th>Type</th>
+                  <th>Sender</th>
+                  <th>Receiver</th>
+                  <th>Amount</th>
+                  <th>Close To</th>
+                  <th>Close Amount</th>
+                  <th>Fee</th>
                 </tr>
-              )}
-              <tr>
-                <td>Genesis ID</td>
-                <td>{transaction["genesis-id"]}</td>
-              </tr>
-              <tr>
-                <td>Genesis Hash</td>
-                <td>{transaction["genesis-hash"]}</td>
-              </tr>
-              {transaction["tx-type"] === TxType.AssetConfig && (
-                <>
+              </thead>
+              <tbody>
+                {transaction["inner-txns"].map((innerTx) => (
                   <tr>
-                    <td>Asset Name</td>
+                    <td className={styles["normal-text"]}>
+                      <h4 className="mobile-only">Type</h4>
+                      {getTxTypeName(innerTx["tx-type"])}
+                    </td>
                     <td>
-                      {transaction["asset-config-transaction"].params.url ? (
-                        <a
-                          href={
-                            transaction["asset-config-transaction"].params.url
-                          }
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {transaction["asset-config-transaction"].params.name}
-                        </a>
-                      ) : (
-                        transaction["asset-config-transaction"].params.name
-                      )}
+                      <h4 className="mobile-only">Sender</h4>
+                      <Link href={`/address/${innerTx.sender}`}>
+                        {ellipseAddress(innerTx.sender)}
+                      </Link>
+                    </td>
+                    <td>
+                      <h4 className="mobile-only">Receiver</h4>
+                      {getInnerTxReceiver(innerTx)}
+                    </td>
+                    <td>
+                      <h4 className="mobile-only">Amount</h4>
+                      {getAmount(innerTx["tx-type"], innerTx, asaMap)}
+                    </td>
+                    <td>
+                      <h4 className="mobile-only">Close To</h4>
+                      {getInnerTxCloseTo(innerTx)}
+                    </td>
+                    <td>
+                      <h4 className="mobile-only">Close Amount</h4>
+                      {getCloseAmount(innerTx["tx-type"], innerTx, asaMap)}
+                    </td>
+                    <td>
+                      <h4 className="mobile-only">Fee</h4>
+                      <AlgoIcon /> {microAlgosToAlgos(innerTx.fee)}
                     </td>
                   </tr>
-                  <tr>
-                    <td>Manager</td>
-                    <td>
-                      {transaction["asset-config-transaction"].params
-                        .manager ? (
-                        <Link
-                          href={`/address/${transaction["asset-config-transaction"].params.manager}`}
-                        >
-                          {
-                            transaction["asset-config-transaction"].params
-                              .manager
-                          }
-                        </Link>
-                      ) : (
-                        "N/A"
-                      )}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>Reserve</td>
-                    <td>
-                      {transaction["asset-config-transaction"].params
-                        .reserve ? (
-                        <Link
-                          href={`/address/${transaction["asset-config-transaction"].params.reserve}`}
-                        >
-                          {
-                            transaction["asset-config-transaction"].params
-                              .reserve
-                          }
-                        </Link>
-                      ) : (
-                        "N/A"
-                      )}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>Freeze</td>
-                    <td>
-                      {transaction["asset-config-transaction"].params.freeze ? (
-                        <Link
-                          href={`/address/${transaction["asset-config-transaction"].params.freeze}`}
-                        >
-                          {
-                            transaction["asset-config-transaction"].params
-                              .freeze
-                          }
-                        </Link>
-                      ) : (
-                        "N/A"
-                      )}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>Clawback</td>
-                    <td>
-                      {transaction["asset-config-transaction"].params
-                        .clawback ? (
-                        <Link
-                          href={`/address/${transaction["asset-config-transaction"].params.clawback}`}
-                        >
-                          {
-                            transaction["asset-config-transaction"].params
-                              .clawback
-                          }
-                        </Link>
-                      ) : (
-                        "N/A"
-                      )}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>Decimals</td>
-                    <td>
-                      {transaction["asset-config-transaction"].params.decimals}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>Total</td>
-                    <td>
-                      {formatNumber(
-                        Number(
-                          formatAsaAmountWithDecimal(
-                            BigInt(
-                              transaction["asset-config-transaction"].params
-                                .total
-                            ),
-                            transaction["asset-config-transaction"].params
-                              .decimals
-                          )
-                        )
-                      )}{" "}
-                      {
-                        transaction["asset-config-transaction"].params[
-                          "unit-name"
-                        ]
-                      }
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>Metadata Hash</td>
-                    <td>
-                      {
-                        transaction["asset-config-transaction"].params[
-                          "metadata-hash"
-                        ]
-                      }
-                    </td>
-                  </tr>
-                </>
-              )}
-            </tbody>
-          </table>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      )}
+      {txType === TxType.App && (
+        <ApplicationTransactionInfo transaction={transaction} />
+      )}
+      <TransactionAdditionalInfo transaction={transaction} />
     </div>
   );
 };

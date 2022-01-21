@@ -23,6 +23,7 @@ type multisigSubsig = {
 
 export type TransactionResponse = {
   id: string;
+  group?: string;
   "genesis-id": number;
   "genesis-hash": string;
   "confirmed-round": number;
@@ -46,17 +47,18 @@ export type TransactionResponse = {
     },
     "on-completion": string;
   };
-  "inner-txns"?: any[];
-  "payment-transaction": {
+  "inner-txns"?: TransactionResponse[];
+  "payment-transaction"?: {
     amount: number;
     "close-amount": number;
-    "close=remainder-to": string;
+    "close-remainder-to": string;
     receiver: string;
   };
   "asset-transfer-transaction": {
     "asset-id": number;
     amount: number;
     receiver: string;
+    "close-amount": number;
     "close-to": string;
     sender: string;
   };

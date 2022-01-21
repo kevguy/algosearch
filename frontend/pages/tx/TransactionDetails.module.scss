@@ -64,12 +64,39 @@
   }
 }
 
-.multisig-details {
+.multiline-details {
   display: flex;
   flex-direction: column;
   line-height: 1.25;
 
-  a {
-    margin-bottom: var(--space-xxs);
+  p {
+    margin: 0;
+  }
+
+  a,
+  p,
+  span {
+    display: inline-flex;
+  }
+
+  a + a,
+  p + p,
+  span + span {
+    margin-top: var(--space-xxs);
+  }
+}
+
+.normal-text {
+  font-weight: 300 !important;
+}
+
+@media screen and (max-width: 768px) {
+  .inner-txs-table {
+    h4 {
+      margin-bottom: 0;
+    }
+    tbody td {
+      margin-bottom: var(--space-xxxs);
+    }
   }
 }

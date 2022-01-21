@@ -214,9 +214,10 @@ Go inside the `frontend` folder:
 
 ```sh
 cd frontend
-yarn dev
 
+yarn dev
 # OR
+yarn build
 yarn start
 ```
 
