@@ -11,9 +11,9 @@
 .statscard {
   display: inline-block;
   width: 25%;
-  min-height: 70px;
+  min-height: var(--space-l);
   background-color: #fff;
-  padding: 15px;
+  padding: var(--space-m);
   border: 1px solid var(--grey-lighter);
   border-radius: 8px;
 
@@ -21,6 +21,10 @@
     color: var(--blue-dark);
     text-transform: uppercase;
     margin: 0;
+  }
+
+  @media screen and (max-width: 768px) {
+    padding: var(--space-s);
   }
 }
 
@@ -34,9 +38,8 @@
   }
 }
 
-.title + span {
-  font-size: 17px;
-  display: inline-block;
+.title + div {
+  white-space: nowrap;
 }
 
 .statscard > span > div > img {

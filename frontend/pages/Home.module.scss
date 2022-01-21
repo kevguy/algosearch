@@ -11,7 +11,7 @@
 
 .block-table {
   display: inline-block;
-  flex: 0 0 calc(50% - var(--space-xs));
+  flex: 0 1 calc(50% - var(--space-xs));
   padding-top: 20px;
   vertical-align: top;
   text-align: left;
@@ -25,4 +25,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  max-width: calc(45vw - var(--space-xs));
+  @media screen and (max-width: 768px) {
+    max-width: none;
+  }
 }

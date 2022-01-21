@@ -1,0 +1,76 @@
+{
+  "application-transaction": {
+    "accounts": [
+      "4WMWVTICJG2XWSZBXSRALIULEUWKKERMT2NSY67JGOFRKVEW7FURVYC5OM",
+      "BQLHUSSAXDPOAXLEYEHS332FIT2RKDQ33RAL45JVTXQYMKNZ3CB3TTNIW4"
+    ],
+    "application-args": [],
+    "application-id": 400404272,
+    "foreign-apps": [],
+    "foreign-assets": [27165954],
+    "global-state-schema": { "num-byte-slice": 0, "num-uint": 0 },
+    "local-state-schema": { "num-byte-slice": 0, "num-uint": 0 },
+    "on-completion": "delete"
+  },
+  "close-rewards": 0,
+  "closing-amount": 0,
+  "confirmed-round": 13348578,
+  "fee": 1000,
+  "first-valid": 13348576,
+  "genesis-hash": "mFgazF+2uRS1tMiL9dsj01hJGySEmPN28B/TjjvpVW0=",
+  "genesis-id": "betanet-v1.0",
+  "id": "Y5W6UWSSYEEOXJI2RHID66HYWIBQ4EVCCCZY5Q4LHK6XSC74BFNA",
+  "inner-txns": [
+    {
+      "asset-transfer-transaction": {
+        "amount": 0,
+        "asset-id": 27165954,
+        "close-amount": 200,
+        "close-to": "BQLHUSSAXDPOAXLEYEHS332FIT2RKDQ33RAL45JVTXQYMKNZ3CB3TTNIW4",
+        "receiver": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ"
+      },
+      "close-rewards": 0,
+      "closing-amount": 0,
+      "confirmed-round": 13348578,
+      "fee": 1000,
+      "first-valid": 13348576,
+      "intra-round-offset": 0,
+      "last-valid": 13349576,
+      "receiver-rewards": 0,
+      "round-time": 1632420997,
+      "sender": "BHBJZQRY6IR2QKA6QQLZ7H5UDI4TUG25WCIXJ5XE7WWEQRJFT5VMXWYV4Q",
+      "sender-rewards": 0,
+      "tx-type": "axfer"
+    },
+    {
+      "close-rewards": 0,
+      "closing-amount": 1200000,
+      "confirmed-round": 13348578,
+      "fee": 1000,
+      "first-valid": 13348576,
+      "intra-round-offset": 0,
+      "last-valid": 13349576,
+      "payment-transaction": {
+        "amount": 0,
+        "close-amount": 1200000,
+        "close-remainder-to": "4WMWVTICJG2XWSZBXSRALIULEUWKKERMT2NSY67JGOFRKVEW7FURVYC5OM",
+        "receiver": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ"
+      },
+      "receiver-rewards": 0,
+      "round-time": 1632420997,
+      "sender": "BHBJZQRY6IR2QKA6QQLZ7H5UDI4TUG25WCIXJ5XE7WWEQRJFT5VMXWYV4Q",
+      "sender-rewards": 0,
+      "tx-type": "pay"
+    }
+  ],
+  "intra-round-offset": 0,
+  "last-valid": 13349576,
+  "receiver-rewards": 0,
+  "round-time": 1632420997,
+  "sender": "4WMWVTICJG2XWSZBXSRALIULEUWKKERMT2NSY67JGOFRKVEW7FURVYC5OM",
+  "sender-rewards": 0,
+  "signature": {
+    "sig": "W9Nvmkp5mMOll1OlZ05IC6VmodPIfoNNCJ0X2PHkylJjovNFNqeNNj8Ouex/5Y2+j6giJEzYCZoZrYvpWm1zDA=="
+  },
+  "tx-type": "appl"
+}

@@ -57,14 +57,17 @@
 
   span {
     width: 10rem;
+
+    @media screen and (max-width: 1024px) {
+      width: auto;
+    }
   }
 
   @media screen and (max-width: 768px) {
     flex-wrap: wrap;
-    gap: var(--space-xxs);
+    gap: var(--space-xs);
 
     span {
-      width: 9rem;
       white-space: nowrap;
       text-overflow: ellipsis;
       overflow: hidden;
