@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import AlgoIcon from "../../components/algoicon";
 import {
+  checkBase64EqualsEmpty,
   ellipseAddress,
   getTxTypeName,
   integerFormatter,
@@ -105,7 +106,7 @@ const TransactionDetails = ({
             </tr>
           </thead>
           <tbody>
-            {transaction.group && (
+            {transaction.group && !checkBase64EqualsEmpty(transaction.group) && (
               <tr>
                 <td>Group ID</td>
                 <td>{transaction.group}</td>

@@ -5,6 +5,12 @@ import moment from "moment-timezone";
 export function removeSpace(text: string) {
     return text.replace(" ", "");
 }
+
+export function checkBase64EqualsEmpty(text: string) {
+  return Buffer.from(text, "base64")
+    .join("")
+    .replaceAll("0", "") === ""
+}
   
 export function ellipseAddress(address = "", width = 6): string {
     return `${address.slice(0, width)}...${address.slice(-width)}`;
