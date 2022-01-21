@@ -287,8 +287,14 @@ logs:
 # ==============================================================================
 # Administration
 
-migrate:
-	go run app/sales-admin/main.go migrate
+deploy-backend-to-heroku:
+	# https://devcenter.heroku.com/articles/container-registry-and-runtime#dockerfile-commands-and-runtime
+	# rmb to run `heroku login` and `heroku container:login` first
+	docker tag algosearch-backend:latest kevguy/algosearch-backend:latest
+	docker push kevguy/algosearch-backend:latest
+	docker tag kevguy/algosearch-backend:latest registry.heroku.com/algosrch/web
+	docker push registry.heroku.com/algosrch/web
+	heroku container:release web --app algosrch
 
 # ==============================================================================
 # Running tests within the local computer

@@ -123,7 +123,7 @@ make docker-logs-local
 make docker-clean
 ```
 
-### Local
+### Running Locally
 
 To run AlgoSearch locally, you need to have the following dependencies:
 
@@ -131,7 +131,7 @@ To run AlgoSearch locally, you need to have the following dependencies:
 - golang, for building and starting the backend services
 - a couchdb connection, for the backend RESTful API to store and retrieve data
 
-### Installation
+#### Installation
 
 Install the dependencies for frontend and the other services:
 
@@ -144,7 +144,7 @@ cd frontend
 yarn install
 ```
 
-### CouchDB
+#### CouchDB
 
 If you haven't set up a database on CouchDB for AlgoSearch to use, run this command with the appropriate credentials to set it up:
 
@@ -158,7 +158,7 @@ go run backend/app/algo-admin/main.go \
 		migrate
 ```
 
-### Backend
+#### Backend
 
 Both the restful API and metric services are configurable. Run the following commands to see what variables that can be configured through command line arguments or environment variables:
 
@@ -172,7 +172,7 @@ go run ./backend/app/sidecar/metrics/main.go --help
 
 **Note that their default values are all set to be compatible with Algorand's sandbox.**
 
-#### RESTful API Service
+##### RESTful API Service
 
 Start the API service:
 
@@ -190,7 +190,7 @@ If you are connecting to the API to sandbox, run:
 make start-sandbox-algosearch-backend
 ```
 
-#### Metric Service
+##### Metric Service
 
 Start the metric service:
 
@@ -220,12 +220,55 @@ yarn dev
 yarn start
 ```
 
-# Heroku
+## Core Team
 
-https://devcenter.heroku.com/articles/container-registry-and-runtime#dockerfile-commands-and-runtime
+<table>
+  <tbody>
+    <tr>
+      <td align="center" width="33.3%" valign="top">
+        <img width="150" height="150" src="https://github.com/kevguy.png?s=150">
+        <br>
+        <a href="https://github.com/kevguy">Kevin Lai</a>
+        <p>Core Services</p>
+        <br>
+        <p>Algorand is sweet!</p>
+      </td>
+      <td align="center" width="33.3%" valign="top">
+        <img width="150" height="150" src="https://github.com/fionnachan.png?s=150">
+        <br>
+        <a href="https://github.com/fionnachan">Fionna Chan</a>
+        <p>Frontend</p>
+        <br>
+        <p>Hardcore Crypto Open-Source Contributor</p>
+      </td>
+      <td align="center" width="33.3%" valign="top">
+        <img width="150" height="150" src="https://github.com/fionnachan.png?s=150">
+        <br>
+        <a href="https://github.com/fionnachan">Thomas Upfield</a>
+        <p>Documentation& Business Relations</p>
+        <br>
+        <p>Algorand is sweet!</p>
+      </td>
+     </tr>
+  </tbody>
+</table>
 
-docker tag algosearch-backend:latest kevguy/algosearch-backend:latest
-docker push kevguy/algosearch-backend:latest
-docker tag kevguy/algosearch-backend:latest registry.heroku.com/algosrch/web
-docker push registry.heroku.com/algosrch/web
-heroku container:release web --app algosrch
+## Special Thanks to
+
+- [@ardanlabs](https://github.com/ardanlabs) for [service](https://github.com/ardanlabs/service), which taught us everything we know about Golang and offering a well-designed sample API service as our foundation.
+
+## Licensing
+
+```
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+```
