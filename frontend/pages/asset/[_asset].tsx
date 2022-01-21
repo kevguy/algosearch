@@ -80,7 +80,11 @@ const Asset = () => {
               <td>
                 {data?.params.url ? (
                   <a
-                    href={data.params.url}
+                    href={
+                      data.params.url.indexOf("https://") === -1
+                        ? `https:/${data.params.url}`
+                        : data.params.url
+                    }
                     target="_blank"
                     rel="noopener noreferrer"
                   >
