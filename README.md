@@ -2,7 +2,7 @@
 
 ## Introduction
 
-AlgoSearch is a open-sourced project that enables you to explore and search the Algorand blockchain for transactions, addresses, and blocks, assets, statistics, and more, in real-time. It's a simple, easy-to-deploy, and open-source block explorer to be used alongside an Algorand archival node.
+AlgoSearch is an open-sourced project that enables you to explore and search the Algorand blockchain for transactions, blocks, addresses, assets, statistics, and more, in real-time. It's a simple, easy-to-deploy, and open-source block explorer to be used alongside an Algorand archival node.
 
 It contains 3 services:
 
@@ -231,23 +231,23 @@ yarn start
         <a href="https://github.com/kevguy">Kevin Lai</a>
         <p>Core Services</p>
         <br>
-        <p>Algorand is sweet!</p>
+        <p>Golang, Linkin Park, South Park, and Red Bull</p>
       </td>
       <td align="center" width="33.3%" valign="top">
         <img width="150" height="150" src="https://github.com/fionnachan.png?s=150">
         <br>
         <a href="https://github.com/fionnachan">Fionna Chan</a>
-        <p>Frontend</p>
+        <p>Frontend & UI/UX Design</p>
         <br>
-        <p>Hardcore Crypto Open-Source Contributor</p>
+        <p>Making the world a better place with OSS, one line at a time</p>
       </td>
       <td align="center" width="33.3%" valign="top">
-        <img width="150" height="150" src="https://github.com/fionnachan.png?s=150">
+        <img width="150" height="150" src="https://github.com/Uppers.png?s=150">
         <br>
-        <a href="https://github.com/fionnachan">Thomas Upfield</a>
-        <p>Documentation& Business Relations</p>
+        <a href="https://github.com/Uppers">Thomas Upfield</a>
+        <p>Documentation & Business Relations</p>
         <br>
-        <p>Algorand is sweet!</p>
+        <p>Algorand Evangelist. DeFi, tokenomics, and analytics</p>
       </td>
      </tr>
   </tbody>
@@ -256,6 +256,8 @@ yarn start
 ## Special Thanks to
 
 - [@ardanlabs](https://github.com/ardanlabs) for [service](https://github.com/ardanlabs/service), which taught us everything we know about Golang and offering a well-designed sample API service as our foundation.
+
+- [@Anish-Agnihotri](https://github.com/Anish-Agnihotri) for his contribution to the original [AlgoSearch](https://github.com/Anish-Agnihotri/algosearch) written with create-react-app and a Node.js backend.
 
 ## Licensing
 
