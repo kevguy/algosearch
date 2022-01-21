@@ -330,18 +330,23 @@ list:
 
 FILES := $(shell docker ps -aq)
 
+# Stop and remove all containers (not only AlgoSearch)
 docker-down-local:
 	docker stop $(FILES)
 	docker rm $(FILES)
 
+# See logging of all containers
 docker-logs-local:
 	docker logs -f $(FILES)
 
+# Remove all containers
 docker-down:
 	docker rm -f $(shell docker ps -aq)
 
+# Clean and remove all docker images
 docker-clean:
 	docker system prune -f
 
+# Remove all containers
 docker-delete-all-containers:
 	docker rm -f $(docker ps -a -q)

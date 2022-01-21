@@ -2,6 +2,16 @@
 
 ## Introduction
 
+AlgoSearch is a open-sourced project that enables you to explore and search the Algorand blockchain for transactions, addresses, and blocks, assets, statistics, and more, in real-time. It's a simple, easy-to-deploy, and open-source block explorer to be used alongside an Algorand archival node.
+
+It contains 3 services:
+
+- Frontend app
+  - The website of AlgoSearch
+- RESTful API server
+  - It connects to the Algorand archival node (and indexer, optional) and serves a set of API endpoints for the frontend to consume.
+- Metrics server (optional)
+  - It connects to the RESTful API and monitors its status
 
 ## Usage
 
@@ -11,11 +21,24 @@ Make sure you have a CouchDB database set up and a working Algorand node, ideall
 
 If you want to do tracing, you can set up Zipkin too.
 
-### How to run
+#### CouchDB
+
+If you want to start a CouchDB quickly in your local environment, you can run this command to start one using Docker:
+
+```sh
+make run-couch
+```
+
+- http://localhost:5984
+  - username: `admin`
+  - password: `password`
+  - volume: `PROJECT_FOLDER/db-data`
+
+### Getting Started
 
 #### Using Docker
 
-Run the following command to start the container which already contains all the three services (RESTful API, metrics and frontend):
+You can start the container with a [Docker image](https://hub.docker.com/r/kevguy/algosearch) which already contains all the three services (RESTful API, metrics and frontend):
 
 ```sh
 docker run \
@@ -24,6 +47,7 @@ docker run \
   -e ALGOSEARCH_COUCH_DB_HOST=234.567.89.0:5984 \
   -e ALGOSEARCH_COUCH_DB_USER=algorand \
   -e ALGOSEARCH_COUCH_DB_PASSWORD=algorand \
+  -e ALGOSEARCH_COUCH_DB_NAME=algosearch \
   -e ALGOSEARCH_ALGOD_PROTOCOL=http \
   -e ALGOSEARCH_ALGOD_ADDR=234.567.89.0:4001 \
   -e ALGOSEARCH_ALGOD_TOKEN=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa \
@@ -33,40 +57,112 @@ docker run \
   algosearch:1.1
 ```
 
+Please modify `NEXT_PUBLIC_API_URL` only when you are trying to connect to another backend.
+
+Please modify `METRICS_COLLECT_FROM` only when you are trying to collect metrics from another RESTful API.
+
+- Frontend: http://localhost:3000
+- RESTful API: http://localhost:5000
+- Metrics: http://localhost:3001
+
 #### Using Docker-Compose
 
-Go inside `PROJECT/zard/compose/compose-config.yaml` and change the environment variables accordingly for `algosearch-backend`. Then run the following command to start `docker-compose`:
+You can also use `docker-compose` to start all the services with each of them in separate Docker images.
+
+Go inside `PROJECT_FOLDER/zarf/compose/compose-config.yaml` and change the environment variables accordingly, and then make use of these commands:
 
 ```sh
+# Start everything using docker-compose
 make up
-```
 
-Use this command to see the logs:
-
-```sh
+# See the logs
 make logs
+
+# Stop the containers
+make down
 ```
 
-Use this command to stop the containers:
+- Frontend: http://localhost:3000
+- RESTful API: http://localhost:5000
+- Metrics: http://localhost:3001
+- Zipkin: http://localhost:9411
+- CouchDB: http://localhost:5984
+
+To build the docker images yourself:
 
 ```sh
-make down
+# RESTful API
+# algosearch-backend:1.1
+make algosearch-backend
+# algosearch-backend:latest
+make algosearch-backend-latest
+
+# Frontend
+# algosearch-frontend:1.1
+make algosearch-frontend
+# algosearch-frontend:latest
+make algosearch-frontend-latest
+
+# Metrics
+# algosearch-metrics:1.1
+make algosearch-metrics
+# algosearch-metrics:latest
+make algosearch-metrics-latest
+```
+
+Additionally, here are some useful commands for Docker:
+
+```sh
+# Stop and remove all containers (not only AlgoSearch)
+make docker-down-local
+
+# See logging of all containers
+make docker-logs-local
+
+# Clean and remove all docker images
+make docker-clean
 ```
 
 ### Local
 
-To run AlgoSearch locally, you need to have the following things:
+To run AlgoSearch locally, you need to have the following dependencies:
 
-- npm/yarn, for building and starting the frontend service
+- npm/yarn, for building and starting the frontend app
 - golang, for building and starting the backend services
-- a couchdb connection, for the backend RESTful APi to store and retrieve data
+- a couchdb connection, for the backend RESTful API to store and retrieve data
+
+### Installation
+
+Install the dependencies for frontend and the other services:
+
+```sh
+# Install all the dependencies for RESTful API and metric services
+make tidy
+
+# Install dependencies for frontend app
+cd frontend
+yarn install
+```
+
+### CouchDB
+
+If you haven't set up a database on CouchDB for AlgoSearch to use, run this command with the appropriate credentials to set it up:
+
+```sh
+go run backend/app/algo-admin/main.go \
+		--couch-db-protocol=http \
+		--couch-db-user=admin \
+		--couch-db-password=password \
+		--couch-db-host=0.0.0.0:5984 \
+		--couch-db-name=algosearch \
+		migrate
+```
 
 ### Backend
 
 Both the restful API and metric services are configurable. Run the following commands to see what variables that can be configured through command line arguments or environment variables:
 
 ```sh
-
 # RESTful API
 go run ./backend/app/algosearch/main.go --help
 
@@ -78,16 +174,17 @@ go run ./backend/app/sidecar/metrics/main.go --help
 
 #### RESTful API Service
 
-Run the following command to start the API service:
+Start the API service:
 
 ```sh
-make start-algosearch-backend
+go run ./backend/app/algosearch/main.go
 
-# OR this, which is the same command:
-go run ./backend/app/algosearch/main.go --help
+# OR this, which is the same command but with
+# better logging format
+make start-algosearch-backend
 ```
 
-If you want to connect the API to sandbox, run:
+If you are connecting to the API to sandbox, run:
 
 ```sh
 make start-sandbox-algosearch-backend
@@ -95,16 +192,17 @@ make start-sandbox-algosearch-backend
 
 #### Metric Service
 
-Run the following command to start the metric service:
+Start the metric service:
 
 ```sh
-make start-algosearch-metrics
-
-# OR this, which is the same command:
 go run ./backend/app/sidecar/metrics/main.go
+
+# OR this, which is the same command but with
+# better logging format
+make start-algosearch-metrics
 ```
 
-If you want to connect the metric to work with the sandbox, run:
+If you are connecting the metric service to work with the sandbox, run:
 
 ```sh
 make start-sandbox-algosearch-backend
@@ -112,47 +210,14 @@ make start-sandbox-algosearch-backend
 
 #### Frontend
 
-
-
-## Docker Support
-
-To build AlgoSearch, run the following command and you will have an image `algosearch:1.1`:
+Go inside the `frontend` folder:
 
 ```sh
-make algosearch
-```
+cd frontend
+yarn dev
 
-You can also choose to build the containers separately:
-
-```sh
-# RESTful API
-make algosearch-backend
-
-# Metrics API
-make algosearch-metrics
-
-# Frontend
-make algosearch-frontend
-```
-
-
-```shell
-# kill local postgres to make way for sandbox's postgres
-make kill-postgres
-
-# delete couchdb data
-sudo rm -rf db-data
-
-# start couchdb
-make start-local-couchdb
-
-# insert the design documents into couchdb
-make migrate-couch
-
-# start sandbox
-
-# start the service
-make it-rain
+# OR
+yarn start
 ```
 
 # Heroku
