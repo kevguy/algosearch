@@ -1,8 +1,8 @@
 import React from "react";
 import Link from "next/link";
 import { TransactionResponse } from "../../types/apiResponseTypes";
-import styles from "./TransactionDetails.module.scss";
-import blockStyles from "../block/Block.module.scss";
+import styles from "../../pages/tx/TransactionDetails.module.scss";
+import blockStyles from "../../pages/block/Block.module.scss";
 
 const ApplicationTransactionInfo = ({
   transaction,

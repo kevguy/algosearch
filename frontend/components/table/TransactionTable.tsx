@@ -37,7 +37,9 @@ const TransactionTable = ({
     <div className={styles["transaction-table"]}>
       {transactions &&
         transactions.map((tx: TransactionResponse, index: number) => {
-          const _receiver = tx["payment-transaction"].receiver || tx.sender;
+          const _receiver =
+            (tx["payment-transaction"] && tx["payment-transaction"].receiver) ||
+            tx.sender;
           let _asaInfo: IASAInfo =
             asaMap[tx["asset-transfer-transaction"]["asset-id"]];
 
@@ -85,7 +87,7 @@ const TransactionTable = ({
                           )
                         )
                       )} ${_asaInfo.unitName}`
-                    ) : (
+                    ) : tx["payment-transaction"] ? (
                       <>
                         <AlgoIcon width={12} height={12} />{" "}
                         {formatNumber(
@@ -94,6 +96,8 @@ const TransactionTable = ({
                           )
                         )}
                       </>
+                    ) : (
+                      "N/A"
                     )}
                   </span>
                 </div>

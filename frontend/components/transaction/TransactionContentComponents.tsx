@@ -1,5 +1,5 @@
 import Link from "next/link";
-import AlgoIcon from "../../components/algoicon";
+import AlgoIcon from "../algoicon";
 import { TransactionResponse } from "../../types/apiResponseTypes";
 import { IAsaMap } from "../../types/misc";
 import {

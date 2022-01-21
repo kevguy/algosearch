@@ -9,9 +9,9 @@ import {
   removeSpace,
   TxType,
 } from "../../utils/stringUtils";
-import styles from "./TransactionDetails.module.scss";
-import blockStyles from "../block/Block.module.scss";
-import AlgoIcon from "../../components/algoicon";
+import styles from "../../pages/tx/TransactionDetails.module.scss";
+import blockStyles from "../../pages/block/Block.module.scss";
+import AlgoIcon from "../algoicon";
 import algosdk from "algosdk";
 
 const TransactionAdditionalInfo = ({

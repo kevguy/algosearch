@@ -23,14 +23,14 @@ import {
   TabsUnstyled,
   TabUnstyled,
 } from "@mui/material";
-import TransactionAdditionalInfo from "./TransactionAdditionalInfo";
-import ApplicationTransactionInfo from "./ApplicationTransactionInfo";
+import TransactionAdditionalInfo from "../../components/transaction/TransactionAdditionalInfo";
+import ApplicationTransactionInfo from "../../components/transaction/ApplicationTransactionInfo";
 import {
   getAmount,
   getCloseAmount,
   getInnerTxCloseTo,
   getInnerTxReceiver,
-} from "./TransactionContentComponents";
+} from "../../components/transaction/TransactionContentComponents";
 
 const TransactionDetails = ({
   transaction,
@@ -247,8 +247,8 @@ const TransactionDetails = ({
                 </tr>
               </thead>
               <tbody>
-                {transaction["inner-txns"].map((innerTx) => (
-                  <tr>
+                {transaction["inner-txns"].map((innerTx, index) => (
+                  <tr key={index}>
                     <td className={styles["normal-text"]}>
                       <h4 className="mobile-only">Type</h4>
                       {getTxTypeName(innerTx["tx-type"])}
