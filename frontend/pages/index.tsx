@@ -128,7 +128,7 @@ const Home = () => {
           }
         />
         <Statscard
-          stat="Circulating supply"
+          stat="Circulating Supply"
           info={
             <a
               href="https://metricsapi.algorand.foundation/v1/supply/circulating?unit=algo"
