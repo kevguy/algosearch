@@ -1,0 +1,81 @@
+{
+  "application-transaction": {
+    "application-id": 0,
+    "global-state-schema": { "num-byte-slice": 0, "num-uint": 0 },
+    "local-state-schema": { "num-byte-slice": 0, "num-uint": 0 }
+  },
+  "asset-config-transaction": {
+    "params": {
+      "clawback": "ARCC3TMGVD7KXY7GYTE7U5XXUJXFRD2SXLAWRV57XJ6HWHRR37GNGNMPSY",
+      "creator": "ARCC3TMGVD7KXY7GYTE7U5XXUJXFRD2SXLAWRV57XJ6HWHRR37GNGNMPSY",
+      "decimals": 6,
+      "freeze": "ARCC3TMGVD7KXY7GYTE7U5XXUJXFRD2SXLAWRV57XJ6HWHRR37GNGNMPSY",
+      "manager": "ARCC3TMGVD7KXY7GYTE7U5XXUJXFRD2SXLAWRV57XJ6HWHRR37GNGNMPSY",
+      "metadata-hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+      "name": "Asia Reserve Currency Coin",
+      "reserve": "ARCC3TMGVD7KXY7GYTE7U5XXUJXFRD2SXLAWRV57XJ6HWHRR37GNGNMPSY",
+      "total": 88616203378510000,
+      "unit-name": "ARCC",
+      "url": "https://arcc.io"
+    }
+  },
+  "asset-freeze-transaction": {
+    "address": "",
+    "asset-id": 0,
+    "new-freeze-status": false
+  },
+  "asset-transfer-transaction": { "amount": 0, "asset-id": 0, "receiver": "" },
+  "auth-addr": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ",
+  "confirmed-round": 4162690,
+  "fee": 1000,
+  "first-valid": 4162539,
+  "genesis-hash": "wGHE2Pwdvd7S12BL5FaOP20EGYesN73ktiC1qzkkit8=",
+  "genesis-id": "mainnet-v1.0",
+  "group": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+  "id": "RR6ACOE4TJ6BOPEWFNWLE22IGX4WIG32O7BCMMFOKYTK5V7JQW5Q",
+  "keyreg-transaction": {},
+  "last-valid": 4163539,
+  "lease": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+  "note": "TG92ZSBuZXZlciBmYWlscy4gQnV0IHdoZXJlIHRoZXJlIGFyZSBwcm9waGVjaWVzLCB0aGV5IHdpbGwgY2Vhc2U7IHdoZXJlIHRoZXJlIGFyZSB0b25ndWVzLCB0aGV5IHdpbGwgYmUgc3RpbGxlZDsgd2hlcmUgdGhlcmUgaXMga25vd2xlZGdlLCBpdCB3aWxsIHBhc3MgYXdheS4gRm9yIHdlIGtub3cgaW4gcGFydCBhbmQgd2UgcHJvcGhlc3kgaW4gcGFydCwgYnV0IHdoZW4gY29tcGxldGVuZXNzIGNvbWVzLCB3aGF0IGlzIGluIHBhcnQgZGlzYXBwZWFycy4gV2hlbiBJIHdhcyBhIGNoaWxkLCBJIHRhbGtlZCBsaWtlIGEgY2hpbGQsIEkgdGhvdWdodCBsaWtlIGEgY2hpbGQsIEkgcmVhc29uZWQgbGlrZSBhIGNoaWxkLiAgV2hlbiBJIGJlY2FtZSBhIG1hbiwgSSBwdXQgdGhlIHdheXMgb2YgY2hpbGRob29kIGJlaGluZCBtZS4gRm9yIG5vdyB3ZSBzZWUgb25seSBhIHJlZmxlY3Rpb24gYXMgaW4gYSBtaXJyb3I7IHRoZW4gd2Ugc2hhbGwgc2VlIGZhY2UgdG8gZmFjZS4gTm93IEkga25vdyBpbiBwYXJ0OyB0aGVuIEkgc2hhbGwga25vdyBmdWxseSwgZXZlbiBhcyBJIGFtIGZ1bGx5IGtub3duLg==",
+  "payment-transaction": { "amount": 0, "receiver": "" },
+  "rekey-to": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ",
+  "round-time": 1578516789,
+  "sender": "ARCC3TMGVD7KXY7GYTE7U5XXUJXFRD2SXLAWRV57XJ6HWHRR37GNGNMPSY",
+  "sender-rewards": 704,
+  "signature": {
+    "logicsig": { "logic": null, "multisig-signature": {} },
+    "multisig": {
+      "subsignature": [
+        {
+          "public-key": "QFkQCMaKY5Xu7aqqLbQxj3CTSB0s3aPErGrtuoxzBcs=",
+          "signature": "bP6EVEvrGbkF2g+VZevqxVdpEQ5i0935AmgEZKiH+g3TkqlhrxPWVKW0MMJC9RG31qATGmbsbbXHf1/X7hL6BA=="
+        },
+        {
+          "public-key": "QFkSe+64xxYMj6Bhh7rHSwdpU4FzcELCJde9RKTFCSs=",
+          "signature": "OdCpmFaF1zMEjrMZS1LDj7txlYZK9PPHVUd3qDDa9NpaHHrKyg84m18oSkrrHaHM61qOEhSplPIR2ft0LMoFBQ=="
+        },
+        {
+          "public-key": "QFkReJUmVShqX0geki9K/cotQvISvJ5e1FLfjsAcFfM=",
+          "signature": "fhsbsUVY9ibrP2D55PguTnzZ8xEFS1XYSspa9d9sFjwX/sLp7Nri1eeaFaa/htRRy+pbi3xHqH3bEqu5kXj+CQ=="
+        },
+        {
+          "public-key": "QFkTjbukmmhUerhB1BCnpLWYafAPKbWxwF5C9ynyOrQ=",
+          "signature": "dArgtNBuYeoa1eT+Aq0/rvuBFglg3CfHzDfZPv7FF3nNoR5AQlzWF3iU21JpIO06Tls6QuwsD1icU4oTZIjlBA=="
+        },
+        { "public-key": "QFkYsAzH2FeS3QUwP2wWNi5ODdyz5TrX/jZbN5MYSS4=" },
+        { "public-key": "QFkWXRnuxJn7H+Yvj2Zilwp928HynyL6AwPS9boAxBo=" },
+        { "public-key": "QFkajunPV1rSnPfsvfNszwhpFfHy2oenAdovGzyxstk=" },
+        { "public-key": "QFkafg0VM59LsIs+qysb56I0qgBpvPRzE0hvin903X8=" },
+        {
+          "public-key": "QFkSRXkmcoluO8H3B4BpWXOXFskM19p5U2tinUW4LTA=",
+          "signature": "RfooDPzyjfldx+RKezl3ETYU1XbQ8VI+cw/yOczmhYwoImTPLfhAIsT5ixM6rJ0gPR1PFLWQwhyKiIz1D5QDAQ=="
+        },
+        { "public-key": "QFkYJBVkrxmk+R8imQnoxjq+Zr9yuazAm5TXT7Fg/eg=" },
+        { "public-key": "QFkXM3Ak2ckEzr6JFxNaAsKTdBXP5wqT/E1XatGBNA0=" }
+      ],
+      "threshold": 5,
+      "version": 1
+    }
+  },
+  "tx-type": "acfg"
+}

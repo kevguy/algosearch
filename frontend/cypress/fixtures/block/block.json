@@ -1,0 +1,319 @@
+{
+  "genesis-hash": "wGHE2Pwdvd7S12BL5FaOP20EGYesN73ktiC1qzkkit8=",
+  "genesis-id": "mainnet-v1.0",
+  "previous-block-hash": "xD23ffs8gvOvURZbgQtVtxKhQMCc5wtoohB0sq4FuBA=",
+  "rewards": {
+    "fee-sink": "Y76M3MSY6DKBRHBL7C3NNDXGS5IIMQVQVUAB6MP4XEMMGVF2QWNPL226CA",
+    "rewards-calculation-round": 4500000,
+    "rewards-level": 94072,
+    "rewards-pool": "737777777777777777777777777777777777777777777777777UFEJ2CI",
+    "rewards-rate": 52000012,
+    "rewards-residue": 2044521355
+  },
+  "round": 4259852,
+  "seed": "+oqnjMAeCd/RJBGZ9F4pQcNRWpM9VstN2z+HGAlvrgQ=",
+  "timestamp": 1578944469,
+  "transactions": [
+    {
+      "application-transaction": {
+        "application-id": 0,
+        "global-state-schema": { "num-byte-slice": 0, "num-uint": 0 },
+        "local-state-schema": { "num-byte-slice": 0, "num-uint": 0 }
+      },
+      "asset-config-transaction": {
+        "params": { "creator": "", "decimals": 0, "total": 0 }
+      },
+      "asset-freeze-transaction": {
+        "address": "",
+        "asset-id": 0,
+        "new-freeze-status": false
+      },
+      "asset-transfer-transaction": {
+        "amount": 888888888000000,
+        "asset-id": 163650,
+        "close-to": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ",
+        "receiver": "DBOVYJH5JCRIJ2UZIMY4QRSWXHHBTOOGUYQS7654WSJXAXQ2TUMWFVB2G4",
+        "sender": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ"
+      },
+      "auth-addr": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ",
+      "confirmed-round": 4259852,
+      "fee": 1000,
+      "first-valid": 4259526,
+      "genesis-hash": "wGHE2Pwdvd7S12BL5FaOP20EGYesN73ktiC1qzkkit8=",
+      "genesis-id": "mainnet-v1.0",
+      "group": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+      "id": "5FKLBBCQPBGAT4QWD6D4LANJ7GIXD2AVPK2W4PJBW77Q4U3LM5KQ",
+      "keyreg-transaction": {},
+      "last-valid": 4260526,
+      "lease": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+      "payment-transaction": { "amount": 0, "receiver": "" },
+      "rekey-to": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ",
+      "round-time": 1578944469,
+      "sender": "ARCC3TMGVD7KXY7GYTE7U5XXUJXFRD2SXLAWRV57XJ6HWHRR37GNGNMPSY",
+      "sender-rewards": 195837,
+      "signature": {
+        "logicsig": { "logic": null, "multisig-signature": {} },
+        "multisig": {
+          "subsignature": [
+            {
+              "public-key": "QFkQCMaKY5Xu7aqqLbQxj3CTSB0s3aPErGrtuoxzBcs=",
+              "signature": "WDA4IDLzdZ6JfxfhzLx4uQ05cNrP7P4xmr8G9fjkWOX8y8L/e2AN2DJp2fs9HDQZnyEDNmjONaxfHyYYqMKSBA=="
+            },
+            {
+              "public-key": "QFkSe+64xxYMj6Bhh7rHSwdpU4FzcELCJde9RKTFCSs=",
+              "signature": "NmWo2UDn0FxgRbtp8wzHk70/WVOuquqhoRk5nZk3O31RJ4ErY8QedXdpnKeuGBSA+YgkYeSzwoGtPFaEhC7aDw=="
+            },
+            {
+              "public-key": "QFkReJUmVShqX0geki9K/cotQvISvJ5e1FLfjsAcFfM=",
+              "signature": "IwEUI2ZtFAV92dYNR8qR8gYbapXbTj05X4FsLcC17lDmCipQD75g7SSGsIPLrTrqd/SMM6CQSJlPNkYSioqkDA=="
+            },
+            {
+              "public-key": "QFkTjbukmmhUerhB1BCnpLWYafAPKbWxwF5C9ynyOrQ=",
+              "signature": "20wN81aXwo05mVlGnVYmeOKd91Ou/JrKWyJUBHlxAboDA+DvJXvL2nmkO+GN5BtmCMmf65lo43sNJQvJdnKZAw=="
+            },
+            { "public-key": "QFkYsAzH2FeS3QUwP2wWNi5ODdyz5TrX/jZbN5MYSS4=" },
+            { "public-key": "QFkWXRnuxJn7H+Yvj2Zilwp928HynyL6AwPS9boAxBo=" },
+            { "public-key": "QFkajunPV1rSnPfsvfNszwhpFfHy2oenAdovGzyxstk=" },
+            { "public-key": "QFkafg0VM59LsIs+qysb56I0qgBpvPRzE0hvin903X8=" },
+            {
+              "public-key": "QFkSRXkmcoluO8H3B4BpWXOXFskM19p5U2tinUW4LTA=",
+              "signature": "mbc0BYsEvhxPaFTwLOr6koy4zHzgtNfkmmT+W6BMfxS5BLBb+AExnEaEnDsT9NGmpbGHillTfNIcxDDM5WNtCA=="
+            },
+            { "public-key": "QFkYJBVkrxmk+R8imQnoxjq+Zr9yuazAm5TXT7Fg/eg=" },
+            { "public-key": "QFkXM3Ak2ckEzr6JFxNaAsKTdBXP5wqT/E1XatGBNA0=" }
+          ],
+          "threshold": 5,
+          "version": 1
+        }
+      },
+      "tx-type": "axfer"
+    },
+    {
+      "application-transaction": {
+        "application-id": 0,
+        "global-state-schema": { "num-byte-slice": 0, "num-uint": 0 },
+        "local-state-schema": { "num-byte-slice": 0, "num-uint": 0 }
+      },
+      "asset-config-transaction": {
+        "params": { "creator": "", "decimals": 0, "total": 0 }
+      },
+      "asset-freeze-transaction": {
+        "address": "",
+        "asset-id": 0,
+        "new-freeze-status": false
+      },
+      "asset-transfer-transaction": {
+        "amount": 19389366932220000,
+        "asset-id": 163650,
+        "close-to": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ",
+        "receiver": "6F2D3I2522FQBN5XFQAKTVOUDASH4BJFO3H5Y52F43EORHPPN6KGJIQQ7M",
+        "sender": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ"
+      },
+      "auth-addr": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ",
+      "confirmed-round": 4259852,
+      "fee": 1000,
+      "first-valid": 4259580,
+      "genesis-hash": "wGHE2Pwdvd7S12BL5FaOP20EGYesN73ktiC1qzkkit8=",
+      "genesis-id": "mainnet-v1.0",
+      "group": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+      "id": "O3J2KZT7YRV3YYFVE4IJ4OTL4F7H7VG342KHSZQYKN7HYG53GOFQ",
+      "keyreg-transaction": {},
+      "last-valid": 4260580,
+      "lease": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+      "payment-transaction": { "amount": 0, "receiver": "" },
+      "rekey-to": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ",
+      "round-time": 1578944469,
+      "sender": "ARCC3TMGVD7KXY7GYTE7U5XXUJXFRD2SXLAWRV57XJ6HWHRR37GNGNMPSY",
+      "signature": {
+        "logicsig": { "logic": null, "multisig-signature": {} },
+        "multisig": {
+          "subsignature": [
+            {
+              "public-key": "QFkQCMaKY5Xu7aqqLbQxj3CTSB0s3aPErGrtuoxzBcs=",
+              "signature": "GkDo7MHJ5YpNRV8x9pXfEnFwECuTjb3ukixzRSmqJ4ZeqMk6SYqn2XF5fjo2t8m2N11QQBZy6Cju1BargNzlDg=="
+            },
+            {
+              "public-key": "QFkSe+64xxYMj6Bhh7rHSwdpU4FzcELCJde9RKTFCSs=",
+              "signature": "lupqk50JlxiHf336JKqLTP55cub1cELKWL2nWpyxkw+jkaNUylxh+xUMO+lMr3BKkimXFpZtPRxAuBpC7aVlBw=="
+            },
+            {
+              "public-key": "QFkReJUmVShqX0geki9K/cotQvISvJ5e1FLfjsAcFfM=",
+              "signature": "/HsK+YoJbr4mpd7HS+GU37gDh9CIp9VxJsZ2zI1KWx0kWK5HEr9B1qP2lxzlB4GXY6J2Q9LglbobssPLfAttAg=="
+            },
+            {
+              "public-key": "QFkTjbukmmhUerhB1BCnpLWYafAPKbWxwF5C9ynyOrQ=",
+              "signature": "6HgfvkR2RHrHuPHMelvShMX5WsYn/uMWLPWsMVHYl51MrXaYmG5QFZhhI1Zp+7Gi3xEPGmUTtWI6p7ZVdc4KAA=="
+            },
+            { "public-key": "QFkYsAzH2FeS3QUwP2wWNi5ODdyz5TrX/jZbN5MYSS4=" },
+            { "public-key": "QFkWXRnuxJn7H+Yvj2Zilwp928HynyL6AwPS9boAxBo=" },
+            { "public-key": "QFkajunPV1rSnPfsvfNszwhpFfHy2oenAdovGzyxstk=" },
+            { "public-key": "QFkafg0VM59LsIs+qysb56I0qgBpvPRzE0hvin903X8=" },
+            {
+              "public-key": "QFkSRXkmcoluO8H3B4BpWXOXFskM19p5U2tinUW4LTA=",
+              "signature": "nbhzwGjz+fG7jEK1ZQdDDxzfNn5fNkw3dP4aMemYWY1RILKTDn/D0oQni0Y5wN5ujSB4PN/nUZmJEyLNaOECCg=="
+            },
+            { "public-key": "QFkYJBVkrxmk+R8imQnoxjq+Zr9yuazAm5TXT7Fg/eg=" },
+            { "public-key": "QFkXM3Ak2ckEzr6JFxNaAsKTdBXP5wqT/E1XatGBNA0=" }
+          ],
+          "threshold": 5,
+          "version": 1
+        }
+      },
+      "tx-type": "axfer"
+    },
+    {
+      "application-transaction": {
+        "application-id": 0,
+        "global-state-schema": { "num-byte-slice": 0, "num-uint": 0 },
+        "local-state-schema": { "num-byte-slice": 0, "num-uint": 0 }
+      },
+      "asset-config-transaction": {
+        "params": { "creator": "", "decimals": 0, "total": 0 }
+      },
+      "asset-freeze-transaction": {
+        "address": "",
+        "asset-id": 0,
+        "new-freeze-status": false
+      },
+      "asset-transfer-transaction": {
+        "amount": 45561651331390000,
+        "asset-id": 163650,
+        "close-to": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ",
+        "receiver": "ZPPOBXV26II5M226LEX45QCSKQEECV54BHLPDJIXEIPB4MLLIRPJ36NHQM",
+        "sender": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ"
+      },
+      "auth-addr": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ",
+      "confirmed-round": 4259852,
+      "fee": 1000,
+      "first-valid": 4259567,
+      "genesis-hash": "wGHE2Pwdvd7S12BL5FaOP20EGYesN73ktiC1qzkkit8=",
+      "genesis-id": "mainnet-v1.0",
+      "group": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+      "id": "UV66USFTJEV3ATVA6AS4NQCU5VVBZY35JEIN7VTTJNMVP67ZEG5A",
+      "keyreg-transaction": {},
+      "last-valid": 4260567,
+      "lease": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+      "payment-transaction": { "amount": 0, "receiver": "" },
+      "rekey-to": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ",
+      "round-time": 1578944469,
+      "sender": "ARCC3TMGVD7KXY7GYTE7U5XXUJXFRD2SXLAWRV57XJ6HWHRR37GNGNMPSY",
+      "signature": {
+        "logicsig": { "logic": null, "multisig-signature": {} },
+        "multisig": {
+          "subsignature": [
+            {
+              "public-key": "QFkQCMaKY5Xu7aqqLbQxj3CTSB0s3aPErGrtuoxzBcs=",
+              "signature": "hYj4ghraWMs0sHwlwFKk+cHnQvo952tB6qpzl8pTqsx2UIWf62lkQ5feljnV9olLSmM1ksw5UeSV5d1SFLDrAg=="
+            },
+            {
+              "public-key": "QFkSe+64xxYMj6Bhh7rHSwdpU4FzcELCJde9RKTFCSs=",
+              "signature": "IOxBkQC4qtE/DaHfTQIjy/2mfVWZCVf+j1knROc8PmekP9OjwyzGVnZLR8UExp7RcK9v2psN8bW/wHZtw1lrDQ=="
+            },
+            {
+              "public-key": "QFkReJUmVShqX0geki9K/cotQvISvJ5e1FLfjsAcFfM=",
+              "signature": "1NrLrf5V7FquRvHqshUaMzoQ3Z7sY7KvAcEMTiXasbupB3aZg4sijdxVSQ4XycltwYNIxfJPVENY9SxTcd1VAg=="
+            },
+            { "public-key": "QFkTjbukmmhUerhB1BCnpLWYafAPKbWxwF5C9ynyOrQ=" },
+            { "public-key": "QFkYsAzH2FeS3QUwP2wWNi5ODdyz5TrX/jZbN5MYSS4=" },
+            { "public-key": "QFkWXRnuxJn7H+Yvj2Zilwp928HynyL6AwPS9boAxBo=" },
+            { "public-key": "QFkajunPV1rSnPfsvfNszwhpFfHy2oenAdovGzyxstk=" },
+            {
+              "public-key": "QFkafg0VM59LsIs+qysb56I0qgBpvPRzE0hvin903X8=",
+              "signature": "spt+4VUO+YVgAopWZ1rPqn8mEOj+fXjNM9nuoG5beOby3SB36PJ2Lw2k4GuWdlH1fqNUDvK4slJBERFdMDopCQ=="
+            },
+            {
+              "public-key": "QFkSRXkmcoluO8H3B4BpWXOXFskM19p5U2tinUW4LTA=",
+              "signature": "LUSzdvAss9Oj3EcXpN5XMo295I+JIWZaLpK6n+2Xx/PqQ5Tjbk6KId1Ze+q6yBt1KjR7mA3HwfJkwfuo8G4EDA=="
+            },
+            { "public-key": "QFkYJBVkrxmk+R8imQnoxjq+Zr9yuazAm5TXT7Fg/eg=" },
+            { "public-key": "QFkXM3Ak2ckEzr6JFxNaAsKTdBXP5wqT/E1XatGBNA0=" }
+          ],
+          "threshold": 5,
+          "version": 1
+        }
+      },
+      "tx-type": "axfer"
+    },
+    {
+      "application-transaction": {
+        "application-id": 0,
+        "global-state-schema": { "num-byte-slice": 0, "num-uint": 0 },
+        "local-state-schema": { "num-byte-slice": 0, "num-uint": 0 }
+      },
+      "asset-config-transaction": {
+        "params": { "creator": "", "decimals": 0, "total": 0 }
+      },
+      "asset-freeze-transaction": {
+        "address": "",
+        "asset-id": 0,
+        "new-freeze-status": false
+      },
+      "asset-transfer-transaction": {
+        "amount": 22776296226900000,
+        "asset-id": 163650,
+        "close-to": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ",
+        "receiver": "367UTRSJ3Y65XKQPHLHUVJX2YB5QVHKV657ZVHGYGL6KUJZCUCBMKQAWHY",
+        "sender": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ"
+      },
+      "auth-addr": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ",
+      "confirmed-round": 4259852,
+      "fee": 1000,
+      "first-valid": 4259551,
+      "genesis-hash": "wGHE2Pwdvd7S12BL5FaOP20EGYesN73ktiC1qzkkit8=",
+      "genesis-id": "mainnet-v1.0",
+      "group": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+      "id": "ZYED6ZL4V7P5VXYVSWSLMKX55BLPGAUST4LIZP4ZVUONZZXYPICA",
+      "keyreg-transaction": {},
+      "last-valid": 4260551,
+      "lease": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+      "payment-transaction": { "amount": 0, "receiver": "" },
+      "rekey-to": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ",
+      "round-time": 1578944469,
+      "sender": "ARCC3TMGVD7KXY7GYTE7U5XXUJXFRD2SXLAWRV57XJ6HWHRR37GNGNMPSY",
+      "signature": {
+        "logicsig": { "logic": null, "multisig-signature": {} },
+        "multisig": {
+          "subsignature": [
+            {
+              "public-key": "QFkQCMaKY5Xu7aqqLbQxj3CTSB0s3aPErGrtuoxzBcs=",
+              "signature": "4fcgS1ku38hmIQVk+xD2OcdBgU4cwRejiK0IPhDc0h8o8sv2Ul3FEuy7fbDNWzKz/Vyj0rhUoLCMAO2M0mbLBw=="
+            },
+            { "public-key": "QFkSe+64xxYMj6Bhh7rHSwdpU4FzcELCJde9RKTFCSs=" },
+            { "public-key": "QFkReJUmVShqX0geki9K/cotQvISvJ5e1FLfjsAcFfM=" },
+            { "public-key": "QFkTjbukmmhUerhB1BCnpLWYafAPKbWxwF5C9ynyOrQ=" },
+            {
+              "public-key": "QFkYsAzH2FeS3QUwP2wWNi5ODdyz5TrX/jZbN5MYSS4=",
+              "signature": "fX0ct2jH1rZ6qExSAifCw72GViQzXGVDQ+LjAxmjc5iK1JdQag/La26NpTsCNiHXIr9uooVWz71vDqYygUOCAQ=="
+            },
+            {
+              "public-key": "QFkWXRnuxJn7H+Yvj2Zilwp928HynyL6AwPS9boAxBo=",
+              "signature": "gE4kOR4L9SPoH10YU6yuLNgvL1XSFigEHBvi2FU8tZ6ikzTfIUtV2TYZXu8FSHDyTAoWdhLKHyhgnhX1468IAA=="
+            },
+            { "public-key": "QFkajunPV1rSnPfsvfNszwhpFfHy2oenAdovGzyxstk=" },
+            { "public-key": "QFkafg0VM59LsIs+qysb56I0qgBpvPRzE0hvin903X8=" },
+            { "public-key": "QFkSRXkmcoluO8H3B4BpWXOXFskM19p5U2tinUW4LTA=" },
+            {
+              "public-key": "QFkYJBVkrxmk+R8imQnoxjq+Zr9yuazAm5TXT7Fg/eg=",
+              "signature": "SDVYnI4BVbIwkOflSV+pij3E+vZswC8Gi7DdISs2mySc/gL30DjmuCqX1VmCkwOqsIIXWRTGeBD9NF0LmjuRBA=="
+            },
+            {
+              "public-key": "QFkXM3Ak2ckEzr6JFxNaAsKTdBXP5wqT/E1XatGBNA0=",
+              "signature": "dFsA/T+LLNcc7MrIzmBVa+4NBISIT7djQTr6XrSfl5/LHOHU7M2sBVAOIJexHrCmzt8AvBDCc6+9Zrumpkl0Dw=="
+            }
+          ],
+          "threshold": 5,
+          "version": 1
+        }
+      },
+      "tx-type": "axfer"
+    }
+  ],
+  "transactions-root": "bSmBrwYk8NaBn4fZc7B/oMd85wJH3hJfh500aNFQCpI=",
+  "txn-counter": 187928,
+  "upgrade-state": {
+    "current-protocol": "https://github.com/algorandfoundation/specs/tree/4a9db6a25595c6fd097cf9cc137cc83027787eaa"
+  },
+  "upgrade-vote": {},
+  "proposer": "REMF542E5ZFKS7SGSNHTYB255AUITEKHLAATWVPK3CY7TAFPT6GNNCHH6M",
+  "block-hash": "B2WNSa7XTUmY8fnq1sOnCU2kzouykni/fRU2w0WdIOE="
+}
