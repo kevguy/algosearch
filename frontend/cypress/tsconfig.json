@@ -2,10 +2,9 @@
   "compilerOptions": {
     "target": "es5",
     "lib": ["es2017", "dom"],
-    "types": ["cypress"]
+    "types": ["cypress"],
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": false,
   },
   "include": ["**/*.ts"],
-  "resolveJsonModule": true,
-  "allowSyntheticDefaultImports": false,
-  "esModuleInterop": false
 }

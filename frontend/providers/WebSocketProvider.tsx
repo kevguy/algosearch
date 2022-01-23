@@ -50,12 +50,22 @@ const readyStateNameMap: ReadyStateNameMapType = {
 export const getConnectionStatus = (readyState: ReadyState) =>
   readyStateNameMap[readyState];
 
+let useWebSocketLibHook: any = useWebSocket;
+
 const WebSocketProvider = ({ children }: { children: ReactElement }) => {
-  const { lastJsonMessage, readyState } = useWebSocket(socketEndpoint, {
-    retryOnError: true,
-    reconnectAttempts: 5,
-    reconnectInterval: 3000,
-  });
+  // Ugly dirty hack for cypress to stub useWebSocket
+  // because it can't be stubbed alongside with WebSocket using mock-socket
+  const { lastJsonMessage, readyState } =
+    typeof window !== "undefined" &&
+    (window as any).Cypress &&
+    (window as any).useWebSocketLibHook
+      ? (window as any).useWebSocketLibHook()
+      : useWebSocketLibHook(socketEndpoint, {
+          retryOnError: true,
+          reconnectAttempts: 5,
+          reconnectInterval: 3000,
+        });
+
   const dispatch = useDispatch();
 
   const getJsonMessage = useCallback(() => {

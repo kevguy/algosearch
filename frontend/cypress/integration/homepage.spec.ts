@@ -1,16 +1,7 @@
-import { Server, WebSocket } from "mock-socket";
+import * as blockInSyncFixture from "../fixtures/block/block_18788980.json";
+import * as blockOutOfSyncFixture from "../fixtures/block/block_4259852.json";
+import { commonIntercepts, interceptBlocks, interceptTxs } from "./utils";
 
-const supplyFixture = "../fixtures/supply.json";
-const currentTxFixture = "../fixtures/tx/tx_pay_single.json";
-const blocksFixture = "../fixtures/blocks/blocks_pay_txs.json";
-const txsFixture = "../fixtures/txs/txs_pay.json";
-
-const backend_url = "http://localhost:5000";
-
-window.WebSocket = WebSocket; // Here we stub out the window object
-
-let mockSocket;
-let mockServer;
 describe('Home Page', () => {
   beforeEach(() => {
     // Cypress starts out with a blank slate for each test
@@ -40,67 +31,70 @@ describe('Home Page', () => {
       }
     )
 
-    cy.intercept(
-      {
-        method: 'GET',
-        url: `${backend_url}/v1/current-txn`,
-      },
-      {
-        fixture: currentTxFixture
-      }
-    )
+    commonIntercepts();
 
-    cy.intercept(
-      {
-        method: 'GET',
-        url: `${backend_url}/v1/algod/ledger/supply`,
-      },
-      {
-        fixture: supplyFixture
-      }
-    )
+    interceptBlocks();
 
-    cy.intercept(
-      {
-        method: 'GET',
-        url: `${backend_url}/v1/rounds?latest_blk=*&page=1&limit=10&order=desc`,
-      },
-      {
-        fixture: blocksFixture
-      }
-    ).as('getLatestBlocks')
-
-    cy.intercept(
-      {
-        method: 'GET',
-        url: `${backend_url}/v1/transactions?latest_txn=*&page=1&limit=10&order=desc`,
-      },
-      {
-        fixture: txsFixture
-      }
-    ).as('getLatestTxs')
-
-    cy.visit('/')
-    cy.url().should('equal', 'http://localhost:3000/')
+    interceptTxs();
   })
 
   it('displays home header text correctly', () => {
+    cy.visit('/')
+    cy.url().should('equal', 'http://localhost:3000/')
     cy.get('*[class*="HomeHeader_content"] h1 span').should('have.text', 'Algorand Block Explorer')
     cy.get('*[class*="HomeHeader_desc"] > span').should('have.text', 'Open-source block explorer for Algorand')
   })
 
   it('shows in sync when it is in sync', () => {
-    // TODO -> stub sync status
+    Cypress.on("window:before:load", win => {
+      (win as any).useWebSocketLibHook = () => ({
+        sendMessage: () => {},
+        sendJsonMessage: () => {},
+        lastMessage: {},
+        lastJsonMessage: {
+          account_ids: [],
+          app_ids: null,
+          asset_ids: null,
+          avg_block_txn_speed: 4.375,
+          block: blockInSyncFixture,
+          transaction_ids: [],
+        },
+        readyState: 1,
+        getWebSocket: () => {},
+      });
+    })
+    cy.visit('/')
+
     cy.get('*[class*="sync-status"]').should('have.text', 'in sync')
   })
 
   it('shows out of sync when it is out of sync', () => {
-    // TODO -> stub sync status
-    // also check for out of sync by {num} blocks
-    cy.get('*[class*="sync-status"]').should('have.text', 'out of sync')
+    Cypress.on("window:before:load", win => {
+      (win as any).useWebSocketLibHook = () => ({
+        sendMessage: () => {},
+        sendJsonMessage: () => {},
+        lastMessage: {},
+        lastJsonMessage: {
+          account_ids: [],
+          app_ids: null,
+          asset_ids: null,
+          avg_block_txn_speed: 4.375,
+          block: blockOutOfSyncFixture,
+          transaction_ids: [],
+        },
+        readyState: 1,
+        getWebSocket: () => {},
+      });
+    })
+    cy.visit('/')
+
+    cy.get('*[class*="sync-status"]').should('have.text', 'out of sync by 14,529,128 blocks')
   })
 
-  it('displays stats cards by default', () => {
+  it('displays stats cards text correctly', () => {
+    cy.visit('/')
+    cy.url().should('equal', 'http://localhost:3000/')
+
     cy.get('*[class*="statscard"]').should('have.length', 5)
 
     cy.get('*[class*="statscard"]').eq(0).should('have.text', 'Latest Round')
@@ -111,6 +105,8 @@ describe('Home Page', () => {
   })
 
   it('clicking blocks list block number navigates to block page', () => {
+    cy.visit('/')
+    cy.url().should('equal', 'http://localhost:3000/')
     cy.wait('@getLatestBlocks', {timeout: 15000})
     cy.get('*[class*="BlockTable_block-row"]:first-child [class*="block-id"]').click()
 
@@ -118,6 +114,8 @@ describe('Home Page', () => {
   })
 
   it('clicking blocks list proposer navigates to address page', () => {
+    cy.visit('/')
+    cy.url().should('equal', 'http://localhost:3000/')
     cy.wait('@getLatestBlocks', {timeout: 15000})
     cy.get('*[class*="BlockTable_block-row"]:first-child [class*="proposer"]').click()
 
@@ -125,6 +123,8 @@ describe('Home Page', () => {
   })
 
   it('clicking transactions list tx id navigates to tx page', () => {
+    cy.visit('/')
+    cy.url().should('equal', 'http://localhost:3000/')
     cy.wait('@getLatestTxs', {timeout: 15000})
     cy.get('*[class*="TransactionTable_transaction-row"]:first-child [class*="transaction-id"]').click()
 
@@ -132,6 +132,8 @@ describe('Home Page', () => {
   })
 
   it('clicking transactions list From navigates to address page', () => {
+    cy.visit('/')
+    cy.url().should('equal', 'http://localhost:3000/')
     cy.wait('@getLatestTxs', {timeout: 15000})
     cy.get('*[class*="TransactionTable_transaction-row"]:first-child [class*="TransactionTable_relevant-accounts"] span:first-child').click()
 
@@ -139,6 +141,8 @@ describe('Home Page', () => {
   })
 
   it('clicking transactions list To navigates to address page', () => {
+    cy.visit('/')
+    cy.url().should('equal', 'http://localhost:3000/')
     cy.wait('@getLatestTxs', {timeout: 15000})
     cy.get('*[class*="TransactionTable_transaction-row"]:first-child [class*="TransactionTable_relevant-accounts"]').children().eq(1).click()
 
