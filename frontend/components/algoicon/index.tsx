@@ -1,5 +1,5 @@
 import React from "react";
-import styles from "./AlgoIcon.module.css";
+import styles from "./AlgoIcon.module.scss";
 
 const AlgoIcon = ({
   isLightColor = false,

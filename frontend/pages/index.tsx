@@ -156,7 +156,7 @@ const Home = () => {
         <Statscard
           stat="Algo Price"
           info="Powered by CoinGecko"
-          value={loading ? <Load /> : <>${price}</>}
+          value={loading ? <Load /> : <div>${price}</div>}
         />
       </div>
       <div className={styles["home-split"]}>

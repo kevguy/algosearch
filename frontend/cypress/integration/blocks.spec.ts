@@ -1,4 +1,4 @@
-import { commonIntercepts, interceptBlocksOnBlocksPage } from "./utils"
+import { commonIntercepts, interceptBlocksOnBlocksPage } from "../support/utils"
 
 describe('Blocks Page', () => {
   beforeEach(() => {
