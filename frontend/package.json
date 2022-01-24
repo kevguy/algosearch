@@ -28,11 +28,14 @@
     "web-vitals": "^2.1.2"
   },
   "scripts": {
-    "dev": "next dev",
+    "dev": "(IF EXIST .babelrc rename .babelrc .babelrcignore) & next dev",
+    "test": "(IF EXIST .babelrcignore rename .babelrcignore .babelrc) & cross-env NODE_ENV=test next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "cypress:open": "cypress open"
+    "cypress": "cypress open",
+    "report:coverage:text": "nyc report --reporter=text-summary",
+    "report:coverage": "nyc report --reporter=html"
   },
   "browserslist": {
     "production": [
@@ -47,6 +50,7 @@
     ]
   },
   "devDependencies": {
+    "@cypress/code-coverage": "^3.9.12",
     "@testing-library/jest-dom": "^5.16.1",
     "@testing-library/react": "^12.1.2",
     "@testing-library/user-event": "^13.5.0",
@@ -58,6 +62,8 @@
     "@types/react-table": "^7.7.9",
     "@typescript-eslint/eslint-plugin": "^5.5.0",
     "@typescript-eslint/parser": "^5.8.0",
+    "babel-plugin-istanbul": "^6.1.1",
+    "cross-env": "^7.0.3",
     "cypress": "^9.3.1",
     "eslint": "^8.5.0",
     "eslint-config-airbnb": "^19.0.2",

@@ -1,0 +1,8 @@
+{
+  "env": {
+    "test": {
+      "presets": ["next/babel"],
+      "plugins": ["istanbul"]
+    }
+  }
+}
