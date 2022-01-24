@@ -102,7 +102,7 @@ describe('Home Page', () => {
 
     cy.get('*[class*="TransactionTable_transaction-row"]:first-child [class*="transaction-id"]').click()
 
-    cy.wait(2000).url().should('include', '/tx/')
+    cy.wait(5000).url().should('include', '/tx/')
   })
 
   it('clicking transactions list From navigates to address page', () => {

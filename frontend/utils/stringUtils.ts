@@ -13,7 +13,7 @@ export function checkBase64EqualsEmpty(text: string) {
 }
   
 export function ellipseAddress(address = "", width = 6): string {
-    return `${address.slice(0, width)}...${address.slice(-width)}`;
+    return address ? `${address.slice(0, width)}...${address.slice(-width)}` : "N/A";
 }
 
 export function microAlgosToAlgos(microAlgos: number) : string | number {
