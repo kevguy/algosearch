@@ -25,8 +25,9 @@ describe('Transactions Page', () => {
   })
 
   it('clicking txs list block number navigates to block page', () => {
-    cy.get('tbody tr').eq(0).children().eq(1).children("a").should('have.text', '18,788,980')
-    cy.get('tbody tr').eq(0).children().eq(1).children("a").click()
+    cy.get('tbody tr').eq(0).children().eq(1).children("a").as('blocknum')
+    cy.get('@blocknum').should('have.text', '18,788,980')
+    cy.get('@blocknum').click()
     cy.url().should('include', '/block/')
   })
 
@@ -34,14 +35,14 @@ describe('Transactions Page', () => {
     cy.get('tbody tr').eq(0).children().eq(3).children("a").as('from')
     cy.get('@from').should('have.text', 'ZW3ISE...67W754')
     cy.get('@from').click()
-    cy.url().should('include', '/address/')
+    cy.wait(500).url().should('include', '/address/')
   })
 
   it('clicking txs list To navigates to address page', () => {
     cy.get('tbody tr').eq(0).children().eq(4).children("a").as('to')
     cy.get('@to').should('have.text', '6JUDNT...4NM6UE')
-    cy.get('@to').click()
-    cy.url().should('include', '/address/')
+    cy.get('@to').click({force:true})
+    cy.wait(500).url().should('include', '/address/')
   })
 
   it('shows To N/A for App Call Type transaction', () => {
@@ -50,7 +51,7 @@ describe('Transactions Page', () => {
   })
 
   it('shows page=1 on the url if not provided in url param', () => {
-    cy.url().should('contain', '?page=1')
+    cy.wait(500).url().should('contain', '?page=1')
   })
 
   it('shows page 3 on table pagination if page=3 is provided in url param', () => {
@@ -59,7 +60,7 @@ describe('Transactions Page', () => {
         page: 3
       }
     })
-    cy.url().should('contain', '?page=3')
+    cy.wait(500).url().should('contain', '?page=3')
     cy.get('[class*="CustomTable_page-input"]').should('have.value', 3)
   })
 
@@ -69,7 +70,7 @@ describe('Transactions Page', () => {
         page: 10
       }
     })
-    cy.url().should('contain', '?page=10')
+    cy.wait(500).url().should('contain', '?page=10')
     cy.get('[class*="CustomTable_pagination"]').children().eq(0).click()
     cy.get('[class*="CustomTable_page-input"]').should('have.value', 1)
     cy.wait(500).url().should('contain', `?page=1`)
@@ -81,7 +82,7 @@ describe('Transactions Page', () => {
         page: 10
       }
     })
-    cy.url().should('contain', '?page=10')
+    cy.wait(500).url().should('contain', '?page=10')
     cy.get('[class*="CustomTable_pagination"]').children().eq(1).click()
     cy.get('[class*="CustomTable_page-input"]').should('have.value', 9)
     cy.wait(500).url().should('contain', `?page=9`)

@@ -13,11 +13,13 @@ const CopyAddress = ({
   const [copied, setCopied] = useState(false);
 
   const copyAddress = () => {
-    navigator.clipboard.writeText(address);
-    setCopied(true);
-    setTimeout(() => {
-      setCopied(false);
-    }, 1000);
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(address);
+      setCopied(true);
+      setTimeout(() => {
+        setCopied(false);
+      }, 1000);
+    }
   };
 
   return (

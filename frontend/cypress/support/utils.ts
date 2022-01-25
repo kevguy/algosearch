@@ -8,6 +8,8 @@ const blocksMixedFixture = "../fixtures/blocks/blocks_mixed_txs.json";
 import * as blockInSyncFixture from "../fixtures/block/block_18788980.json";
 import * as blockOutOfSyncFixture from "../fixtures/block/block_4259852.json";
 const txsMixedFixture = "../fixtures/txs/txs_mixed.json";
+const txsFixture = "../fixtures/txs/txs_pay.json";
+const txPaySingleFixture = "../fixtures/tx/tx_pay_single.json";
 
 export const backend_url = "http://localhost:5000";
 
@@ -32,11 +34,12 @@ export const commonIntercepts = () => {
     }
   )
 
-  interceptNext()
+  // interceptNext()
 
   interceptAddr()
   interceptAddrTxs()
   interceptAsset()
+  interceptTx()
 }
 
 export const interceptNext = () => {
@@ -53,7 +56,6 @@ export const interceptNext = () => {
         "accept": "*/*",
         "accept-language": "en-US,en;q=0.5",
         "accept-encoding": "gzip, deflate",
-        "referer": "http://localhost:3000/transactions",
         "connection": "keep-alive"
       },
       body: {
@@ -136,6 +138,18 @@ export const interceptBlocksOnBlocksPage = () => {
   ).as('getBlocks')
 }
 
+export const interceptTx = () => {
+  cy.intercept(
+    {
+      method: 'GET',
+      url: `${backend_url}/v1/transactions/*`
+    },
+    {
+      fixture: txPaySingleFixture
+    }
+  ).as('getTx')
+}
+
 export const interceptTxs = () => {
   cy.intercept(
     {
@@ -143,7 +157,7 @@ export const interceptTxs = () => {
       url: `${backend_url}/v1/transactions?latest_txn=*&page=1&limit=10&order=desc`,
     },
     {
-      fixture: txsMixedFixture
+      fixture: txsFixture
     }
   ).as('getLatestTxs')
 }

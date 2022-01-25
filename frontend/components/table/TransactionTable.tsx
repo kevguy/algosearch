@@ -38,9 +38,9 @@ const TransactionTable = ({
       {transactions &&
         transactions.map((tx: TransactionResponse, index: number) => {
           const _receiver =
-            (tx["payment-transaction"] && tx["payment-transaction"].receiver) ||
-            tx.sender;
+            tx["payment-transaction"] && tx["payment-transaction"].receiver;
           let _asaInfo: IASAInfo =
+            tx["asset-transfer-transaction"] &&
             asaMap[tx["asset-transfer-transaction"]["asset-id"]];
 
           return (
@@ -71,9 +71,13 @@ const TransactionTable = ({
                   </span>
                   <span>
                     To:{" "}
-                    <Link href={`/address/${_receiver}`}>
-                      {ellipseAddress(_receiver)}
-                    </Link>
+                    {_receiver ? (
+                      <Link href={`/address/${_receiver}`}>
+                        {ellipseAddress(_receiver)}
+                      </Link>
+                    ) : (
+                      "N/A"
+                    )}
                   </span>
                 </div>
                 <div className={styles["transaction-info"]}>

@@ -124,6 +124,6 @@ describe('Home Page', () => {
 
     cy.get('*[class*="TransactionTable_transaction-row"]:first-child [class*="TransactionTable_relevant-accounts"]').children().eq(1).click()
 
-    cy.url().should('include', '/address/')
+    cy.wait(500).url().should('include', '/address/')
   })
 })

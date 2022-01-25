@@ -168,7 +168,7 @@ const Address = () => {
           }
         />
         <Statscard
-          stat="Pending rewards"
+          stat="Pending Rewards"
           value={
             loading ? (
               <Load />
