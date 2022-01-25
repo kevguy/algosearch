@@ -7,7 +7,7 @@ const blocksFixture = "../fixtures/blocks/blocks_pay_txs.json";
 const blocksMixedFixture = "../fixtures/blocks/blocks_mixed_txs.json";
 import * as blockInSyncFixture from "../fixtures/block/block_18788980.json";
 import * as blockOutOfSyncFixture from "../fixtures/block/block_4259852.json";
-const txsFixture = "../fixtures/txs/txs_pay.json";
+const txsMixedFixture = "../fixtures/txs/txs_mixed.json";
 
 export const backend_url = "http://localhost:5000";
 
@@ -32,9 +32,48 @@ export const commonIntercepts = () => {
     }
   )
 
+  interceptNext()
+
   interceptAddr()
   interceptAddrTxs()
   interceptAsset()
+}
+
+export const interceptNext = () => {
+  cy.intercept(
+    {
+      method: 'GET',
+      url: 'http://localhost:3000/_next/static/development/_devPagesManifest.json',
+    },
+    {
+      response: 200,
+      headers: {
+        "host": "localhost:3000",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:96.0) Gecko/20100101 Firefox/96.0",
+        "accept": "*/*",
+        "accept-language": "en-US,en;q=0.5",
+        "accept-encoding": "gzip, deflate",
+        "referer": "http://localhost:3000/transactions",
+        "connection": "keep-alive"
+      },
+      body: {
+        "pages": [
+          "/",
+          "/404",
+          "/_app",
+          "/_document",
+          "/address/[_address]",
+          "/api/__coverage__",
+          "/asset/[_asset]",
+          "/block/[_block]",
+          "/blocks",
+          "/transactions",
+          "/tx/TransactionDetails",
+          "/tx/[_txid]"
+        ]
+      }
+    }
+  )
 }
 
 export const interceptAddr = () => {
@@ -104,7 +143,7 @@ export const interceptTxs = () => {
       url: `${backend_url}/v1/transactions?latest_txn=*&page=1&limit=10&order=desc`,
     },
     {
-      fixture: txsFixture
+      fixture: txsMixedFixture
     }
   ).as('getLatestTxs')
 }
@@ -113,10 +152,10 @@ export const interceptTxsOnTxsPage = () => {
   cy.intercept(
     {
       method: 'GET',
-      url: `${backend_url}/v1/transactions?latest_txn=*&page=1&limit=15&order=desc`,
+      url: `${backend_url}/v1/transactions?latest_txn=*&page=*&limit=15&order=desc`,
     },
     {
-      fixture: txsFixture
+      fixture: txsMixedFixture
     }
   ).as('getTxs')
 }
