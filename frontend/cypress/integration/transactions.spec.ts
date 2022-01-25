@@ -34,7 +34,7 @@ describe('Transactions Page', () => {
   it('clicking txs list From navigates to address page', () => {
     cy.get('tbody tr').eq(0).children().eq(3).children("a").as('from')
     cy.get('@from').should('have.text', 'ZW3ISE...67W754')
-    cy.get('@from').click()
+    cy.get('@from').click({force:true})
     cy.wait(500).url().should('include', '/address/')
   })
 

@@ -35,7 +35,7 @@ export const commonIntercepts = () => {
     }
   )
 
-  // interceptNext()
+  interceptNext()
 
   interceptAddr()
   interceptAddrTxs()
