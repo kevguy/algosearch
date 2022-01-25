@@ -195,11 +195,11 @@ const Block = () => {
               </td>
             </tr>
             <tr>
-              <td>Block hash</td>
+              <td>Block Hash</td>
               <td>{loading ? <Load /> : data && data["block-hash"]}</td>
             </tr>
             <tr>
-              <td>Previous block hash</td>
+              <td>Previous Block Hash</td>
               <td>
                 {loading ? (
                   <Load />

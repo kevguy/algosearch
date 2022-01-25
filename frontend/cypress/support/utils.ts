@@ -3,6 +3,7 @@ const currentTxFixture = "../fixtures/tx/tx_pay_single.json";
 const addressFixture = "../fixtures/address/address_1.json";
 const addressTxsFixture = "../fixtures/address/address_1_txs.json";
 const assetFixture = "../fixtures/asset/asset_1.json";
+const blockFixture = "../fixtures/block/block_18788980.json";
 const blocksFixture = "../fixtures/blocks/blocks_pay_txs.json";
 const blocksMixedFixture = "../fixtures/blocks/blocks_mixed_txs.json";
 import * as blockInSyncFixture from "../fixtures/block/block_18788980.json";
@@ -39,6 +40,7 @@ export const commonIntercepts = () => {
   interceptAddr()
   interceptAddrTxs()
   interceptAsset()
+  interceptBlock()
   interceptTx()
 }
 
@@ -136,6 +138,18 @@ export const interceptBlocksOnBlocksPage = () => {
       fixture: blocksMixedFixture
     }
   ).as('getBlocks')
+}
+
+export const interceptBlock = () => {
+  cy.intercept(
+    {
+      method: 'GET',
+      url: `${backend_url}/v1/algod/rounds/*`,
+    },
+    {
+      fixture: blockFixture
+    }
+  ).as('getBlock')
 }
 
 export const interceptTx = () => {
