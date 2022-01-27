@@ -1,0 +1,8 @@
+{
+  "block_hash_found": false,
+  "block_round_found": false,
+  "txn_found": false,
+  "acct_found": true,
+  "asset_found": false,
+  "application_found": false
+}

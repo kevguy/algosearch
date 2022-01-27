@@ -1,4 +1,7 @@
-import { commonIntercepts, interceptBlocks, interceptTxs, stubWebSocketToInSync, stubWebSocketToOutOfSync } from "../support/utils";
+import { backend_url, commonIntercepts, interceptBlocks, interceptTxs, stubWebSocketToInSync, stubWebSocketToOutOfSync } from "../support/utils";
+const searchTxFixture = "../fixtures/search/search_tx.json";
+const searchAddrFixture = "../fixtures/search/search_address.json";
+const searchBlockFixture = "../fixtures/search/search_block.json";
 
 describe('Home Page', () => {
   beforeEach(() => {
@@ -126,4 +129,69 @@ describe('Home Page', () => {
 
     cy.wait(500).url().should('include', '/address/')
   })
+
+  /* Test Header Search Bar */
+  it('searching an address on header search bar navigates to address page', () => {
+    cy.intercept(
+      {
+        method: 'GET',
+        url: `${backend_url}/v1/search?key=ARCC3TMGVD7KXY7GYTE7U5XXUJXFRD2SXLAWRV57XJ6HWHRR37GNGNMPSY`,
+      },
+      {
+        fixture: searchAddrFixture
+      }
+    ).as('searchAddr')
+
+    stubWebSocketToInSync();
+    cy.visit('/')
+
+    cy.get('input[type="search"]').type('ARCC3TMGVD7KXY7GYTE7U5XXUJXFRD2SXLAWRV57XJ6HWHRR37GNGNMPSY')
+    cy.get('input[type="search"]').siblings('button').click()
+    cy.wait('@searchAddr')
+
+    cy.wait(500).url().should('include', '/address/ARCC3TMGVD7KXY7GYTE7U5XXUJXFRD2SXLAWRV57XJ6HWHRR37GNGNMPSY')
+  })
+
+  it('searching a tx id on header search bar navigates to tx page', () => {
+    cy.intercept(
+      {
+        method: 'GET',
+        url: `${backend_url}/v1/search?key=NTIU26TLJ6XMMBV6YQJB6SUPG5FBKCMHG2EQ5R5AGJDQ7OXK7PKQ`,
+      },
+      {
+        fixture: searchTxFixture
+      }
+    ).as('searchTx')
+
+    stubWebSocketToInSync();
+    cy.visit('/')
+
+    cy.get('input[type="search"]').type('NTIU26TLJ6XMMBV6YQJB6SUPG5FBKCMHG2EQ5R5AGJDQ7OXK7PKQ')
+    cy.get('input[type="search"]').siblings('button').click()
+    cy.wait('@searchTx')
+
+    cy.wait(500).url().should('include', '/tx/NTIU26TLJ6XMMBV6YQJB6SUPG5FBKCMHG2EQ5R5AGJDQ7OXK7PKQ')
+  })
+
+  it('searching a block id on header search bar navigates to block page', () => {
+    cy.intercept(
+      {
+        method: 'GET',
+        url: `${backend_url}/v1/search?key=4259852`,
+      },
+      {
+        fixture: searchBlockFixture
+      }
+    ).as('searchBlock')
+
+    stubWebSocketToInSync();
+    cy.visit('/')
+
+    cy.get('input[type="search"]').type('4259852')
+    cy.get('input[type="search"]').siblings('button').click()
+    cy.wait('@searchBlock')
+
+    cy.wait(500).url().should('include', '/block/4259852')
+  })
+
 })
