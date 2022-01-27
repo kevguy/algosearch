@@ -35,6 +35,7 @@ export type TransactionResponse = {
     accounts: string[];
     "application-args": [];
     "application-id": number;
+    "approval-program"?: string;
     "foreign-apps": [];
     "foreign-assets": number[];
     "global-state-schema": {

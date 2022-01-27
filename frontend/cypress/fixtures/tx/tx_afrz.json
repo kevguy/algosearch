@@ -1,0 +1,29 @@
+{
+  "current-round": 18889965,
+  "transaction": {
+    "asset-freeze-transaction": {
+      "address": "4EHY6C3XAXIUHIUTK2FQIKBCQLWFWMF7LNL2U3GXMIBHLHCXHJZPPKERTQ",
+      "asset-id": 238498122,
+      "new-freeze-status": false
+    },
+    "close-rewards": 0,
+    "closing-amount": 0,
+    "confirmed-round": 15855297,
+    "fee": 1000,
+    "first-valid": 15855295,
+    "genesis-hash": "wGHE2Pwdvd7S12BL5FaOP20EGYesN73ktiC1qzkkit8=",
+    "genesis-id": "mainnet-v1.0",
+    "group": "kvtthMqWp5BvLEJUToPtmnBs2begnkEyJ0iLT7G6um0=",
+    "id": "BNNBILQQXACV2WT67EJINEW2RFA6ZZ4GP32TOKTPBJR2KXAS6EHA",
+    "intra-round-offset": 53,
+    "last-valid": 15856295,
+    "receiver-rewards": 0,
+    "round-time": 1630009309,
+    "sender": "FRWFUUDU5NLQQ2CC26VEILW3L3BCI7U6VNQJMTGIV43C7QEJ7ACCE3V4GM",
+    "sender-rewards": 45,
+    "signature": {
+      "sig": "+zztwn4IJOUpTuWyrZtDUeplHC0C+gXFTlXj8jdH/k8lFzwtDs6zjdVL3R6IihojYNeB9dTaqkQimdQWC0M1CA=="
+    },
+    "tx-type": "afrz"
+  }
+}
