@@ -1044,6 +1044,11 @@
     "@babel/helper-validator-identifier" "^7.16.7"
     to-fast-properties "^2.0.0"
 
+"@ctrl/ts-base32@^2.1.1":
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/@ctrl/ts-base32/-/ts-base32-2.1.1.tgz#e84abee414044462ff06e61f2afeddd516ea690d"
+  integrity sha512-lQ6Q0hZyhGgzAn/+7h0mseWhMh5d8nS4fxlhjhJrVSc+3U7qvITBvcLRDk2p71OcPgU55ZXVYfTfr2FqjDljGQ==
+
 "@cypress/browserify-preprocessor@3.0.2":
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/@cypress/browserify-preprocessor/-/browserify-preprocessor-3.0.2.tgz#1dbecae394937aed47a3524cad47086c2ded8c50"
