@@ -21,10 +21,45 @@ type multisigSubsig = {
   signature?: string;
 }
 
+export type AccountOwnedAsset = {
+  amount: number;
+  "asset-id": number;
+  creator: string;
+  "is-frozen": boolean;
+}
+
+export type AccountResponse = {
+  address: string;
+  amount: number;
+  "amount-without-pending-rewards": number;
+  "apps-total-schema": { "num-byte-slice": number; "num-uint": number;},
+  assets: AccountOwnedAsset[];
+  "created-assets":IAsaResponse[];
+  participation: {
+    "selection-participation-key": string | null;
+    "vote-first-valid": number;
+    "vote-key-dilution": number;
+    "vote-last-valid": number;
+    "vote-participation-key": string | null;
+  };
+  "pending-rewards": number;
+  "reward-base": number;
+  "rewards": number;
+  "round": number;
+  "status": "Online" | "Offline";
+}
+
+
+export type AccountTxsResponse = {
+  "num_of_pages": number,
+  "num_of_txns": number,
+  items: TransactionResponse[]
+}
+
 export type TransactionResponse = {
   id: string;
   group?: string;
-  "genesis-id": number;
+  "genesis-id": string;
   "genesis-hash": string;
   "confirmed-round": number;
   "tx-type": TxType;
@@ -80,6 +115,11 @@ export type TransactionResponse = {
       url?: string;
     };
   };
+  "asset-freeze-transaction": {
+    address: string;
+    "asset-id": number;
+    "new-freeze-status": boolean;
+  };
   fee: number;
   "round-time": number;
   "first-valid": number;
@@ -87,7 +127,11 @@ export type TransactionResponse = {
   timestamp: number;
   note: string;
   signature: {
-    logicsig: {};
+    logicsig: {
+      args?: [];
+      logic: string | null;
+      "multisig-signature"?: {};
+    };
     multisig: {
       subsignature?: multisigSubsig[],
       threshold?: number;

@@ -42,7 +42,7 @@ FROM node:alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY ./frontend .
-RUN NEXT_PUBLIC_API_URL=APP_NEXT_PUBLIC_API_URL yarn build
+RUN NEXT_PUBLIC_API_URL=APP_NEXT_PUBLIC_API_URL NEXT_PUBLIC_ALGOD_PROTOCOL=APP_NEXT_PUBLIC_ALGOD_PROTOCOL NEXT_PUBLIC_ALGOD_ADDR=APP_NEXT_PUBLIC_ALGOD_ADDR NEXT_PUBLIC_ALGOD_TOKEN=APP_NEXT_PUBLIC_ALGOD_TOKEN yarn build
 
 # Production image, copy all the files and run next
 FROM node:alpine AS runner

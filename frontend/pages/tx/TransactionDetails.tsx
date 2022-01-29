@@ -7,6 +7,7 @@ import {
   getTxTypeName,
   integerFormatter,
   microAlgosToAlgos,
+  prettyPrintTEAL,
   removeSpace,
   TxType,
 } from "../../utils/stringUtils";
@@ -16,13 +17,14 @@ import algosdk from "algosdk";
 import msgpack from "@ygoe/msgpack";
 import { TransactionResponse } from "../../types/apiResponseTypes";
 import { IAsaMap } from "../../types/misc";
-import { apiGetASA } from "../../utils/api";
+import { apiGetASA, getLsigTEAL } from "../../utils/api";
 import {
   TabPanelUnstyled,
   TabsListUnstyled,
   TabsUnstyled,
   TabUnstyled,
 } from "@mui/material";
+import hljs from "highlight.js";
 import TransactionAdditionalInfo from "../../components/transaction/TransactionAdditionalInfo";
 import ApplicationTransactionInfo from "../../components/transaction/ApplicationTransactionInfo";
 import {
@@ -31,6 +33,13 @@ import {
   getInnerTxCloseTo,
   getInnerTxReceiver,
 } from "../../components/transaction/TransactionContentComponents";
+import {
+  algodAddr,
+  algodProtocol,
+  algodToken,
+  isLocal,
+} from "../../utils/constants";
+import { DryrunResponse } from "algosdk/dist/types/src/client/v2/algod/models/types";
 
 const TransactionDetails = ({
   transaction,
@@ -42,6 +51,7 @@ const TransactionDetails = ({
   const [receiver, setReceiver] = useState<string>();
   const [asaMap, setAsaMap] = useState<IAsaMap>([]);
   const [decodedNotes, setDecodedNotes] = useState<bigint>();
+  const [disassembledLogicSig, setDisassembledLogicSig] = useState<string>();
   const decodeWithMsgpack = useCallback(() => {
     try {
       let message = msgpack.deserialize(
@@ -58,6 +68,38 @@ const TransactionDetails = ({
 
   useEffect(() => {
     if (transaction) {
+      if (
+        isLocal &&
+        algodToken &&
+        algodProtocol &&
+        algodAddr &&
+        transaction.signature.logicsig.logic &&
+        transaction.signature.logicsig.args
+      ) {
+        const logicSig = new algosdk.LogicSigAccount(
+          Buffer.from(transaction.signature.logicsig.logic, "base64"),
+          transaction.signature.logicsig.args.map((item) =>
+            Buffer.from(item, "base64")
+          )
+        );
+        getLsigTEAL(logicSig, transaction)
+          .then((result: DryrunResponse) => {
+            if (
+              result &&
+              result.txns &&
+              result.txns[0] &&
+              result.txns[0].disassembly
+            ) {
+              const disassembledResult = prettyPrintTEAL(
+                result.txns[0].disassembly
+              );
+              setDisassembledLogicSig(disassembledResult);
+            }
+          })
+          .catch((error) => {
+            console.error("LogicSig disassembly error: ", error);
+          });
+      }
       setTxType(transaction["tx-type"]);
       setReceiver(
         transaction && transaction["tx-type"] === TxType.AssetTransfer
@@ -222,6 +264,23 @@ const TransactionDetails = ({
                       )}
                     </TabsUnstyled>
                   </div>
+                </td>
+              </tr>
+            )}
+            {transaction.signature.logicsig.logic && disassembledLogicSig && (
+              <tr>
+                <td className={styles["valign-top-identifier"]}>LogicSig</td>
+                <td>
+                  <pre className={`${styles["teal-box"]} hljs`}>
+                    <code
+                      className="language-lua"
+                      dangerouslySetInnerHTML={{
+                        __html: hljs.highlight(disassembledLogicSig, {
+                          language: "lua",
+                        }).value,
+                      }}
+                    ></code>
+                  </pre>
                 </td>
               </tr>
             )}

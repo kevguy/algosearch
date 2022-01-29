@@ -132,3 +132,23 @@ export const getTxTypeName = (txType: TxType) => {
       return "Payment";
   }
 };
+
+export function prettyPrintTEAL(sourceCode: string[]) {
+  let indexOfFirstColon = -1;
+  return sourceCode
+    .map((line, index) => {
+      let _line = line;
+      if (line.indexOf(":") > -1) {
+        _line = "\n" + _line;
+        indexOfFirstColon = index;
+      }
+      if (indexOfFirstColon > -1) {
+        if (_line.indexOf(":") === -1 && _line.indexOf("#") === -1) {
+          _line = "    " + _line;
+        }
+      }
+      return _line;
+    })
+    .join("\n")
+    .trimEnd();
+};

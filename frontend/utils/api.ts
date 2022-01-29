@@ -1,8 +1,9 @@
 import axios from "axios";
-import { siteName } from "./constants";
+import { algodAddr, algodProtocol, algodToken, siteName } from "./constants";
 import { IAsaResponse,  ISupply, TransactionResponse } from "../types/apiResponseTypes";
 import { currencyFormatter, microAlgosToAlgos, TxType } from "./stringUtils";
 import { IASAInfo, IAsaMap } from "../types/misc";
+import algosdk, { LogicSigAccount } from "algosdk";
 
 export const apiGetSupply = async () => {
   try {
@@ -86,3 +87,38 @@ export const apiGetASA = async (transactions: TransactionResponse[]) => {
   );
   return _asaMap;
 }
+
+export const getLsigTEAL = async (
+  lsigAc: LogicSigAccount,
+  tx: TransactionResponse
+) => {
+  const algod = new algosdk.Algodv2(
+    algodToken,
+    `${algodProtocol}://${algodAddr}`,
+    "4001"
+  );
+  const payTx = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
+    from: tx.sender,
+    to: tx.sender,
+    amount: tx["payment-transaction"]!.amount,
+    suggestedParams: {
+      fee: tx.fee,
+      firstRound: tx["first-valid"],
+      lastRound: tx["last-valid"],
+      genesisHash: tx["genesis-hash"],
+      genesisID: tx["genesis-id"],
+    },
+  });
+
+  // @ts-ignore
+  const dr = new algosdk.modelsv2.DryrunRequest({
+    txns: [
+      {
+        lsig: lsigAc.get_obj_for_encoding().lsig,
+        txn: payTx.get_obj_for_encoding(),
+      },
+    ],
+  });
+  const dryrunResponse = await algod.dryrun(dr).do();
+  return dryrunResponse;
+};

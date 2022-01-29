@@ -100,3 +100,20 @@
     }
   }
 }
+
+.teal-box {
+  max-height: 20rem;
+  padding: var(--space-s) var(--space-m);
+  border: 1px solid var(--grey);
+  border-radius: 4px;
+  margin: 0;
+  overflow: auto;
+
+  code {
+    font-size: var(--font-size-xxs);
+    line-height: 1.2;
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+  }
+}
