@@ -18,7 +18,8 @@ services:
     container_name: algosearch-backend
     networks:
       - shared-network
-    image: ../docker/dockerfile.algosearch-backend
+#    image: ../docker/dockerfile.algosearch-backend
+    image: kevguy/algosearch-backend:latest
     ports:
       - 5000:5000 # CRUD API
       - 4000:4000 # DEBUG API
@@ -30,7 +31,8 @@ services:
     container_name: algosearch-frontend
     networks:
       - shared-network
-    image: ../docker/dockerfile.algosearch-frontend
+#    image: ../docker/dockerfile.algosearch-frontend
+    image: kevguy/algosearch-frontend:latest
     ports:
       - 3000:3000
     depends_on:
@@ -40,7 +42,8 @@ services:
     container_name: algosearch-metrics
     networks:
       - shared-network
-    image: ../docker/dockerfile.metrics
+#    image: ../docker/dockerfile.metrics
+    image: kevguy/algosearch-metrics:latest
     ports:
       - 3001:3001 # EXPVAR API
       - 4001:4001 # DEBUG API

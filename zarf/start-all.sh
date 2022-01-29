@@ -24,7 +24,8 @@ if [ "$ALGOSEARCH_IS_HEROKU" = "true" ]; then
   export ALGOSEARCH_WEB_API_HOST="0.0.0.0:${PORT}"
 fi
 
-if [ "$ALGOSEARCH_BACKEND_DISABLED" != "true" ]; then ./algosearch; fi & \
-if [ "$ALGOSEARCH_METRICS_DISABLED" != "true" ]; then ./metrics; fi & \
+if [ "$ALGOSEARCH_BACKEND_DISABLED" != "true" ]; then ./algosearch; else echo "Backend is disabled"; fi & \
+if [ "$ALGOSEARCH_METRICS_DISABLED" != "true" ]; then ./metrics; else echo "Metrics is disabled"; fi & \
 #if [ "$ALGOSEARCH_FRONTEND_DISABLED" != "true" ]; then node_modules/.bin/next start; fi
-if [ "$ALGOSEARCH_FRONTEND_DISABLED" != "true" ]; then node server.js; fi
+if [ "$ALGOSEARCH_FRONTEND_DISABLED" != "true" ]; then node server.js; else echo "Frontend is disabled"; fi
+sleep infinity
