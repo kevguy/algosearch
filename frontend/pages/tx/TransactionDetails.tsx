@@ -41,6 +41,7 @@ import {
 } from "../../utils/constants";
 import { DryrunResponse } from "algosdk/dist/types/src/client/v2/algod/models/types";
 import { AssetConfigTransactionInfo } from "../../components/transaction/AssetConfigTransactionInfo";
+import { AssetFreezeTransactionInfo } from "../../components/transaction/AssetFreezeTransactionInfo";
 
 const TransactionDetails = ({
   transaction,
@@ -108,7 +109,7 @@ const TransactionDetails = ({
           ? transaction["asset-transfer-transaction"].receiver
           : transaction["payment-transaction"]
           ? transaction["payment-transaction"].receiver
-          : "N/A"
+          : ""
       );
       apiGetASA([transaction]).then((result) => {
         setAsaMap(result);
@@ -368,6 +369,9 @@ const TransactionDetails = ({
       )}
       {txType === TxType.AssetConfig && (
         <AssetConfigTransactionInfo tx={transaction} />
+      )}
+      {txType === TxType.AssetFreeze && (
+        <AssetFreezeTransactionInfo tx={transaction} />
       )}
       <TransactionAdditionalInfo transaction={transaction} />
     </div>
