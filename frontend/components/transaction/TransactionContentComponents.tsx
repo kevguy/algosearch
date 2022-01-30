@@ -16,11 +16,13 @@ export const getInnerTxReceiver = (innerTx: TransactionResponse) => {
       ? innerTx["asset-transfer-transaction"].receiver
       : innerTx["payment-transaction"]
       ? innerTx["payment-transaction"].receiver
-      : "N/A";
-  return (
+      : "";
+  return innerTxReceiver ? (
     <Link href={`/address/${innerTxReceiver}`}>
       {ellipseAddress(innerTxReceiver)}
     </Link>
+  ) : (
+    "N/A"
   );
 };
 
@@ -30,11 +32,13 @@ export const getInnerTxCloseTo = (innerTx: TransactionResponse) => {
       ? innerTx["asset-transfer-transaction"]["close-to"]
       : innerTx["payment-transaction"]
       ? innerTx["payment-transaction"]["close-remainder-to"]
-      : "N/A";
-  return (
+      : "";
+  return innerTxCloseTo ? (
     <Link href={`/address/${innerTxCloseTo}`}>
       {ellipseAddress(innerTxCloseTo)}
     </Link>
+  ) : (
+    "N/A"
   );
 };
 
@@ -105,7 +109,7 @@ export const getCloseAmount = (
       </div>
     );
   }
-  if (tx["payment-transaction"]) {
+  if (tx["payment-transaction"] && tx["payment-transaction"]["close-amount"]) {
     return (
       <div>
         <AlgoIcon />{" "}

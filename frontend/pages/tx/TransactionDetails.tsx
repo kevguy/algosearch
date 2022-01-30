@@ -3,9 +3,9 @@ import Link from "next/link";
 import AlgoIcon from "../../components/algoicon";
 import {
   checkBase64EqualsEmpty,
-  ellipseAddress,
   getTxTypeName,
   integerFormatter,
+  isZeroAddress,
   microAlgosToAlgos,
   prettyPrintTEAL,
   removeSpace,
@@ -30,8 +30,6 @@ import ApplicationTransactionInfo from "../../components/transaction/Application
 import {
   getAmount,
   getCloseAmount,
-  getInnerTxCloseTo,
-  getInnerTxReceiver,
 } from "../../components/transaction/TransactionContentComponents";
 import {
   algodAddr,
@@ -43,6 +41,7 @@ import { DryrunResponse } from "algosdk/dist/types/src/client/v2/algod/models/ty
 import { AssetConfigTransactionInfo } from "../../components/transaction/AssetConfigTransactionInfo";
 import { AssetFreezeTransactionInfo } from "../../components/transaction/AssetFreezeTransactionInfo";
 import { KeyRegTransactionInfo } from "../../components/transaction/KeyRegTransactionInfo";
+import { InnerTxns } from "../../components/transaction/InnerTxns";
 
 const TransactionDetails = ({
   transaction,
@@ -198,6 +197,19 @@ const TransactionDetails = ({
                 </td>
               </tr>
             )}
+            {transaction["rekey-to"] &&
+              !isZeroAddress(transaction["rekey-to"]) && (
+                <tr>
+                  <td>Rekey To</td>
+                  <td>
+                    <div>
+                      <Link href={`/address/${transaction["rekey-to"]}`}>
+                        {transaction["rekey-to"]}
+                      </Link>
+                    </div>
+                  </td>
+                </tr>
+              )}
             {txType !== TxType.App && (
               <tr>
                 <td>Amount</td>
@@ -206,6 +218,60 @@ const TransactionDetails = ({
                 </td>
               </tr>
             )}
+            {txType === TxType.Pay &&
+              transaction["payment-transaction"] &&
+              Object.keys(transaction["payment-transaction"]).includes(
+                "close-amount"
+              ) && (
+                <tr>
+                  <td>Close Amount</td>
+                  <td>
+                    <div>{getCloseAmount(txType, transaction, asaMap)}</div>
+                  </td>
+                </tr>
+              )}
+            {txType === TxType.Pay &&
+              transaction["payment-transaction"] &&
+              transaction["payment-transaction"]["close-remainder-to"] &&
+              !isZeroAddress(
+                transaction["payment-transaction"]["close-remainder-to"]
+              ) && (
+                <tr>
+                  <td>Close Remainder To</td>
+                  <td>
+                    <div>
+                      <Link
+                        href={`/address/${transaction["payment-transaction"]["close-remainder-to"]}`}
+                      >
+                        {
+                          transaction["payment-transaction"][
+                            "close-remainder-to"
+                          ]
+                        }
+                      </Link>
+                    </div>
+                  </td>
+                </tr>
+              )}
+            {txType === TxType.AssetTransfer &&
+              transaction["asset-transfer-transaction"] &&
+              transaction["asset-transfer-transaction"]["close-to"] &&
+              !isZeroAddress(
+                transaction["asset-transfer-transaction"]["close-to"]
+              ) && (
+                <tr>
+                  <td>Close To</td>
+                  <td>
+                    <div>
+                      <Link
+                        href={`/address/${transaction["asset-transfer-transaction"]["close-to"]}`}
+                      >
+                        {transaction["asset-transfer-transaction"]["close-to"]}
+                      </Link>
+                    </div>
+                  </td>
+                </tr>
+              )}
             <tr>
               <td>Fee</td>
               <td>
@@ -302,66 +368,9 @@ const TransactionDetails = ({
         </table>
       </div>
       {transaction["inner-txns"] && (
-        <div>
-          <h4>Inner Transactions</h4>
-          <div
-            className={`${blockStyles["block-table"]} ${styles["inner-txs-table"]}`}
-          >
-            <table cellSpacing="0">
-              <thead>
-                <tr>
-                  <th>Type</th>
-                  <th>Sender</th>
-                  <th>Receiver</th>
-                  <th>Amount</th>
-                  <th>Close To</th>
-                  <th>Close Amount</th>
-                  <th>Fee</th>
-                </tr>
-              </thead>
-              <tbody>
-                {transaction["inner-txns"].map((innerTx, index) => (
-                  <tr key={index}>
-                    <td className={styles["normal-text"]}>
-                      <h4 className="mobile-only">Type</h4>
-                      {getTxTypeName(innerTx["tx-type"])}
-                    </td>
-                    <td>
-                      <h4 className="mobile-only">Sender</h4>
-                      <Link href={`/address/${innerTx.sender}`}>
-                        {ellipseAddress(innerTx.sender)}
-                      </Link>
-                    </td>
-                    <td>
-                      <h4 className="mobile-only">Receiver</h4>
-                      {getInnerTxReceiver(innerTx)}
-                    </td>
-                    <td>
-                      <h4 className="mobile-only">Amount</h4>
-                      {getAmount(innerTx["tx-type"], innerTx, asaMap)}
-                    </td>
-                    <td>
-                      <h4 className="mobile-only">Close To</h4>
-                      {getInnerTxCloseTo(innerTx)}
-                    </td>
-                    <td>
-                      <h4 className="mobile-only">Close Amount</h4>
-                      {getCloseAmount(innerTx["tx-type"], innerTx, asaMap)}
-                    </td>
-                    <td>
-                      <h4 className="mobile-only">Fee</h4>
-                      <AlgoIcon /> {microAlgosToAlgos(innerTx.fee)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <InnerTxns tx={transaction} asaMap={asaMap} />
       )}
-      {txType === TxType.App && (
-        <ApplicationTransactionInfo transaction={transaction} />
-      )}
+      {txType === TxType.App && <ApplicationTransactionInfo tx={transaction} />}
       {txType === TxType.AssetConfig && (
         <AssetConfigTransactionInfo tx={transaction} />
       )}

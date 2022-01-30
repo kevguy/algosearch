@@ -19,21 +19,21 @@ import { Column } from "react-table";
 import { IAsaMap } from "../../types/misc";
 import Head from "next/head";
 import { transactionsColumns } from "../../components/tableColumns/transactionsColumns";
-
-export type DataType = {
-  "amount-without-pending-rewards": number;
-  "pending-rewards": number;
-  rewards: number;
-  status: string;
-};
+import addressFixture from "../../cypress/fixtures/address/address_1.json";
+import addressTxsFixture from "../../cypress/fixtures/address/address_1_txs.json";
+import {
+  AccountResponse,
+  AccountTxsResponse,
+  TransactionResponse,
+} from "../../types/apiResponseTypes";
 
 const Address = () => {
   const router = useRouter();
   const { _address, page } = router.query;
   const [address, setAddress] = useState("");
   const [accountTxNum, setAccountTxNum] = useState(0);
-  const [accountTxns, setAccountTxns] = useState();
-  const [data, setData] = useState<DataType>();
+  const [accountTxns, setAccountTxns] = useState<TransactionResponse[]>();
+  const [data, setData] = useState<AccountResponse>();
   const [loading, setLoading] = useState(true);
   const [tableLoading, setTableLoading] = useState(true);
   const [pageSize, setPageSize] = useState(15);
@@ -113,7 +113,15 @@ const Address = () => {
     setLoading(false);
     setTableLoading(false);
     setAddress(_address.toString());
-    getAddressData(_address.toString());
+    // getAddressData(_address.toString());
+    setData(addressFixture as AccountResponse);
+    setPageCount(addressTxsFixture.num_of_pages);
+    setAccountTxNum(addressTxsFixture.num_of_txns);
+    if (addressTxsFixture.items) {
+      setAccountTxns(
+        (addressTxsFixture as unknown as AccountTxsResponse).items
+      );
+    }
   }, [_address, page, router]);
 
   useEffect(() => {

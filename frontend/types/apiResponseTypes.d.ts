@@ -99,8 +99,8 @@ export type TransactionResponse = {
   "created-application-index"?: number;
   "payment-transaction"?: {
     amount: number;
-    "close-amount": number;
-    "close-remainder-to": string;
+    "close-amount"?: number;
+    "close-remainder-to"?: string;
     receiver: string;
   };
   "asset-transfer-transaction": {
@@ -135,6 +135,7 @@ export type TransactionResponse = {
   };
   "keyreg-transaction"?: KeyRegTransaction;
   fee: number;
+  "rekey-to"?: string;
   "round-time": number;
   "first-valid": number;
   "last-valid": number;

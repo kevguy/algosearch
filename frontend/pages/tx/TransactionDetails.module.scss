@@ -99,6 +99,13 @@
 .inner-table {
   border-collapse: collapse;
 
+  thead {
+    color: var(--blue-dark);
+    font-weight: 500;
+    background-color: #f8fafd;
+    border-bottom: 1px solid rgb(231, 234, 243);
+  }
+
   @media screen and (max-width: 768px) {
     > thead {
       display: table-header-group !important;
