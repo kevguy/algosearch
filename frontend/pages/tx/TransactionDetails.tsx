@@ -269,21 +269,35 @@ const TransactionDetails = ({
               </tr>
             )}
             {transaction.signature.logicsig &&
-              transaction.signature.logicsig.logic &&
-              disassembledLogicSig && (
+              transaction.signature.logicsig.logic && (
                 <tr>
                   <td className={styles["valign-top-identifier"]}>LogicSig</td>
                   <td>
-                    <pre className={`${styles["teal-box"]} hljs`}>
-                      <code
-                        className="language-lua"
-                        dangerouslySetInnerHTML={{
-                          __html: hljs.highlight(disassembledLogicSig, {
-                            language: "lua",
-                          }).value,
-                        }}
-                      ></code>
-                    </pre>
+                    {disassembledLogicSig ? (
+                      <TabsUnstyled defaultValue={0}>
+                        <TabsListUnstyled className={styles.tabs}>
+                          <TabUnstyled>TEAL</TabUnstyled>
+                          <TabUnstyled>Base64</TabUnstyled>
+                        </TabsListUnstyled>
+                        <TabPanelUnstyled value={0}>
+                          <pre className={`${styles["teal-box"]} hljs`}>
+                            <code
+                              className="language-lua"
+                              dangerouslySetInnerHTML={{
+                                __html: hljs.highlight(disassembledLogicSig, {
+                                  language: "lua",
+                                }).value,
+                              }}
+                            ></code>
+                          </pre>
+                        </TabPanelUnstyled>
+                        <TabPanelUnstyled value={1}>
+                          {transaction.signature.logicsig.logic}
+                        </TabPanelUnstyled>
+                      </TabsUnstyled>
+                    ) : (
+                      transaction.signature.logicsig.logic
+                    )}
                   </td>
                 </tr>
               )}

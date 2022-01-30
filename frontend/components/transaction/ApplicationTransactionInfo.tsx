@@ -2,12 +2,24 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import algosdk from "algosdk";
 import hljs from "highlight.js";
+import {
+  TabPanelUnstyled,
+  TabsListUnstyled,
+  TabsUnstyled,
+  TabUnstyled,
+} from "@mui/material";
 
 import { TransactionResponse } from "../../types/apiResponseTypes";
 import styles from "../../pages/tx/TransactionDetails.module.scss";
 import blockStyles from "../../pages/block/Block.module.scss";
 import { getAppTEAL, getClearStateTEAL } from "../../utils/api";
 import { prettyPrintTEAL } from "../../utils/stringUtils";
+import {
+  algodAddr,
+  algodProtocol,
+  algodToken,
+  isLocal,
+} from "../../utils/constants";
 
 const ApplicationTransactionInfo = ({
   transaction,
@@ -19,7 +31,14 @@ const ApplicationTransactionInfo = ({
     useState<string>();
 
   useEffect(() => {
-    if (transaction && transaction["application-transaction"]) {
+    if (
+      isLocal &&
+      algodToken &&
+      algodProtocol &&
+      algodAddr &&
+      transaction &&
+      transaction["application-transaction"]
+    ) {
       if (transaction["application-transaction"]["approval-program"]) {
         getAppTEAL(transaction)
           .then((result) => {
@@ -168,49 +187,139 @@ const ApplicationTransactionInfo = ({
               <td>On Completion</td>
               <td>{transaction["application-transaction"]["on-completion"]}</td>
             </tr>
-            {transaction["application-transaction"]["approval-program"] &&
-              disassembledApp && (
-                <tr>
-                  <td className={styles["valign-top-identifier"]}>
-                    Approval Program
-                  </td>
-                  <td>
-                    <pre className={`${styles["teal-box"]} hljs`}>
-                      <code
-                        className="language-lua"
-                        dangerouslySetInnerHTML={{
-                          __html: hljs.highlight(disassembledApp, {
-                            language: "lua",
-                          }).value,
-                        }}
-                      ></code>
-                    </pre>
-                  </td>
-                </tr>
-              )}
-            {transaction["application-transaction"]["clear-state-program"] &&
-              disassembledClearStateProgram && (
-                <tr>
-                  <td className={styles["valign-top-identifier"]}>
-                    Clear State Program
-                  </td>
-                  <td>
-                    <pre className={`${styles["teal-box"]} hljs`}>
-                      <code
-                        className="language-lua"
-                        dangerouslySetInnerHTML={{
-                          __html: hljs.highlight(
-                            disassembledClearStateProgram,
-                            {
-                              language: "lua",
-                            }
-                          ).value,
-                        }}
-                      ></code>
-                    </pre>
-                  </td>
-                </tr>
-              )}
+            {transaction["created-application-index"] && (
+              <tr>
+                <td>Created Application Index</td>
+                <td>{transaction["created-application-index"]}</td>
+              </tr>
+            )}
+            {transaction["application-transaction"]["global-state-schema"] && (
+              <tr>
+                <td>Global State Schema</td>
+                <td className={styles["multiline-details"]}>
+                  <p>
+                    Number of byte-slice:{" "}
+                    {
+                      transaction["application-transaction"][
+                        "global-state-schema"
+                      ]["num-byte-slice"]
+                    }
+                  </p>
+                  <p>
+                    Number of uint:{" "}
+                    {
+                      transaction["application-transaction"][
+                        "global-state-schema"
+                      ]["num-uint"]
+                    }
+                  </p>
+                </td>
+              </tr>
+            )}
+            {transaction["application-transaction"]["local-state-schema"] && (
+              <tr>
+                <td>Local State Schema</td>
+                <td className={styles["multiline-details"]}>
+                  <p>
+                    Number of byte-slice:{" "}
+                    {
+                      transaction["application-transaction"][
+                        "local-state-schema"
+                      ]["num-byte-slice"]
+                    }
+                  </p>
+                  <p>
+                    Number of uint:{" "}
+                    {
+                      transaction["application-transaction"][
+                        "local-state-schema"
+                      ]["num-uint"]
+                    }
+                  </p>
+                </td>
+              </tr>
+            )}
+            {transaction["application-transaction"]["approval-program"] && (
+              <tr>
+                <td className={styles["valign-top-identifier"]}>
+                  Approval Program
+                </td>
+                <td>
+                  {disassembledApp ? (
+                    <TabsUnstyled defaultValue={0}>
+                      <TabsListUnstyled className={styles.tabs}>
+                        <TabUnstyled>TEAL</TabUnstyled>
+                        <TabUnstyled>Base64</TabUnstyled>
+                      </TabsListUnstyled>
+                      <TabPanelUnstyled value={0}>
+                        <pre className={`${styles["teal-box"]} hljs`}>
+                          <code
+                            className="language-lua"
+                            dangerouslySetInnerHTML={{
+                              __html: hljs.highlight(disassembledApp, {
+                                language: "lua",
+                              }).value,
+                            }}
+                          ></code>
+                        </pre>
+                      </TabPanelUnstyled>
+                      <TabPanelUnstyled value={1}>
+                        {
+                          transaction["application-transaction"][
+                            "approval-program"
+                          ]
+                        }
+                      </TabPanelUnstyled>
+                    </TabsUnstyled>
+                  ) : (
+                    transaction["application-transaction"]["approval-program"]
+                  )}
+                </td>
+              </tr>
+            )}
+            {transaction["application-transaction"]["clear-state-program"] && (
+              <tr>
+                <td className={styles["valign-top-identifier"]}>
+                  Clear State Program
+                </td>
+                <td>
+                  {disassembledClearStateProgram ? (
+                    <TabsUnstyled defaultValue={0}>
+                      <TabsListUnstyled className={styles.tabs}>
+                        <TabUnstyled>TEAL</TabUnstyled>
+                        <TabUnstyled>Base64</TabUnstyled>
+                      </TabsListUnstyled>
+                      <TabPanelUnstyled value={0}>
+                        <pre className={`${styles["teal-box"]} hljs`}>
+                          <code
+                            className="language-lua"
+                            dangerouslySetInnerHTML={{
+                              __html: hljs.highlight(
+                                disassembledClearStateProgram,
+                                {
+                                  language: "lua",
+                                }
+                              ).value,
+                            }}
+                          ></code>
+                        </pre>
+                      </TabPanelUnstyled>
+                      <TabPanelUnstyled value={1}>
+                        {
+                          transaction["application-transaction"][
+                            "clear-state-program"
+                          ]
+                        }
+                      </TabPanelUnstyled>
+                    </TabsUnstyled>
+                  ) : (
+                    transaction["application-transaction"][
+                      "clear-state-program"
+                    ]
+                  )}
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
