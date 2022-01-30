@@ -56,6 +56,26 @@ export type AccountTxsResponse = {
   items: TransactionResponse[]
 }
 
+export type AppTransaction = {
+  accounts?: string[];
+  "application-args"?: [];
+  "application-id": number;
+  "approval-program"?: string;
+  "clear-state-program"?: string;
+  "extra-program-pages"?: number;
+  "foreign-apps"?: [];
+  "foreign-assets"?: number[];
+  "global-state-schema"?: {
+    "num-byte-slice": number;
+    "num-uint": number;
+  },
+  "local-state-schema"?: {
+    "num-byte-slice": number;
+    "num-uint": number;
+  },
+  "on-completion": string;
+}
+
 export type TransactionResponse = {
   id: string;
   group?: string;
@@ -66,24 +86,9 @@ export type TransactionResponse = {
   sender: string;
   "sender-rewards": number;
   "receiver-rewards": number;
-  "application-transaction": {
-    accounts: string[];
-    "application-args": [];
-    "application-id": number;
-    "approval-program"?: string;
-    "foreign-apps": [];
-    "foreign-assets": number[];
-    "global-state-schema": {
-      "num-byte-slice": number;
-      "num-uint": number;
-    },
-    "local-state-schema": {
-      "num-byte-slice": number;
-      "num-uint": number;
-    },
-    "on-completion": string;
-  };
+  "application-transaction": AppTransaction;
   "inner-txns"?: TransactionResponse[];
+  "created-application-index"?: number;
   "payment-transaction"?: {
     amount: number;
     "close-amount": number;

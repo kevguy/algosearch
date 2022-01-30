@@ -73,6 +73,7 @@ const TransactionDetails = ({
         algodToken &&
         algodProtocol &&
         algodAddr &&
+        transaction.signature.logicsig &&
         transaction.signature.logicsig.logic &&
         transaction.signature.logicsig.args
       ) {
@@ -267,23 +268,25 @@ const TransactionDetails = ({
                 </td>
               </tr>
             )}
-            {transaction.signature.logicsig.logic && disassembledLogicSig && (
-              <tr>
-                <td className={styles["valign-top-identifier"]}>LogicSig</td>
-                <td>
-                  <pre className={`${styles["teal-box"]} hljs`}>
-                    <code
-                      className="language-lua"
-                      dangerouslySetInnerHTML={{
-                        __html: hljs.highlight(disassembledLogicSig, {
-                          language: "lua",
-                        }).value,
-                      }}
-                    ></code>
-                  </pre>
-                </td>
-              </tr>
-            )}
+            {transaction.signature.logicsig &&
+              transaction.signature.logicsig.logic &&
+              disassembledLogicSig && (
+                <tr>
+                  <td className={styles["valign-top-identifier"]}>LogicSig</td>
+                  <td>
+                    <pre className={`${styles["teal-box"]} hljs`}>
+                      <code
+                        className="language-lua"
+                        dangerouslySetInnerHTML={{
+                          __html: hljs.highlight(disassembledLogicSig, {
+                            language: "lua",
+                          }).value,
+                        }}
+                      ></code>
+                    </pre>
+                  </td>
+                </tr>
+              )}
           </tbody>
         </table>
       </div>

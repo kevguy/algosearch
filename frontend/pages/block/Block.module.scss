@@ -10,7 +10,7 @@
     word-break: break-all;
   }
 
-  table {
+  > table {
     min-width: 100%;
     table-layout: fixed;
   }
@@ -61,7 +61,7 @@
   }
 }
 
-.block-table table > tbody > tr {
+.block-table > table > tbody > tr {
   @media screen and (max-width: 768px) {
     line-height: 1.3;
     padding: var(--space-s) 0;
@@ -69,7 +69,7 @@
   }
 }
 
-.block-table table > tbody > tr > td {
+.block-table > table > tbody > tr > td {
   padding: var(--space-s);
   border-bottom: 1px solid rgb(231, 234, 243);
   &:first-child {
@@ -93,7 +93,7 @@
   }
 }
 
-.block-table table > tbody > tr:last-child > td {
+.block-table > table > tbody > tr:last-child > td {
   border-bottom: none;
 }
 
