@@ -20,12 +20,6 @@ const TransactionAdditionalInfo = ({
     <h4>Additional Information</h4>
     <div className={blockStyles["block-table"]}>
       <table cellSpacing="0">
-        <thead>
-          <tr>
-            <th>Identifier</th>
-            <th>Value</th>
-          </tr>
-        </thead>
         <tbody>
           <tr>
             <td>First Round</td>

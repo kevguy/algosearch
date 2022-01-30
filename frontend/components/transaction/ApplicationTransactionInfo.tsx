@@ -85,12 +85,6 @@ const ApplicationTransactionInfo = ({
       <h4>Application Transaction Information</h4>
       <div className={blockStyles["block-table"]}>
         <table cellSpacing="0">
-          <thead>
-            <tr>
-              <th>Identifier</th>
-              <th>Value</th>
-            </tr>
-          </thead>
           <tbody>
             <tr>
               <td>Application ID</td>

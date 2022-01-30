@@ -145,12 +145,6 @@ const TransactionDetails = ({
     <div className={blockStyles["table-wrapper"]}>
       <div className={blockStyles["block-table"]}>
         <table cellSpacing="0">
-          <thead>
-            <tr>
-              <th>Identifier</th>
-              <th>Value</th>
-            </tr>
-          </thead>
           <tbody>
             {transaction.group && !checkBase64EqualsEmpty(transaction.group) && (
               <tr>
