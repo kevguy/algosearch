@@ -74,8 +74,8 @@
   padding: var(--space-s);
   border-bottom: 1px solid rgb(231, 234, 243);
   &:first-child {
-    min-width: 220px;
-    width: 220px;
+    min-width: 240px;
+    width: 240px;
     font-weight: 500;
     @media screen and (max-width: 768px) {
       width: 100%;

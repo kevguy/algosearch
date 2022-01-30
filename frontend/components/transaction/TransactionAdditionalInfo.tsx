@@ -30,11 +30,7 @@ const TransactionAdditionalInfo = ({
           <tr>
             <td>First Round</td>
             <td>
-              <Link
-                href={`/block/${removeSpace(
-                  transaction["first-valid"].toString()
-                )}`}
-              >
+              <Link href={`/block/${transaction["first-valid"].toString()}`}>
                 {integerFormatter.format(
                   Number(removeSpace(transaction["first-valid"].toString()))
                 )}
@@ -44,11 +40,7 @@ const TransactionAdditionalInfo = ({
           <tr>
             <td>Last Round</td>
             <td>
-              <Link
-                href={`/block/${removeSpace(
-                  transaction["last-valid"].toString()
-                )}`}
-              >
+              <Link href={`/block/${transaction["last-valid"].toString()}`}>
                 {integerFormatter.format(
                   Number(removeSpace(transaction["last-valid"].toString()))
                 )}
@@ -59,9 +51,7 @@ const TransactionAdditionalInfo = ({
             <td>Confirmed Round</td>
             <td>
               <Link
-                href={`/block/${removeSpace(
-                  transaction["confirmed-round"].toString()
-                )}`}
+                href={`/block/${transaction["confirmed-round"].toString()}`}
               >
                 {integerFormatter.format(
                   Number(removeSpace(transaction["confirmed-round"].toString()))
@@ -112,10 +102,12 @@ const TransactionAdditionalInfo = ({
                 </td>
               </tr>
             )}
-          <tr>
-            <td>Genesis ID</td>
-            <td>{transaction["genesis-id"]}</td>
-          </tr>
+          {transaction["genesis-id"] && (
+            <tr>
+              <td>Genesis ID</td>
+              <td>{transaction["genesis-id"]}</td>
+            </tr>
+          )}
           <tr>
             <td>Genesis Hash</td>
             <td>{transaction["genesis-hash"]}</td>

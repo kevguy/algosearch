@@ -13,28 +13,28 @@ export interface IAsaResponse {
     total: number;
     "unit-name": string;
     url: string;
-  }
+  };
 }
 
 type multisigSubsig = {
   "public-key": string;
   signature?: string;
-}
+};
 
 export type AccountOwnedAsset = {
   amount: number;
   "asset-id": number;
   creator: string;
   "is-frozen": boolean;
-}
+};
 
 export type AccountResponse = {
   address: string;
   amount: number;
   "amount-without-pending-rewards": number;
-  "apps-total-schema": { "num-byte-slice": number; "num-uint": number;},
+  "apps-total-schema": { "num-byte-slice": number; "num-uint": number };
   assets: AccountOwnedAsset[];
-  "created-assets":IAsaResponse[];
+  "created-assets": IAsaResponse[];
   participation: {
     "selection-participation-key": string | null;
     "vote-first-valid": number;
@@ -44,17 +44,16 @@ export type AccountResponse = {
   };
   "pending-rewards": number;
   "reward-base": number;
-  "rewards": number;
-  "round": number;
-  "status": "Online" | "Offline";
-}
-
+  rewards: number;
+  round: number;
+  status: "Online" | "Offline";
+};
 
 export type AccountTxsResponse = {
-  "num_of_pages": number,
-  "num_of_txns": number,
-  items: TransactionResponse[]
-}
+  num_of_pages: number;
+  num_of_txns: number;
+  items: TransactionResponse[];
+};
 
 export type AppTransaction = {
   accounts?: string[];
@@ -68,18 +67,27 @@ export type AppTransaction = {
   "global-state-schema"?: {
     "num-byte-slice": number;
     "num-uint": number;
-  },
+  };
   "local-state-schema"?: {
     "num-byte-slice": number;
     "num-uint": number;
-  },
+  };
   "on-completion": string;
-}
+};
+
+export type KeyRegTransaction = {
+  "non-participation": boolean;
+  "selection-participation-key": string;
+  "vote-first-valid": number;
+  "vote-key-dilution": number;
+  "vote-last-valid": number;
+  "vote-participation-key": string;
+};
 
 export type TransactionResponse = {
   id: string;
   group?: string;
-  "genesis-id": string;
+  "genesis-id"?: string;
   "genesis-hash": string;
   "confirmed-round": number;
   "tx-type": TxType;
@@ -110,11 +118,11 @@ export type TransactionResponse = {
       total: number;
       // more info if type is Asset Config
       manager?: string;
-      reserve?:string;
+      reserve?: string;
       freeze?: string;
       clawback?: string;
       "metadata-hash"?: string;
-      name?:string;
+      name?: string;
       total?: number;
       "unit-name"?: string;
       url?: string;
@@ -125,6 +133,7 @@ export type TransactionResponse = {
     "asset-id": number;
     "new-freeze-status": boolean;
   };
+  "keyreg-transaction"?: KeyRegTransaction;
   fee: number;
   "round-time": number;
   "first-valid": number;
@@ -138,7 +147,7 @@ export type TransactionResponse = {
       "multisig-signature"?: {};
     };
     multisig: {
-      subsignature?: multisigSubsig[],
+      subsignature?: multisigSubsig[];
       threshold?: number;
       version?: number;
     };
@@ -175,7 +184,7 @@ export type IBlockResponse = {
   "upgrade-vote": {};
   _id: string;
   _rev: string;
-}
+};
 
 export interface ILatestBlocksResponse {
   num_of_blks: number;

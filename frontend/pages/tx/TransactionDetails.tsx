@@ -42,6 +42,7 @@ import {
 import { DryrunResponse } from "algosdk/dist/types/src/client/v2/algod/models/types";
 import { AssetConfigTransactionInfo } from "../../components/transaction/AssetConfigTransactionInfo";
 import { AssetFreezeTransactionInfo } from "../../components/transaction/AssetFreezeTransactionInfo";
+import { KeyRegTransactionInfo } from "../../components/transaction/KeyRegTransactionInfo";
 
 const TransactionDetails = ({
   transaction,
@@ -373,6 +374,7 @@ const TransactionDetails = ({
       {txType === TxType.AssetFreeze && (
         <AssetFreezeTransactionInfo tx={transaction} />
       )}
+      {txType === TxType.KeyReg && <KeyRegTransactionInfo tx={transaction} />}
       <TransactionAdditionalInfo transaction={transaction} />
     </div>
   );
