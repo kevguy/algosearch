@@ -40,6 +40,7 @@ import {
   isLocal,
 } from "../../utils/constants";
 import { DryrunResponse } from "algosdk/dist/types/src/client/v2/algod/models/types";
+import { AssetConfigTransactionInfo } from "../../components/transaction/AssetConfigTransactionInfo";
 
 const TransactionDetails = ({
   transaction,
@@ -364,6 +365,9 @@ const TransactionDetails = ({
       )}
       {txType === TxType.App && (
         <ApplicationTransactionInfo transaction={transaction} />
+      )}
+      {txType === TxType.AssetConfig && (
+        <AssetConfigTransactionInfo tx={transaction} />
       )}
       <TransactionAdditionalInfo transaction={transaction} />
     </div>

@@ -2,12 +2,9 @@ import React from "react";
 import Link from "next/link";
 import { TransactionResponse } from "../../types/apiResponseTypes";
 import {
-  formatAsaAmountWithDecimal,
-  formatNumber,
   integerFormatter,
   microAlgosToAlgos,
   removeSpace,
-  TxType,
 } from "../../utils/stringUtils";
 import styles from "../../pages/tx/TransactionDetails.module.scss";
 import blockStyles from "../../pages/block/Block.module.scss";
@@ -123,114 +120,6 @@ const TransactionAdditionalInfo = ({
             <td>Genesis Hash</td>
             <td>{transaction["genesis-hash"]}</td>
           </tr>
-          {transaction["tx-type"] === TxType.AssetConfig && (
-            <>
-              <tr>
-                <td>Asset Name</td>
-                <td>
-                  {transaction["asset-config-transaction"].params.url ? (
-                    <a
-                      href={transaction["asset-config-transaction"].params.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {transaction["asset-config-transaction"].params.name}
-                    </a>
-                  ) : (
-                    transaction["asset-config-transaction"].params.name
-                  )}
-                </td>
-              </tr>
-              <tr>
-                <td>Manager</td>
-                <td>
-                  {transaction["asset-config-transaction"].params.manager ? (
-                    <Link
-                      href={`/address/${transaction["asset-config-transaction"].params.manager}`}
-                    >
-                      {transaction["asset-config-transaction"].params.manager}
-                    </Link>
-                  ) : (
-                    "N/A"
-                  )}
-                </td>
-              </tr>
-              <tr>
-                <td>Reserve</td>
-                <td>
-                  {transaction["asset-config-transaction"].params.reserve ? (
-                    <Link
-                      href={`/address/${transaction["asset-config-transaction"].params.reserve}`}
-                    >
-                      {transaction["asset-config-transaction"].params.reserve}
-                    </Link>
-                  ) : (
-                    "N/A"
-                  )}
-                </td>
-              </tr>
-              <tr>
-                <td>Freeze</td>
-                <td>
-                  {transaction["asset-config-transaction"].params.freeze ? (
-                    <Link
-                      href={`/address/${transaction["asset-config-transaction"].params.freeze}`}
-                    >
-                      {transaction["asset-config-transaction"].params.freeze}
-                    </Link>
-                  ) : (
-                    "N/A"
-                  )}
-                </td>
-              </tr>
-              <tr>
-                <td>Clawback</td>
-                <td>
-                  {transaction["asset-config-transaction"].params.clawback ? (
-                    <Link
-                      href={`/address/${transaction["asset-config-transaction"].params.clawback}`}
-                    >
-                      {transaction["asset-config-transaction"].params.clawback}
-                    </Link>
-                  ) : (
-                    "N/A"
-                  )}
-                </td>
-              </tr>
-              <tr>
-                <td>Decimals</td>
-                <td>
-                  {transaction["asset-config-transaction"].params.decimals}
-                </td>
-              </tr>
-              <tr>
-                <td>Total</td>
-                <td>
-                  {formatNumber(
-                    Number(
-                      formatAsaAmountWithDecimal(
-                        BigInt(
-                          transaction["asset-config-transaction"].params.total
-                        ),
-                        transaction["asset-config-transaction"].params.decimals
-                      )
-                    )
-                  )}{" "}
-                  {transaction["asset-config-transaction"].params["unit-name"]}
-                </td>
-              </tr>
-              <tr>
-                <td>Metadata Hash</td>
-                <td>
-                  {
-                    transaction["asset-config-transaction"].params[
-                      "metadata-hash"
-                    ]
-                  }
-                </td>
-              </tr>
-            </>
-          )}
         </tbody>
       </table>
     </div>
