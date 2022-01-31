@@ -1,6 +1,6 @@
 import { TxType } from "../utils/stringUtils";
 
-export interface IAsaResponse {
+export type IAsaResponse = {
   index: number;
   params: {
     clawback: string;
@@ -14,7 +14,7 @@ export interface IAsaResponse {
     "unit-name": string;
     url: string;
   };
-}
+};
 
 type multisigSubsig = {
   "public-key": string;
@@ -28,6 +28,24 @@ export type AccountOwnedAsset = {
   "is-frozen": boolean;
 };
 
+export type StateSchema = {
+  "num-byte-slice": number;
+  "num-uint": number;
+};
+
+export type CreatedApp = {
+  "created-at-round": number;
+  deleted: boolean;
+  id: number;
+  params: {
+    "approval-program": string;
+    "clear-state-program": string;
+    creator: string;
+    "global-state-schema": StateSchema;
+    "local-state-schema": StateSchema;
+  };
+};
+
 export type AccountResponse = {
   address: string;
   amount: number;
@@ -35,6 +53,7 @@ export type AccountResponse = {
   "apps-total-schema": { "num-byte-slice": number; "num-uint": number };
   assets: AccountOwnedAsset[];
   "created-assets": IAsaResponse[];
+  "created-apps": CreatedApp[];
   participation: {
     "selection-participation-key": string | null;
     "vote-first-valid": number;
@@ -64,25 +83,22 @@ export type AppTransaction = {
   "extra-program-pages"?: number;
   "foreign-apps"?: [];
   "foreign-assets"?: number[];
-  "global-state-schema"?: {
-    "num-byte-slice": number;
-    "num-uint": number;
-  };
-  "local-state-schema"?: {
-    "num-byte-slice": number;
-    "num-uint": number;
-  };
+  "global-state-schema"?: StateSchema;
+  "local-state-schema"?: StateSchema;
   "on-completion": string;
 };
 
-export type KeyRegTransaction = {
-  "non-participation": boolean;
+export interface Participation {
   "selection-participation-key": string;
   "vote-first-valid": number;
   "vote-key-dilution": number;
   "vote-last-valid": number;
   "vote-participation-key": string;
-};
+}
+
+export interface KeyRegTransaction extends Participation {
+  "non-participation": boolean;
+}
 
 export type TransactionResponse = {
   id: string;

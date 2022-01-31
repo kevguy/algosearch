@@ -38,6 +38,7 @@ export interface TableProperties<T extends Record<string, unknown>>
   loading: boolean;
   className?: string;
   defaultPage?: number;
+  changeUrlPageParamOnPageChange?: boolean;
 }
 
 const Table = <T extends Record<string, unknown>>(
@@ -51,6 +52,7 @@ const Table = <T extends Record<string, unknown>>(
     loading,
     className,
     defaultPage,
+    changeUrlPageParamOnPageChange = true,
   } = props;
   const router = useRouter();
   const instance = useTable<T>(
@@ -86,31 +88,45 @@ const Table = <T extends Record<string, unknown>>(
   );
   const firstPageClickHandler = useCallback(() => {
     gotoPage(0);
-    router.replace({
-      query: Object.assign({}, router.query, { page: 1 }),
-    });
+    if (changeUrlPageParamOnPageChange) {
+      router.replace({
+        query: Object.assign({}, router.query, { page: 1 }),
+      });
+    }
     setPageIndexDisplayed(1);
   }, [gotoPage, router]);
 
   const prevPageClickHandler = useCallback(() => {
     previousPage();
-    router.replace({
-      query: Object.assign({}, router.query, { page: pageIndexDisplayed - 1 }),
-    });
+    if (changeUrlPageParamOnPageChange) {
+      router.replace({
+        query: Object.assign({}, router.query, {
+          page: pageIndexDisplayed - 1,
+        }),
+      });
+    }
     setPageIndexDisplayed(pageIndexDisplayed - 1);
   }, [previousPage, pageIndexDisplayed, router]);
 
   const pageInputChangeHandler = useCallback(() => {
     if (pageIndexDisplayed) {
       if (pageIndexDisplayed <= pageOptions.length) {
-        router.replace({
-          query: Object.assign({}, router.query, { page: pageIndexDisplayed }),
-        });
+        if (changeUrlPageParamOnPageChange) {
+          router.replace({
+            query: Object.assign({}, router.query, {
+              page: pageIndexDisplayed,
+            }),
+          });
+        }
         gotoPage(pageIndexDisplayed - 1);
       } else {
-        router.replace({
-          query: Object.assign({}, router.query, { page: pageOptions.length }),
-        });
+        if (changeUrlPageParamOnPageChange) {
+          router.replace({
+            query: Object.assign({}, router.query, {
+              page: pageOptions.length,
+            }),
+          });
+        }
         setPageIndexDisplayed(pageOptions.length);
         gotoPage(pageOptions.length - 1);
       }
@@ -119,30 +135,46 @@ const Table = <T extends Record<string, unknown>>(
 
   const nextPageClickHandler = useCallback(() => {
     nextPage();
-    router.replace({
-      query: Object.assign({}, router.query, { page: pageIndexDisplayed + 1 }),
-    });
+    if (changeUrlPageParamOnPageChange) {
+      router.replace({
+        query: Object.assign({}, router.query, {
+          page: pageIndexDisplayed + 1,
+        }),
+      });
+    }
     setPageIndexDisplayed(pageIndexDisplayed + 1);
   }, [pageIndexDisplayed, nextPage, router]);
 
   const finalPageClickHandler = useCallback(() => {
     gotoPage(controlledPageCount - 1);
-    router.replace({
-      query: Object.assign({}, router.query, { page: controlledPageCount }),
-    });
+    if (changeUrlPageParamOnPageChange) {
+      router.replace({
+        query: Object.assign({}, router.query, { page: controlledPageCount }),
+      });
+    }
     setPageIndexDisplayed(controlledPageCount);
   }, [controlledPageCount, gotoPage, router]);
 
   useEffect(() => {
-    if (
-      fetchData &&
-      defaultPage === pageIndexDisplayed &&
-      pageIndex + 1 === pageIndexDisplayed
-    ) {
-      // only fetch when page is set correct across the variables
-      fetchData({
-        pageIndex,
-      });
+    if (!fetchData) {
+      return;
+    }
+    if (changeUrlPageParamOnPageChange) {
+      if (
+        defaultPage === pageIndexDisplayed &&
+        pageIndex + 1 === pageIndexDisplayed
+      ) {
+        // only fetch when page is set correct across the variables
+        fetchData({
+          pageIndex,
+        });
+      }
+    } else {
+      if (pageIndexDisplayed) {
+        fetchData({
+          pageIndex: pageIndexDisplayed - 1,
+        });
+      }
     }
   }, [fetchData, pageIndex, defaultPage, router, pageIndexDisplayed]);
 

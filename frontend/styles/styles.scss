@@ -251,3 +251,8 @@ code {
     max-width: 95vw;
   }
 }
+
+.vertical-layout {
+  display: flex;
+  flex-direction: column;
+}

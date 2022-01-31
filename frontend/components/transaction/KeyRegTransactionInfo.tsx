@@ -56,7 +56,7 @@ export const KeyRegTransactionInfo = ({ tx }: { tx: TransactionResponse }) => {
               </td>
               <td>
                 {integerFormatter.format(
-                  Number(removeSpace(keyRegTx["vote-key-dilution"].toString()))
+                  Number(keyRegTx["vote-key-dilution"].toString())
                 )}
               </td>
             </tr>
@@ -68,7 +68,7 @@ export const KeyRegTransactionInfo = ({ tx }: { tx: TransactionResponse }) => {
               <td>
                 <Link href={`/block/${keyRegTx["vote-first-valid"]}`}>
                   {integerFormatter.format(
-                    Number(removeSpace(keyRegTx["vote-first-valid"].toString()))
+                    Number(keyRegTx["vote-first-valid"].toString())
                   )}
                 </Link>
               </td>
@@ -81,7 +81,7 @@ export const KeyRegTransactionInfo = ({ tx }: { tx: TransactionResponse }) => {
               <td>
                 <Link href={`/block/${keyRegTx["vote-last-valid"]}`}>
                   {integerFormatter.format(
-                    Number(removeSpace(keyRegTx["vote-last-valid"].toString()))
+                    Number(keyRegTx["vote-last-valid"].toString())
                   )}
                 </Link>
               </td>
