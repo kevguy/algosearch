@@ -195,7 +195,38 @@ describe('Transaction Page', () => {
   });
 
   /* Asset Transfer Tx */
+  it('displays Asset Transfer tx info correctly', () => {
+    cy.intercept(
+      {
+        method: 'GET',
+        url: `${backend_url}/v1/transactions/*`,
+      },
+      {
+        fixture: txAxferFixture,
+      },
+    ).as('getAxferTx');
+    cy.visit('/tx/5FKLBBCQPBGAT4QWD6D4LANJ7GIXD2AVPK2W4PJBW77Q4U3LM5KQ');
+    cy.wait('@getAxferTx');
+
+    cy.get('[class*="Block_block-table"]').eq(0).find('tbody tr').as('axferTable');
+    cy.get('@axferTable').eq(0).children().eq(0).should('have.text', 'ID');
+    cy.get('@axferTable').eq(0).children().eq(1).should('have.text', '5FKLBBCQPBGAT4QWD6D4LANJ7GIXD2AVPK2W4PJBW77Q4U3LM5KQ');
+    cy.get('@axferTable').eq(1).children().eq(0).should('have.text', 'Block');
+    cy.get('@axferTable').eq(1).children().eq(1).should('have.text', '4,259,852');
+    cy.get('@axferTable').eq(2).children().eq(0).should('have.text', 'Type');
+    cy.get('@axferTable').eq(2).children().eq(1).should('have.text', 'ASA Transfer');
+    cy.get('@axferTable').eq(3).children().eq(0).should('have.text', 'Sender');
+    cy.get('@axferTable').eq(3).children().eq(1).should('have.text', 'ARCC3TMGVD7KXY7GYTE7U5XXUJXFRD2SXLAWRV57XJ6HWHRR37GNGNMPSY');
+    cy.get('@axferTable').eq(4).children().eq(0).should('have.text', 'Receiver');
+    cy.get('@axferTable').eq(4).children().eq(1).should('have.text', 'DBOVYJH5JCRIJ2UZIMY4QRSWXHHBTOOGUYQS7654WSJXAXQ2TUMWFVB2G4');
+    cy.get('@axferTable').eq(5).children().eq(0).should('have.text', 'Amount');
+    cy.get('@axferTable').eq(5).children().eq(1).should('contain', '888,888,888 ARCC');
+    cy.get('@axferTable').eq(6).children().eq(0).should('have.text', 'Fee');
+    cy.get('@axferTable').eq(6).children().eq(1).should('contain', '0.001');
+  });
+
   /* Asset KeyReg Tx */
+
   /* App Call Tx with Approval Program and Clear State Program */
   it('displays App Call Tx with Approval Program and Clear State Program info correctly', () => {
     cy.intercept(
