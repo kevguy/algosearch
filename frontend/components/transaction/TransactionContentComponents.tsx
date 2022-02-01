@@ -92,23 +92,26 @@ export const getCloseAmount = (
   if (txType === TxType.AssetTransfer) {
     const axferTx = tx["asset-transfer-transaction"];
     return (
-      <div>
-        {axferTx &&
-          asaMap[axferTx["asset-id"]] &&
-          formatNumber(
-            Number(
-              formatAsaAmountWithDecimal(
-                BigInt(axferTx["close-amount"]),
-                asaMap[axferTx["asset-id"]].decimals
-              ) ?? 0
-            )
-          )}{" "}
-        {axferTx && asaMap[axferTx["asset-id"]] && (
-          <Link href={`/asset/${axferTx["asset-id"]}`}>
-            {asaMap[axferTx["asset-id"]].unitName}
-          </Link>
-        )}
-      </div>
+      axferTx &&
+      axferTx["close-amount"] && (
+        <div>
+          {axferTx &&
+            asaMap[axferTx["asset-id"]] &&
+            formatNumber(
+              Number(
+                formatAsaAmountWithDecimal(
+                  BigInt(axferTx["close-amount"]),
+                  asaMap[axferTx["asset-id"]].decimals
+                ) ?? 0
+              )
+            )}{" "}
+          {axferTx && asaMap[axferTx["asset-id"]] && (
+            <Link href={`/asset/${axferTx["asset-id"]}`}>
+              {asaMap[axferTx["asset-id"]].unitName}
+            </Link>
+          )}
+        </div>
+      )
     );
   }
   if (tx["payment-transaction"] && tx["payment-transaction"]["close-amount"]) {

@@ -22,7 +22,7 @@ const TransactionAdditionalInfo = ({
       <table cellSpacing="0">
         <tbody>
           <tr>
-            <td>First Round</td>
+            <td>First Valid</td>
             <td>
               <Link href={`/block/${transaction["first-valid"].toString()}`}>
                 {integerFormatter.format(
@@ -32,7 +32,7 @@ const TransactionAdditionalInfo = ({
             </td>
           </tr>
           <tr>
-            <td>Last Round</td>
+            <td>Last Valid</td>
             <td>
               <Link href={`/block/${transaction["last-valid"].toString()}`}>
                 {integerFormatter.format(

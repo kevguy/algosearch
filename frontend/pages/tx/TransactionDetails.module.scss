@@ -125,8 +125,19 @@
   font-weight: 300 !important;
 }
 
-@media screen and (max-width: 768px) {
-  .inner-txs-table {
+.inner-txs-table {
+  th {
+    font-weight: 500;
+    color: var(--blue-dark);
+    background-color: #f8fafd;
+  }
+  > table > tbody > tr > td:first-child {
+    min-width: auto !important;
+    width: auto !important;
+    color: initial !important;
+    background-color: transparent !important;
+  }
+  @media screen and (max-width: 768px) {
     h4 {
       margin-bottom: 0;
     }

@@ -20,20 +20,21 @@ describe('Transaction Page', () => {
     cy.visit('/tx/NTIU26TLJ6XMMBV6YQJB6SUPG5FBKCMHG2EQ5R5AGJDQ7OXK7PKQ');
     cy.wait('@getTx');
 
-    cy.get('[class*="Block_block-table"]').eq(0).find('tbody tr').eq(0).children().eq(0).should('have.text', 'ID');
-    cy.get('[class*="Block_block-table"]').eq(0).find('tbody tr').eq(0).children().eq(1).should('have.text', 'NTIU26TLJ6XMMBV6YQJB6SUPG5FBKCMHG2EQ5R5AGJDQ7OXK7PKQ');
-    cy.get('[class*="Block_block-table"]').eq(0).find('tbody tr').eq(1).children().eq(0).should('have.text', 'Block');
-    cy.get('[class*="Block_block-table"]').eq(0).find('tbody tr').eq(1).children().eq(1).should('have.text', '6,611,812');
-    cy.get('[class*="Block_block-table"]').eq(0).find('tbody tr').eq(2).children().eq(0).should('have.text', 'Type');
-    cy.get('[class*="Block_block-table"]').eq(0).find('tbody tr').eq(2).children().eq(1).should('have.text', 'Payment');
-    cy.get('[class*="Block_block-table"]').eq(0).find('tbody tr').eq(3).children().eq(0).should('have.text', 'Sender');
-    cy.get('[class*="Block_block-table"]').eq(0).find('tbody tr').eq(3).children().eq(1).should('have.text', 'TKEVVXMEEBRZQG5PP6CPJTHNK3MVHPTRA5M3ATER5GIL36EAPUMX5MR37U');
-    cy.get('[class*="Block_block-table"]').eq(0).find('tbody tr').eq(4).children().eq(0).should('have.text', 'Receiver');
-    cy.get('[class*="Block_block-table"]').eq(0).find('tbody tr').eq(4).children().eq(1).should('have.text', 'SP745JJR4KPRQEXJZHVIEN736LYTL2T2DFMG3OIIFJBV66K73PHNMDCZVM');
-    cy.get('[class*="Block_block-table"]').eq(0).find('tbody tr').eq(5).children().eq(0).should('have.text', 'Amount');
-    cy.get('[class*="Block_block-table"]').eq(0).find('tbody tr').eq(5).children().eq(1).should('contain', '28,883.027883');
-    cy.get('[class*="Block_block-table"]').eq(0).find('tbody tr').eq(6).children().eq(0).should('have.text', 'Fee');
-    cy.get('[class*="Block_block-table"]').eq(0).find('tbody tr').eq(6).children().eq(1).should('contain', '0.001');
+    cy.get('[class*="Block_block-table"]').eq(0).find('tbody tr').as('mainTable');
+    cy.get('@mainTable').eq(0).children().eq(0).should('have.text', 'ID');
+    cy.get('@mainTable').eq(0).children().eq(1).should('have.text', 'NTIU26TLJ6XMMBV6YQJB6SUPG5FBKCMHG2EQ5R5AGJDQ7OXK7PKQ');
+    cy.get('@mainTable').eq(1).children().eq(0).should('have.text', 'Block');
+    cy.get('@mainTable').eq(1).children().eq(1).should('have.text', '6,611,812');
+    cy.get('@mainTable').eq(2).children().eq(0).should('have.text', 'Type');
+    cy.get('@mainTable').eq(2).children().eq(1).should('have.text', 'Payment');
+    cy.get('@mainTable').eq(3).children().eq(0).should('have.text', 'Sender');
+    cy.get('@mainTable').eq(3).children().eq(1).should('have.text', 'TKEVVXMEEBRZQG5PP6CPJTHNK3MVHPTRA5M3ATER5GIL36EAPUMX5MR37U');
+    cy.get('@mainTable').eq(4).children().eq(0).should('have.text', 'Receiver');
+    cy.get('@mainTable').eq(4).children().eq(1).should('have.text', 'SP745JJR4KPRQEXJZHVIEN736LYTL2T2DFMG3OIIFJBV66K73PHNMDCZVM');
+    cy.get('@mainTable').eq(5).children().eq(0).should('have.text', 'Amount');
+    cy.get('@mainTable').eq(5).children().eq(1).should('contain', '28,883.027883');
+    cy.get('@mainTable').eq(6).children().eq(0).should('have.text', 'Fee');
+    cy.get('@mainTable').eq(6).children().eq(1).should('contain', '0.001');
   });
 
   it('displays notes in 4 versions', () => {
@@ -79,12 +80,32 @@ describe('Transaction Page', () => {
     cy.url().should('include', '/address/');
   });
 
+  it('displays Additional Info correctly', () => {
+    cy.visit('/tx/NTIU26TLJ6XMMBV6YQJB6SUPG5FBKCMHG2EQ5R5AGJDQ7OXK7PKQ');
+    cy.wait('@getTx');
+    cy.get('[class*="Block_block-table"]').eq(1).find('tbody tr').as('addInfoTable');
+    cy.get('@addInfoTable').eq(0).children().eq(0).should('have.text', 'First Valid');
+    cy.get('@addInfoTable').eq(0).children().eq(1).should('have.text', '6,611,809');
+    cy.get('@addInfoTable').eq(1).children().eq(0).should('have.text', 'Last Valid');
+    cy.get('@addInfoTable').eq(1).children().eq(1).should('have.text', '6,612,809');
+    cy.get('@addInfoTable').eq(2).children().eq(0).should('have.text', 'Confirmed Round');
+    cy.get('@addInfoTable').eq(2).children().eq(1).should('have.text', '6,611,812');
+    cy.get('@addInfoTable').eq(3).children().eq(0).should('have.text', 'Sender Rewards');
+    cy.get('@addInfoTable').eq(3).children().eq(1).should('contain', '0.028883');
+    cy.get('@addInfoTable').eq(4).children().eq(0).should('have.text', 'Receiver Rewards');
+    cy.get('@addInfoTable').eq(4).children().eq(1).should('contain', '0');
+    cy.get('@addInfoTable').eq(5).children().eq(0).should('have.text', 'Genesis ID');
+    cy.get('@addInfoTable').eq(5).children().eq(1).should('have.text', 'mainnet-v1.0');
+    cy.get('@addInfoTable').eq(6).children().eq(0).should('have.text', 'Genesis Hash');
+    cy.get('@addInfoTable').eq(6).children().eq(1).should('have.text', 'wGHE2Pwdvd7S12BL5FaOP20EGYesN73ktiC1qzkkit8=');
+  });
+
   /* Asset Config Tx */
   /* Asset Freeze Tx */
   /* Asset Transfer Tx */
   /* Asset KeyReg Tx */
   /* App Call Tx with Approval Program and Clear State Program */
-  it.only('displays App Call Tx with Approval Program and Clear State Program info correctly', () => {
+  it('displays App Call Tx with Approval Program and Clear State Program info correctly', () => {
     cy.intercept(
       {
         method: 'GET',
@@ -97,18 +118,19 @@ describe('Transaction Page', () => {
     cy.visit('/tx/NTIU26TLJ6XMMBV6YQJB6SUPG5FBKCMHG2EQ5R5AGJDQ7OXK7PKQ');
     cy.wait('@getApprovalTx');
 
-    cy.get('[class*="Block_block-table"]').eq(0).find('tbody tr').eq(0).children().eq(0).should('have.text', 'Group ID');
-    cy.get('[class*="Block_block-table"]').eq(0).find('tbody tr').eq(0).children().eq(1).should('have.text', 'TwOfuW94Nd0hXrKfpSXcwD80DE7v1copZN8NZfQM67M=');
-    cy.get('[class*="Block_block-table"]').eq(0).find('tbody tr').eq(1).children().eq(0).should('have.text', 'ID');
-    cy.get('[class*="Block_block-table"]').eq(0).find('tbody tr').eq(1).children().eq(1).should('have.text', '3FLI5PVGYIHV7RXMW5M4VFVIIRQOZFMFELYGFL6FCEQUNOEAVD7Q');
-    cy.get('[class*="Block_block-table"]').eq(0).find('tbody tr').eq(2).children().eq(0).should('have.text', 'Block');
-    cy.get('[class*="Block_block-table"]').eq(0).find('tbody tr').eq(2).children().eq(1).should('have.text', '19,193,933');
-    cy.get('[class*="Block_block-table"]').eq(0).find('tbody tr').eq(3).children().eq(0).should('have.text', 'Type');
-    cy.get('[class*="Block_block-table"]').eq(0).find('tbody tr').eq(3).children().eq(1).should('have.text', 'App Call');
-    cy.get('[class*="Block_block-table"]').eq(0).find('tbody tr').eq(4).children().eq(0).should('have.text', 'Sender');
-    cy.get('[class*="Block_block-table"]').eq(0).find('tbody tr').eq(4).children().eq(1).should('have.text', 'MIZ3P3RZEXYT4VHRRT6K5EBYQKP24SLHBPXMADKKDZ3VCLVXOOKUACN42E');
-    cy.get('[class*="Block_block-table"]').eq(0).find('tbody tr').eq(5).children().eq(0).should('have.text', 'Fee');
-    cy.get('[class*="Block_block-table"]').eq(0).find('tbody tr').eq(5).children().eq(1).should('contain', '0.001');
+    cy.get('[class*="Block_block-table"]').eq(0).find('tbody tr').as('appCallMainTable');
+    cy.get('@appCallMainTable').eq(0).children().eq(0).should('have.text', 'Group ID');
+    cy.get('@appCallMainTable').eq(0).children().eq(1).should('have.text', 'TwOfuW94Nd0hXrKfpSXcwD80DE7v1copZN8NZfQM67M=');
+    cy.get('@appCallMainTable').eq(1).children().eq(0).should('have.text', 'ID');
+    cy.get('@appCallMainTable').eq(1).children().eq(1).should('have.text', '3FLI5PVGYIHV7RXMW5M4VFVIIRQOZFMFELYGFL6FCEQUNOEAVD7Q');
+    cy.get('@appCallMainTable').eq(2).children().eq(0).should('have.text', 'Block');
+    cy.get('@appCallMainTable').eq(2).children().eq(1).should('have.text', '19,193,933');
+    cy.get('@appCallMainTable').eq(3).children().eq(0).should('have.text', 'Type');
+    cy.get('@appCallMainTable').eq(3).children().eq(1).should('have.text', 'App Call');
+    cy.get('@appCallMainTable').eq(4).children().eq(0).should('have.text', 'Sender');
+    cy.get('@appCallMainTable').eq(4).children().eq(1).should('have.text', 'MIZ3P3RZEXYT4VHRRT6K5EBYQKP24SLHBPXMADKKDZ3VCLVXOOKUACN42E');
+    cy.get('@appCallMainTable').eq(5).children().eq(0).should('have.text', 'Fee');
+    cy.get('@appCallMainTable').eq(5).children().eq(1).should('contain', '0.001');
 
     /* App Call Tx Info */
     cy.get('[class*="Block_block-table"]').eq(1).children('table').children('tbody').children('tr').as('appTxInfoTableRows');
@@ -156,6 +178,67 @@ describe('Transaction Page', () => {
   });
 
   /* App Call Tx with Inner Txs */
+  it('displays App Call Tx with Inner Txs info correctly', () => {
+    cy.intercept(
+      {
+        method: 'GET',
+        url: `${backend_url}/v1/transactions/*`,
+      },
+      {
+        fixture: txInnerTxsFixture,
+      },
+    ).as('getInnersTx');
+    cy.visit('/tx/Y5W6UWSSYEEOXJI2RHID66HYWIBQ4EVCCCZY5Q4LHK6XSC74BFNA');
+    cy.wait('@getInnersTx');
+
+    cy.get('[class*="Block_block-table"]').eq(0).find('tbody tr').as('appCallMainTable');
+    cy.get('@appCallMainTable').eq(0).children().eq(0).should('have.text', 'ID');
+    cy.get('@appCallMainTable').eq(0).children().eq(1).should('have.text', 'Y5W6UWSSYEEOXJI2RHID66HYWIBQ4EVCCCZY5Q4LHK6XSC74BFNA');
+    cy.get('@appCallMainTable').eq(1).children().eq(0).should('have.text', 'Block');
+    cy.get('@appCallMainTable').eq(1).children().eq(1).should('have.text', '13,348,578');
+    cy.get('@appCallMainTable').eq(2).children().eq(0).should('have.text', 'Type');
+    cy.get('@appCallMainTable').eq(2).children().eq(1).should('have.text', 'App Call');
+    cy.get('@appCallMainTable').eq(3).children().eq(0).should('have.text', 'Sender');
+    cy.get('@appCallMainTable').eq(3).children().eq(1).should('have.text', '4WMWVTICJG2XWSZBXSRALIULEUWKKERMT2NSY67JGOFRKVEW7FURVYC5OM');
+    cy.get('@appCallMainTable').eq(4).children().eq(0).should('have.text', 'Fee');
+    cy.get('@appCallMainTable').eq(4).children().eq(1).should('contain', '0.001');
+
+    /* Inner Txs Info */
+    cy.get('[class*="Block_block-table"]').eq(1).children('table').children('tbody').children('tr').as('innersTableRows');
+    cy.get('@innersTableRows').eq(0).children().eq(0).should('contain', 'ASA Transfer');
+    cy.get('@innersTableRows').eq(0).children().eq(1).should('contain', 'BHBJZQ...XWYV4Q');
+    cy.get('@innersTableRows').eq(0).children().eq(2).should('contain', 'AAAAAA...Y5HFKQ');
+    cy.get('@innersTableRows').eq(0).children().eq(3).should('contain', '0 ARCC');
+    cy.get('@innersTableRows').eq(0).children().eq(4).should('contain', 'BQLHUS...TTNIW4');
+    cy.get('@innersTableRows').eq(0).children().eq(5).should('contain', '0.0002 ARCC');
+    cy.get('@innersTableRows').eq(0).children().eq(6).should('contain', '0.001');
+    cy.get('@innersTableRows').eq(1).children().eq(0).should('contain', 'Payment');
+    cy.get('@innersTableRows').eq(1).children().eq(1).should('contain', 'BHBJZQ...XWYV4Q');
+    cy.get('@innersTableRows').eq(1).children().eq(2).should('contain', 'AAAAAA...Y5HFKQ');
+    cy.get('@innersTableRows').eq(1).children().eq(3).should('contain', '0');
+    cy.get('@innersTableRows').eq(1).children().eq(4).should('contain', '4WMWVT...VYC5OM');
+    cy.get('@innersTableRows').eq(1).children().eq(5).should('contain', '1.2');
+    cy.get('@innersTableRows').eq(1).children().eq(6).should('contain', '0.001');
+
+    /* App Call Tx Info */
+    cy.get('[class*="Block_block-table"]').eq(2).children('table').children('tbody').children('tr').as('appTxInfoTableRows');
+
+    cy.get('@appTxInfoTableRows').eq(0).children().eq(0).should('have.text', 'Application ID');
+    cy.get('@appTxInfoTableRows').eq(0).children().eq(1).should('have.text', '400404272');
+    cy.get('@appTxInfoTableRows').eq(1).children().eq(0).should('have.text', 'Accounts');
+    cy.get('@appTxInfoTableRows').eq(1).children().eq(1).should('contain', '4WMWVTICJG2XWSZBXSRALIULEUWKKERMT2NSY67JGOFRKVEW7FURVYC5OM');
+    cy.get('@appTxInfoTableRows').eq(1).children().eq(1).should('contain', 'BQLHUSSAXDPOAXLEYEHS332FIT2RKDQ33RAL45JVTXQYMKNZ3CB3TTNIW4');
+    cy.get('@appTxInfoTableRows').eq(2).children().eq(0).should('have.text', 'Foreign Assets');
+    cy.get('@appTxInfoTableRows').eq(2).children().eq(1).should('have.text', '27165954');
+    cy.get('@appTxInfoTableRows').eq(3).children().eq(0).should('have.text', 'On Completion');
+    cy.get('@appTxInfoTableRows').eq(3).children().eq(1).should('have.text', 'delete');
+    cy.get('@appTxInfoTableRows').eq(4).children().eq(0).should('have.text', 'Global State Schema');
+    cy.get('@appTxInfoTableRows').eq(4).children().eq(1).should('contain', 'Number of byte-slice: 0');
+    cy.get('@appTxInfoTableRows').eq(4).children().eq(1).should('contain', 'Number of uint: 0');
+    cy.get('@appTxInfoTableRows').eq(5).children().eq(0).should('have.text', 'Local State Schema');
+    cy.get('@appTxInfoTableRows').eq(5).children().eq(1).should('contain', 'Number of byte-slice: 0');
+    cy.get('@appTxInfoTableRows').eq(5).children().eq(1).should('contain', 'Number of uint: 0');
+  });
   /* Payment Tx with LogicSig */
   /* Payment Tx with MultiSig */
 });
