@@ -101,6 +101,57 @@ describe('Transaction Page', () => {
   });
 
   /* Asset Config Tx */
+  it('displays Asset Config Tx info correctly', () => {
+    cy.intercept(
+      {
+        method: 'GET',
+        url: `${backend_url}/v1/transactions/*`,
+      },
+      {
+        fixture: txAcfgFixture,
+      },
+    ).as('getAcfgTx');
+    cy.visit('/tx/RR6ACOE4TJ6BOPEWFNWLE22IGX4WIG32O7BCMMFOKYTK5V7JQW5Q');
+    cy.wait('@getAcfgTx');
+
+    cy.get('[class*="Block_block-table"]').eq(0).find('tbody tr').as('acfgMainTable');
+    cy.get('@acfgMainTable').eq(0).children().eq(0).should('have.text', 'ID');
+    cy.get('@acfgMainTable').eq(0).children().eq(1).should('have.text', 'RR6ACOE4TJ6BOPEWFNWLE22IGX4WIG32O7BCMMFOKYTK5V7JQW5Q');
+    cy.get('@acfgMainTable').eq(1).children().eq(0).should('have.text', 'Block');
+    cy.get('@acfgMainTable').eq(1).children().eq(1).should('have.text', '4,162,690');
+    cy.get('@acfgMainTable').eq(2).children().eq(0).should('have.text', 'Type');
+    cy.get('@acfgMainTable').eq(2).children().eq(1).should('have.text', 'ASA Config');
+    cy.get('@acfgMainTable').eq(3).children().eq(0).should('have.text', 'Sender');
+    cy.get('@acfgMainTable').eq(3).children().eq(1).should('have.text', 'ARCC3TMGVD7KXY7GYTE7U5XXUJXFRD2SXLAWRV57XJ6HWHRR37GNGNMPSY');
+    cy.get('@acfgMainTable').eq(4).children().eq(0).should('have.text', 'Receiver');
+    cy.get('@acfgMainTable').eq(4).children().eq(1).should('have.text', 'N/A');
+    cy.get('@acfgMainTable').eq(5).children().eq(0).should('have.text', 'Amount');
+    cy.get('@acfgMainTable').eq(5).children().eq(1).should('contain', '0');
+    cy.get('@acfgMainTable').eq(6).children().eq(0).should('have.text', 'Fee');
+    cy.get('@acfgMainTable').eq(6).children().eq(1).should('contain', '0.001');
+
+    /* Asset Config Info */
+    cy.get('[class*="Block_block-table"]').eq(1).children('table').children('tbody').children('tr').as('acfgTableRows');
+    cy.get('@acfgTableRows').eq(0).children().eq(0).should('have.text', 'Asset Name');
+    cy.get('@acfgTableRows').eq(0).children().eq(1).should('have.text', 'Asia Reserve Currency Coin');
+    cy.get('@acfgTableRows').eq(1).children().eq(0).should('have.text', 'Creator');
+    cy.get('@acfgTableRows').eq(1).children().eq(1).should('have.text', 'ARCC3TMGVD7KXY7GYTE7U5XXUJXFRD2SXLAWRV57XJ6HWHRR37GNGNMPSY');
+    cy.get('@acfgTableRows').eq(2).children().eq(0).should('have.text', 'Manager');
+    cy.get('@acfgTableRows').eq(2).children().eq(1).should('have.text', 'ARCC3TMGVD7KXY7GYTE7U5XXUJXFRD2SXLAWRV57XJ6HWHRR37GNGNMPSY');
+    cy.get('@acfgTableRows').eq(3).children().eq(0).should('have.text', 'Reserve');
+    cy.get('@acfgTableRows').eq(3).children().eq(1).should('have.text', 'ARCC3TMGVD7KXY7GYTE7U5XXUJXFRD2SXLAWRV57XJ6HWHRR37GNGNMPSY');
+    cy.get('@acfgTableRows').eq(4).children().eq(0).should('have.text', 'Freeze');
+    cy.get('@acfgTableRows').eq(4).children().eq(1).should('have.text', 'ARCC3TMGVD7KXY7GYTE7U5XXUJXFRD2SXLAWRV57XJ6HWHRR37GNGNMPSY');
+    cy.get('@acfgTableRows').eq(5).children().eq(0).should('have.text', 'Clawback');
+    cy.get('@acfgTableRows').eq(5).children().eq(1).should('have.text', 'ARCC3TMGVD7KXY7GYTE7U5XXUJXFRD2SXLAWRV57XJ6HWHRR37GNGNMPSY');
+    cy.get('@acfgTableRows').eq(6).children().eq(0).should('have.text', 'Decimals');
+    cy.get('@acfgTableRows').eq(6).children().eq(1).should('have.text', '6');
+    cy.get('@acfgTableRows').eq(7).children().eq(0).should('have.text', 'Total');
+    cy.get('@acfgTableRows').eq(7).children().eq(1).should('have.text', '88,616,203,378.51 ARCC');
+    cy.get('@acfgTableRows').eq(8).children().eq(0).should('have.text', 'Metadata Hash');
+    cy.get('@acfgTableRows').eq(8).children().eq(1).should('have.text', 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=');
+  });
+
   /* Asset Freeze Tx */
   /* Asset Transfer Tx */
   /* Asset KeyReg Tx */
