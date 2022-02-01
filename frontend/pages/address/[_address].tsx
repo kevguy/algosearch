@@ -457,10 +457,7 @@ const Address = () => {
       {accountTxns && (
         <div className={blockStyles["table-group"]}>
           <h3 className={blockStyles["table-header"]}>
-            {accountTxns &&
-              accountTxns.length > 1 &&
-              integerFormatter.format(Number(accountTxns.length.toString())) +
-                " "}
+            {accountTxNum && integerFormatter.format(accountTxNum) + " "}
             Transactions
           </h3>
           <div className={`${blockStyles["table-wrapper"]} table`}>
