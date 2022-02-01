@@ -86,19 +86,19 @@ export type AppTransaction = {
   "foreign-assets"?: number[];
   "global-state-schema"?: StateSchema;
   "local-state-schema"?: StateSchema;
-  "on-completion": string;
+  "on-completion"?: string;
 };
 
 export interface Participation {
-  "selection-participation-key": string;
-  "vote-first-valid": number;
-  "vote-key-dilution": number;
-  "vote-last-valid": number;
-  "vote-participation-key": string;
+  "selection-participation-key"?: string;
+  "vote-first-valid"?: number;
+  "vote-key-dilution"?: number;
+  "vote-last-valid"?: number;
+  "vote-participation-key"?: string;
 }
 
 export interface KeyRegTransaction extends Participation {
-  "non-participation": boolean;
+  "non-participation"?: boolean;
 }
 
 export type TransactionResponse = {
@@ -111,7 +111,7 @@ export type TransactionResponse = {
   "tx-type": TxType | string;
   sender: string;
   "sender-rewards": number;
-  "receiver-rewards": number;
+  "receiver-rewards"?: number;
   "application-transaction"?: AppTransaction;
   "inner-txns"?: TransactionResponse[];
   "created-application-index"?: number;
@@ -127,9 +127,9 @@ export type TransactionResponse = {
     "asset-id": number;
     amount: number;
     receiver: string;
-    "close-amount": number;
-    "close-to": string;
-    sender: string;
+    "close-amount"?: number;
+    "close-to"?: string;
+    sender?: string;
   };
   "asset-config-transaction"?: {
     params: {

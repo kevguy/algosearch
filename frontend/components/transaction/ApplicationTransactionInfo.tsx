@@ -2,12 +2,10 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import algosdk from "algosdk";
 import hljs from "highlight.js";
-import {
-  TabPanelUnstyled,
-  TabsListUnstyled,
-  TabsUnstyled,
-  TabUnstyled,
-} from "@mui/material";
+import TabUnstyled from "@mui/base/TabUnstyled";
+import TabsUnstyled from "@mui/base/TabsUnstyled";
+import TabsListUnstyled from "@mui/base/TabsListUnstyled";
+import TabPanelUnstyled from "@mui/base/TabPanelUnstyled";
 
 import { TransactionResponse } from "../../types/apiResponseTypes";
 import styles from "../../pages/tx/TransactionDetails.module.scss";
@@ -97,15 +95,15 @@ const ApplicationTransactionInfo = ({ tx }: { tx: TransactionResponse }) => {
             </tr>
             {appTx["application-args"] && appTx["application-args"].length > 0 && (
               <tr className={styles["valign-top-identifier"]}>
-                <td>Arguments (base64)</td>
+                <td>Arguments</td>
                 <td className={styles["multiline-details"]}>
                   <div className={styles["inner-table-wrapper"]}>
                     <table className={styles["inner-table"]}>
                       <thead>
                         <tr>
-                          <td>base64</td>
-                          <td>ascii</td>
-                          <td>uint</td>
+                          <td>Base64</td>
+                          <td>ASCII</td>
+                          <td>UInt64</td>
                         </tr>
                       </thead>
                       <tbody>

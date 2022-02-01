@@ -1,5 +1,16 @@
 import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import algosdk from "algosdk";
+import msgpack from "@ygoe/msgpack";
+import TabUnstyled from "@mui/base/TabUnstyled";
+import TabsUnstyled from "@mui/base/TabsUnstyled";
+import TabsListUnstyled from "@mui/base/TabsListUnstyled";
+import TabPanelUnstyled from "@mui/base/TabPanelUnstyled";
+import hljs from "highlight.js";
+
+import { TransactionResponse } from "../../types/apiResponseTypes";
+import { IAsaMap } from "../../types/misc";
+import { apiGetASA, getLsigTEAL } from "../../utils/api";
 import AlgoIcon from "../../components/algoicon";
 import {
   checkBase64EqualsEmpty,
@@ -13,18 +24,6 @@ import {
 } from "../../utils/stringUtils";
 import styles from "./TransactionDetails.module.scss";
 import blockStyles from "../block/Block.module.scss";
-import algosdk from "algosdk";
-import msgpack from "@ygoe/msgpack";
-import { TransactionResponse } from "../../types/apiResponseTypes";
-import { IAsaMap } from "../../types/misc";
-import { apiGetASA, getLsigTEAL } from "../../utils/api";
-import {
-  TabPanelUnstyled,
-  TabsListUnstyled,
-  TabsUnstyled,
-  TabUnstyled,
-} from "@mui/material";
-import hljs from "highlight.js";
 import TransactionAdditionalInfo from "../../components/transaction/TransactionAdditionalInfo";
 import ApplicationTransactionInfo from "../../components/transaction/ApplicationTransactionInfo";
 import {
@@ -56,7 +55,7 @@ const TransactionDetails = ({
   const [decodedNotes, setDecodedNotes] = useState<bigint>();
   const [disassembledLogicSig, setDisassembledLogicSig] = useState<string>();
   const decodeWithMsgpack = useCallback(() => {
-    if (!transaction.note) return;
+    if (!transaction || !transaction.note) return;
     try {
       let message = msgpack.deserialize(
         Buffer.from(transaction.note, "base64")
@@ -292,46 +291,44 @@ const TransactionDetails = ({
               <tr>
                 <td className={styles["valign-top-identifier"]}>Note</td>
                 <td>
-                  <div>
-                    <TabsUnstyled defaultValue={0}>
-                      <TabsListUnstyled className={styles.tabs}>
-                        <TabUnstyled>Base64</TabUnstyled>
-                        <TabUnstyled>ASCII</TabUnstyled>
-                        {decodedNotes && <TabUnstyled>UInt64</TabUnstyled>}
-                        {msgpackNotes && <TabUnstyled>MessagePack</TabUnstyled>}
-                      </TabsListUnstyled>
-                      <TabPanelUnstyled value={0}>
-                        <div className={styles.notes}>{transaction.note}</div>
-                      </TabPanelUnstyled>
-                      <TabPanelUnstyled value={1}>
-                        <div className={styles.notes}>
-                          {atob(transaction.note)}
+                  <TabsUnstyled defaultValue={0}>
+                    <TabsListUnstyled className={styles.tabs}>
+                      <TabUnstyled>Base64</TabUnstyled>
+                      <TabUnstyled>ASCII</TabUnstyled>
+                      {decodedNotes && <TabUnstyled>UInt64</TabUnstyled>}
+                      {msgpackNotes && <TabUnstyled>MessagePack</TabUnstyled>}
+                    </TabsListUnstyled>
+                    <TabPanelUnstyled value={0}>
+                      <div className={styles.notes}>{transaction.note}</div>
+                    </TabPanelUnstyled>
+                    <TabPanelUnstyled value={1}>
+                      <div className={styles.notes}>
+                        {atob(transaction.note)}
+                      </div>
+                    </TabPanelUnstyled>
+                    {decodedNotes && (
+                      <TabPanelUnstyled value={2}>
+                        <div className={styles["notes-row"]}>
+                          <div>
+                            <h5>Hexadecimal</h5>
+                            <span>{decodedNotes.toString(16)}</span>
+                          </div>
+                          <div>
+                            <h5>Decimal</h5>
+                            <span>{decodedNotes.toString()}</span>
+                          </div>
                         </div>
                       </TabPanelUnstyled>
-                      {decodedNotes && (
-                        <TabPanelUnstyled value={2}>
-                          <div className={styles["notes-row"]}>
-                            <div>
-                              <h5>Hexadecimal</h5>
-                              <span>{decodedNotes!.toString(16)}</span>
-                            </div>
-                            <div>
-                              <h5>Decimal</h5>
-                              <span>{decodedNotes!.toString()}</span>
-                            </div>
-                          </div>
-                        </TabPanelUnstyled>
-                      )}
-                      {msgpackNotes && (
-                        <TabPanelUnstyled
-                          value={!!decodedNotes ? 3 : 2}
-                          className={styles.notes}
-                        >
-                          <pre>{msgpackNotes}</pre>
-                        </TabPanelUnstyled>
-                      )}
-                    </TabsUnstyled>
-                  </div>
+                    )}
+                    {msgpackNotes && (
+                      <TabPanelUnstyled
+                        value={!!decodedNotes ? 3 : 2}
+                        className={styles.notes}
+                      >
+                        <pre>{msgpackNotes}</pre>
+                      </TabPanelUnstyled>
+                    )}
+                  </TabsUnstyled>
                 </td>
               </tr>
             )}

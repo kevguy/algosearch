@@ -20,72 +20,82 @@ export const KeyRegTransactionInfo = ({ tx }: { tx: TransactionResponse }) => {
               <td>Mark account as participating</td>
               <td>{(!keyRegTx["non-participation"]).toString()}</td>
             </tr>
-            <tr>
-              <td>
-                <span>Selection Participation Key</span>
-                <StyledTooltip info="Public key used with the Verified Random Function (VRF) result during committee selection" />
-              </td>
-              <td>
-                {base32Encode(
-                  Buffer.from(
-                    keyRegTx["selection-participation-key"],
-                    "base64"
-                  ),
-                  undefined,
-                  { padding: false }
-                )}
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <span>Vote Participation Key</span>
-                <StyledTooltip info="Participation public key used in key registration transactions" />
-              </td>
-              <td>
-                {base32Encode(
-                  Buffer.from(keyRegTx["vote-participation-key"], "base64"),
-                  undefined,
-                  { padding: false }
-                )}
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <span>Vote Key Dilution</span>
-                <StyledTooltip info="Number of subkeys in each batch of participation keys" />
-              </td>
-              <td>
-                {integerFormatter.format(
-                  Number(keyRegTx["vote-key-dilution"].toString())
-                )}
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <span>Vote First Valid</span>
-                <StyledTooltip info="First round this participation key is valid" />
-              </td>
-              <td>
-                <Link href={`/block/${keyRegTx["vote-first-valid"]}`}>
-                  {integerFormatter.format(
-                    Number(keyRegTx["vote-first-valid"].toString())
+            {keyRegTx["selection-participation-key"] && (
+              <tr>
+                <td>
+                  <span>Selection Participation Key</span>
+                  <StyledTooltip info="Public key used with the Verified Random Function (VRF) result during committee selection" />
+                </td>
+                <td>
+                  {base32Encode(
+                    Buffer.from(
+                      keyRegTx["selection-participation-key"],
+                      "base64"
+                    ),
+                    undefined,
+                    { padding: false }
                   )}
-                </Link>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <span>Vote Last Valid</span>
-                <StyledTooltip info="Last round this participation key is valid" />
-              </td>
-              <td>
-                <Link href={`/block/${keyRegTx["vote-last-valid"]}`}>
-                  {integerFormatter.format(
-                    Number(keyRegTx["vote-last-valid"].toString())
+                </td>
+              </tr>
+            )}
+            {keyRegTx["vote-participation-key"] && (
+              <tr>
+                <td>
+                  <span>Vote Participation Key</span>
+                  <StyledTooltip info="Participation public key used in key registration transactions" />
+                </td>
+                <td>
+                  {base32Encode(
+                    Buffer.from(keyRegTx["vote-participation-key"], "base64"),
+                    undefined,
+                    { padding: false }
                   )}
-                </Link>
-              </td>
-            </tr>
+                </td>
+              </tr>
+            )}
+            {keyRegTx["vote-key-dilution"] && (
+              <tr>
+                <td>
+                  <span>Vote Key Dilution</span>
+                  <StyledTooltip info="Number of subkeys in each batch of participation keys" />
+                </td>
+                <td>
+                  {integerFormatter.format(
+                    Number(keyRegTx["vote-key-dilution"].toString())
+                  )}
+                </td>
+              </tr>
+            )}
+            {keyRegTx["vote-first-valid"] && (
+              <tr>
+                <td>
+                  <span>Vote First Valid</span>
+                  <StyledTooltip info="First round this participation key is valid" />
+                </td>
+                <td>
+                  <Link href={`/block/${keyRegTx["vote-first-valid"]}`}>
+                    {integerFormatter.format(
+                      Number(keyRegTx["vote-first-valid"].toString())
+                    )}
+                  </Link>
+                </td>
+              </tr>
+            )}
+            {keyRegTx["vote-last-valid"] && (
+              <tr>
+                <td>
+                  <span>Vote Last Valid</span>
+                  <StyledTooltip info="Last round this participation key is valid" />
+                </td>
+                <td>
+                  <Link href={`/block/${keyRegTx["vote-last-valid"]}`}>
+                    {integerFormatter.format(
+                      Number(keyRegTx["vote-last-valid"].toString())
+                    )}
+                  </Link>
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
