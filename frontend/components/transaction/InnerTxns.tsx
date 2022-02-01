@@ -6,6 +6,7 @@ import {
   ellipseAddress,
   getTxTypeName,
   microAlgosToAlgos,
+  TxType,
 } from "../../utils/stringUtils";
 import Link from "next/link";
 import {
@@ -47,7 +48,7 @@ export const InnerTxns = ({
               <tr key={index}>
                 <td className={styles["normal-text"]}>
                   <h4 className="mobile-only">Type</h4>
-                  {getTxTypeName(innerTx["tx-type"])}
+                  {getTxTypeName(innerTx["tx-type"] as TxType)}
                 </td>
                 <td>
                   <h4 className="mobile-only">Sender</h4>
@@ -61,7 +62,7 @@ export const InnerTxns = ({
                 </td>
                 <td>
                   <h4 className="mobile-only">Amount</h4>
-                  {getAmount(innerTx["tx-type"], innerTx, asaMap)}
+                  {getAmount(innerTx["tx-type"] as TxType, innerTx, asaMap)}
                 </td>
                 <td>
                   <h4 className="mobile-only">Close To</h4>
@@ -69,7 +70,11 @@ export const InnerTxns = ({
                 </td>
                 <td>
                   <h4 className="mobile-only">Close Amount</h4>
-                  {getCloseAmount(innerTx["tx-type"], innerTx, asaMap)}
+                  {getCloseAmount(
+                    innerTx["tx-type"] as TxType,
+                    innerTx,
+                    asaMap
+                  )}
                 </td>
                 <td>
                   <h4 className="mobile-only">Fee</h4>

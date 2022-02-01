@@ -25,7 +25,6 @@ import { transactionsColumns } from "../../components/tableColumns/transactionsC
 import {
   IAsaResponse,
   AccountResponse,
-  AccountTxsResponse,
   TransactionResponse,
   CreatedApp,
   AccountOwnedAsset,

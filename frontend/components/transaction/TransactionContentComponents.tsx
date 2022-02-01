@@ -12,7 +12,8 @@ import {
 
 export const getInnerTxReceiver = (innerTx: TransactionResponse) => {
   const innerTxReceiver =
-    innerTx["tx-type"] === TxType.AssetTransfer
+    innerTx["tx-type"] === TxType.AssetTransfer &&
+    innerTx["asset-transfer-transaction"]
       ? innerTx["asset-transfer-transaction"].receiver
       : innerTx["payment-transaction"]
       ? innerTx["payment-transaction"].receiver
@@ -28,7 +29,8 @@ export const getInnerTxReceiver = (innerTx: TransactionResponse) => {
 
 export const getInnerTxCloseTo = (innerTx: TransactionResponse) => {
   const innerTxCloseTo =
-    innerTx["tx-type"] === TxType.AssetTransfer
+    innerTx["tx-type"] === TxType.AssetTransfer &&
+    innerTx["asset-transfer-transaction"]
       ? innerTx["asset-transfer-transaction"]["close-to"]
       : innerTx["payment-transaction"]
       ? innerTx["payment-transaction"]["close-remainder-to"]

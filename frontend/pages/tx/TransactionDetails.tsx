@@ -347,23 +347,29 @@ const TransactionDetails = ({
                           <TabUnstyled>Base64</TabUnstyled>
                         </TabsListUnstyled>
                         <TabPanelUnstyled value={0}>
-                          <pre className={`${styles["teal-box"]} hljs`}>
-                            <code
-                              className="language-lua"
-                              dangerouslySetInnerHTML={{
-                                __html: hljs.highlight(disassembledLogicSig, {
-                                  language: "lua",
-                                }).value,
-                              }}
-                            ></code>
-                          </pre>
+                          <Copyable copyableText={disassembledLogicSig}>
+                            <pre className={`${styles["teal-box"]} hljs`}>
+                              <code
+                                className="language-lua"
+                                dangerouslySetInnerHTML={{
+                                  __html: hljs.highlight(disassembledLogicSig, {
+                                    language: "lua",
+                                  }).value,
+                                }}
+                              ></code>
+                            </pre>
+                          </Copyable>
                         </TabPanelUnstyled>
                         <TabPanelUnstyled value={1}>
-                          {transaction.signature.logicsig.logic}
+                          <Copyable
+                            copyableText={transaction.signature.logicsig.logic}
+                          />
                         </TabPanelUnstyled>
                       </TabsUnstyled>
                     ) : (
-                      transaction.signature.logicsig.logic
+                      <Copyable
+                        copyableText={transaction.signature.logicsig.logic}
+                      />
                     )}
                   </td>
                 </tr>

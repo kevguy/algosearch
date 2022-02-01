@@ -172,6 +172,7 @@ const constructAppTxForDryrun = (
     return null;
   }
   const appInfo = tx["application-transaction"];
+  if (!appInfo) return;
   const approvalProgram = Uint8Array.from(
     Buffer.from(appInfo["approval-program"]!, "base64")
   );
@@ -214,6 +215,7 @@ const constructAppTxForDryrun = (
 
 const constructAppForDryrun = (tx: TransactionResponse) => {
   const appInfo = tx["application-transaction"];
+  if (!appInfo) return;
   const approvalProgram = Uint8Array.from(
     Buffer.from(appInfo["approval-program"]!, "base64")
   );
@@ -242,6 +244,7 @@ export const getAppTEAL = async (tx: TransactionResponse) => {
   const appInfo = tx["application-transaction"];
   if (
     !algod ||
+    !appInfo ||
     !appInfo["approval-program"] ||
     !appInfo["clear-state-program"] ||
     !tx["created-application-index"] ||
@@ -254,7 +257,7 @@ export const getAppTEAL = async (tx: TransactionResponse) => {
   const appArgs = appInfo["application-args"].map((arg) =>
     Uint8Array.from(Buffer.from(arg, "base64"))
   );
-  const app = constructAppForDryrun(tx);
+  const app = constructAppForDryrun(tx)!;
   const appTx = constructAppTxForDryrun(tx, appArgs);
 
   if (!appTx) {
@@ -274,6 +277,7 @@ export const getClearStateTEAL = async (tx: TransactionResponse) => {
   const appInfo = tx["application-transaction"];
   if (
     !algod ||
+    !appInfo ||
     !appInfo["approval-program"] ||
     !appInfo["clear-state-program"] ||
     !tx["created-application-index"] ||
@@ -286,7 +290,7 @@ export const getClearStateTEAL = async (tx: TransactionResponse) => {
   const appArgs = appInfo["application-args"].map((arg) =>
     Uint8Array.from(Buffer.from(arg, "base64"))
   );
-  const app = constructAppForDryrun(tx);
+  const app = constructAppForDryrun(tx)!;
   const appTx = constructAppTxForDryrun(tx, appArgs, true);
 
   if (!appTx) {

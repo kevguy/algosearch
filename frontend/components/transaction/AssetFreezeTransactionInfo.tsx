@@ -8,6 +8,7 @@ export const AssetFreezeTransactionInfo = ({
   tx: TransactionResponse;
 }) => {
   const afrzTx = tx["asset-freeze-transaction"];
+  if (!afrzTx) return null;
   return (
     <div>
       <h4>Asset Freeze Information</h4>

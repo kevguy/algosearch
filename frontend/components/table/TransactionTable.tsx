@@ -48,7 +48,7 @@ const TransactionTable = ({
               <div className={styles["transaction-subrow"]}>
                 <div className={styles["tx-type-label-wrapper"]}>
                   <span className={styles["tx-type-label"]}>
-                    {getTxTypeName(tx["tx-type"])}
+                    {getTxTypeName(tx["tx-type"] as TxType)}
                   </span>
                 </div>
                 <span className={styles["transaction-id"]}>
@@ -82,7 +82,9 @@ const TransactionTable = ({
                 </div>
                 <div className={styles["transaction-info"]}>
                   <span>
-                    {tx["tx-type"] === TxType.AssetTransfer && _asaInfo ? (
+                    {tx["tx-type"] === TxType.AssetTransfer &&
+                    _asaInfo &&
+                    tx["asset-transfer-transaction"] ? (
                       `${formatNumber(
                         Number(
                           formatAsaAmountWithDecimal(

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { TransactionResponse } from "../../types/apiResponseTypes";
 import blockStyles from "../../pages/block/Block.module.scss";
-import { integerFormatter, removeSpace } from "../../utils/stringUtils";
+import { integerFormatter } from "../../utils/stringUtils";
 import { StyledTooltip } from "../tooltip";
 import { base32Encode } from "@ctrl/ts-base32";
 

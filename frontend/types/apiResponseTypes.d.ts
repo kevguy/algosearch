@@ -112,7 +112,7 @@ export type TransactionResponse = {
   sender: string;
   "sender-rewards": number;
   "receiver-rewards": number;
-  "application-transaction": AppTransaction;
+  "application-transaction"?: AppTransaction;
   "inner-txns"?: TransactionResponse[];
   "created-application-index"?: number;
   "close-rewards"?: number;
@@ -163,11 +163,11 @@ export type TransactionResponse = {
   note?: string;
   signature: {
     logicsig?: {
-      args?: [];
+      args?: string[];
       logic: string | null;
       "multisig-signature"?: {};
     };
-    multisig: {
+    multisig?: {
       subsignature?: multisigSubsig[];
       threshold?: number;
       version?: number;

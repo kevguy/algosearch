@@ -71,6 +71,8 @@ const ApplicationTransactionInfo = ({ tx }: { tx: TransactionResponse }) => {
     }
   }, [tx]);
 
+  if (!appTx) return null;
+
   return (
     <div>
       <h4>Application Transaction Information</h4>

@@ -11,6 +11,7 @@ export const AssetConfigTransactionInfo = ({
 }: {
   tx: TransactionResponse;
 }) => {
+  if (!tx["asset-config-transaction"]) return null;
   return (
     <div>
       <h4>Asset Configuration Information</h4>
