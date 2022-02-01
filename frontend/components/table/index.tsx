@@ -94,7 +94,7 @@ const Table = <T extends Record<string, unknown>>(
       });
     }
     setPageIndexDisplayed(1);
-  }, [gotoPage, router]);
+  }, [gotoPage, router, changeUrlPageParamOnPageChange]);
 
   const prevPageClickHandler = useCallback(() => {
     previousPage();
@@ -106,7 +106,12 @@ const Table = <T extends Record<string, unknown>>(
       });
     }
     setPageIndexDisplayed(pageIndexDisplayed - 1);
-  }, [previousPage, pageIndexDisplayed, router]);
+  }, [
+    previousPage,
+    pageIndexDisplayed,
+    router,
+    changeUrlPageParamOnPageChange,
+  ]);
 
   const pageInputChangeHandler = useCallback(() => {
     if (pageIndexDisplayed) {
@@ -131,7 +136,13 @@ const Table = <T extends Record<string, unknown>>(
         gotoPage(pageOptions.length - 1);
       }
     }
-  }, [pageIndexDisplayed, gotoPage, pageOptions, router]);
+  }, [
+    pageIndexDisplayed,
+    gotoPage,
+    pageOptions,
+    router,
+    changeUrlPageParamOnPageChange,
+  ]);
 
   const nextPageClickHandler = useCallback(() => {
     nextPage();
@@ -143,7 +154,7 @@ const Table = <T extends Record<string, unknown>>(
       });
     }
     setPageIndexDisplayed(pageIndexDisplayed + 1);
-  }, [pageIndexDisplayed, nextPage, router]);
+  }, [pageIndexDisplayed, nextPage, router, changeUrlPageParamOnPageChange]);
 
   const finalPageClickHandler = useCallback(() => {
     gotoPage(controlledPageCount - 1);
@@ -153,7 +164,7 @@ const Table = <T extends Record<string, unknown>>(
       });
     }
     setPageIndexDisplayed(controlledPageCount);
-  }, [controlledPageCount, gotoPage, router]);
+  }, [controlledPageCount, gotoPage, router, changeUrlPageParamOnPageChange]);
 
   useEffect(() => {
     if (!fetchData) {
@@ -176,7 +187,14 @@ const Table = <T extends Record<string, unknown>>(
         });
       }
     }
-  }, [fetchData, pageIndex, defaultPage, router, pageIndexDisplayed]);
+  }, [
+    fetchData,
+    pageIndex,
+    defaultPage,
+    router,
+    pageIndexDisplayed,
+    changeUrlPageParamOnPageChange,
+  ]);
 
   return (
     <>

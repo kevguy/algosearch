@@ -67,7 +67,7 @@ const ApplicationTransactionInfo = ({ tx }: { tx: TransactionResponse }) => {
           });
       }
     }
-  }, [tx]);
+  }, [tx, appTx]);
 
   if (!appTx) return null;
 

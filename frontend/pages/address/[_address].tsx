@@ -177,7 +177,7 @@ const Address = () => {
         );
       }
     }
-  }, [data]);
+  }, [data, pageSize]);
 
   useEffect(() => {
     if (!router.isReady || !_address) {
