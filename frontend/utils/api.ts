@@ -6,7 +6,7 @@ import {
   ISupply,
   TransactionResponse,
 } from "../types/apiResponseTypes";
-import { currencyFormatter, microAlgosToAlgos, TxType } from "./stringUtils";
+import { formatNumber, microAlgosToAlgos, TxType } from "./stringUtils";
 import { IASAInfo, IAsaMap } from "../types/misc";
 import algosdk, { LogicSigAccount, OnApplicationComplete } from "algosdk";
 import {
@@ -28,7 +28,7 @@ export const apiGetSupply = async () => {
     const _onlineMoney = Number(microAlgosToAlgos(supply.data["online-money"]));
     const _results: ISupply = {
       current_round: supply.data.current_round,
-      "online-money": currencyFormatter.format(_onlineMoney),
+      "online-money": formatNumber(_onlineMoney),
     };
     return _results;
   } catch (error) {
@@ -65,7 +65,7 @@ export const apiGetASA = async (transactions: TransactionResponse[]) => {
     new Set(
       transactions
         .filter((tx) => tx["tx-type"] === TxType.AssetTransfer)
-        .map((tx) => tx["asset-transfer-transaction"]["asset-id"])
+        .map((tx) => tx["asset-transfer-transaction"]!["asset-id"])
     )
   );
   const _asaList = await Promise.all(

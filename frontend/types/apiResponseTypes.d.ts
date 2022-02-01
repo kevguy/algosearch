@@ -77,12 +77,12 @@ export type AccountTxsResponse = {
 
 export type AppTransaction = {
   accounts?: string[];
-  "application-args"?: [];
+  "application-args"?: string[];
   "application-id": number;
   "approval-program"?: string;
   "clear-state-program"?: string;
   "extra-program-pages"?: number;
-  "foreign-apps"?: [];
+  "foreign-apps"?: number[];
   "foreign-assets"?: number[];
   "global-state-schema"?: StateSchema;
   "local-state-schema"?: StateSchema;
@@ -107,20 +107,23 @@ export type TransactionResponse = {
   "genesis-id"?: string;
   "genesis-hash": string;
   "confirmed-round": number;
-  "tx-type": TxType;
+  "intra-round-offset"?: number;
+  "tx-type": TxType | string;
   sender: string;
   "sender-rewards": number;
   "receiver-rewards": number;
   "application-transaction": AppTransaction;
   "inner-txns"?: TransactionResponse[];
   "created-application-index"?: number;
+  "close-rewards"?: number;
+  "closing-amount"?: number;
   "payment-transaction"?: {
     amount: number;
     "close-amount"?: number;
     "close-remainder-to"?: string;
     receiver: string;
   };
-  "asset-transfer-transaction": {
+  "asset-transfer-transaction"?: {
     "asset-id": number;
     amount: number;
     receiver: string;
@@ -128,7 +131,7 @@ export type TransactionResponse = {
     "close-to": string;
     sender: string;
   };
-  "asset-config-transaction": {
+  "asset-config-transaction"?: {
     params: {
       creator: string;
       decimals: number;
@@ -145,7 +148,7 @@ export type TransactionResponse = {
       url?: string;
     };
   };
-  "asset-freeze-transaction": {
+  "asset-freeze-transaction"?: {
     address: string;
     "asset-id": number;
     "new-freeze-status": boolean;
@@ -156,10 +159,10 @@ export type TransactionResponse = {
   "round-time": number;
   "first-valid": number;
   "last-valid": number;
-  timestamp: number;
-  note: string;
+  lease?: string;
+  note?: string;
   signature: {
-    logicsig: {
+    logicsig?: {
       args?: [];
       logic: string | null;
       "multisig-signature"?: {};

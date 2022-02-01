@@ -20,6 +20,7 @@ import {
   algodToken,
   isLocal,
 } from "../../utils/constants";
+import Copyable from "../copyable/Copyable";
 
 const ApplicationTransactionInfo = ({ tx }: { tx: TransactionResponse }) => {
   const appTx = tx["application-transaction"];
@@ -199,23 +200,25 @@ const ApplicationTransactionInfo = ({ tx }: { tx: TransactionResponse }) => {
                         <TabUnstyled>Base64</TabUnstyled>
                       </TabsListUnstyled>
                       <TabPanelUnstyled value={0}>
-                        <pre className={`${styles["teal-box"]} hljs`}>
-                          <code
-                            className="language-lua"
-                            dangerouslySetInnerHTML={{
-                              __html: hljs.highlight(disassembledApp, {
-                                language: "lua",
-                              }).value,
-                            }}
-                          ></code>
-                        </pre>
+                        <Copyable copyableText={disassembledApp}>
+                          <pre className={`${styles["teal-box"]} hljs`}>
+                            <code
+                              className="language-lua"
+                              dangerouslySetInnerHTML={{
+                                __html: hljs.highlight(disassembledApp, {
+                                  language: "lua",
+                                }).value,
+                              }}
+                            />
+                          </pre>
+                        </Copyable>
                       </TabPanelUnstyled>
                       <TabPanelUnstyled value={1}>
-                        {appTx["approval-program"]}
+                        <Copyable copyableText={appTx["approval-program"]} />
                       </TabPanelUnstyled>
                     </TabsUnstyled>
                   ) : (
-                    appTx["approval-program"]
+                    <Copyable copyableText={appTx["approval-program"]} />
                   )}
                 </td>
               </tr>
@@ -233,26 +236,28 @@ const ApplicationTransactionInfo = ({ tx }: { tx: TransactionResponse }) => {
                         <TabUnstyled>Base64</TabUnstyled>
                       </TabsListUnstyled>
                       <TabPanelUnstyled value={0}>
-                        <pre className={`${styles["teal-box"]} hljs`}>
-                          <code
-                            className="language-lua"
-                            dangerouslySetInnerHTML={{
-                              __html: hljs.highlight(
-                                disassembledClearStateProgram,
-                                {
-                                  language: "lua",
-                                }
-                              ).value,
-                            }}
-                          ></code>
-                        </pre>
+                        <Copyable copyableText={disassembledClearStateProgram}>
+                          <pre className={`${styles["teal-box"]} hljs`}>
+                            <code
+                              className="language-lua"
+                              dangerouslySetInnerHTML={{
+                                __html: hljs.highlight(
+                                  disassembledClearStateProgram,
+                                  {
+                                    language: "lua",
+                                  }
+                                ).value,
+                              }}
+                            />
+                          </pre>
+                        </Copyable>
                       </TabPanelUnstyled>
                       <TabPanelUnstyled value={1}>
-                        {appTx["clear-state-program"]}
+                        <Copyable copyableText={appTx["clear-state-program"]} />
                       </TabPanelUnstyled>
                     </TabsUnstyled>
                   ) : (
-                    appTx["clear-state-program"]
+                    <Copyable copyableText={appTx["clear-state-program"]} />
                   )}
                 </td>
               </tr>

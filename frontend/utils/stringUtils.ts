@@ -74,10 +74,6 @@ export const timeAgoLocale: timeago.LocaleFunc = (diff, index, totalSec) => {
   ][index] as [string, string];
 };
 
-export const currencyFormatter = new Intl.NumberFormat("en-US", {
-  maximumFractionDigits: 2,
-});
-
 export const integerFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 2,
 });

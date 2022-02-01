@@ -42,6 +42,7 @@ import { AssetConfigTransactionInfo } from "../../components/transaction/AssetCo
 import { AssetFreezeTransactionInfo } from "../../components/transaction/AssetFreezeTransactionInfo";
 import { KeyRegTransactionInfo } from "../../components/transaction/KeyRegTransactionInfo";
 import { InnerTxns } from "../../components/transaction/InnerTxns";
+import Copyable from "../../components/copyable/Copyable";
 
 const TransactionDetails = ({
   transaction,
@@ -55,6 +56,7 @@ const TransactionDetails = ({
   const [decodedNotes, setDecodedNotes] = useState<bigint>();
   const [disassembledLogicSig, setDisassembledLogicSig] = useState<string>();
   const decodeWithMsgpack = useCallback(() => {
+    if (!transaction.note) return;
     try {
       let message = msgpack.deserialize(
         Buffer.from(transaction.note, "base64")
@@ -103,10 +105,10 @@ const TransactionDetails = ({
             console.error("LogicSig disassembly error: ", error);
           });
       }
-      setTxType(transaction["tx-type"]);
+      setTxType(transaction["tx-type"] as TxType);
       setReceiver(
         transaction && transaction["tx-type"] === TxType.AssetTransfer
-          ? transaction["asset-transfer-transaction"].receiver
+          ? transaction["asset-transfer-transaction"]!.receiver
           : transaction["payment-transaction"]
           ? transaction["payment-transaction"].receiver
           : ""
@@ -153,7 +155,9 @@ const TransactionDetails = ({
             )}
             <tr>
               <td>ID</td>
-              <td>{transaction.id}</td>
+              <td>
+                <Copyable copyableText={transaction.id} />
+              </td>
             </tr>
             <tr>
               <td>Block</td>

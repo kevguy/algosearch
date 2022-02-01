@@ -1,0 +1,30 @@
+.copyable-wrapper {
+  position: relative;
+
+  &.inline {
+    .copy {
+      position: relative;
+      top: auto;
+      right: auto;
+      padding: 0;
+      margin-left: var(--space-xxs);
+
+      svg {
+        font-size: 0.85rem;
+      }
+    }
+  }
+}
+
+.copy {
+  position: absolute;
+  min-width: auto;
+  right: var(--space-l);
+  top: var(--space-xs);
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 0;
+
+  svg {
+    font-size: 1rem;
+  }
+}

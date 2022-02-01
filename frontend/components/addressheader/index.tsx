@@ -1,5 +1,5 @@
 import React from "react";
-import CopyIcon from "../copyicon";
+import CopyIcon from "../copyable/CopyIcon";
 import styles from "./AddressHeader.module.scss";
 
 const AddressHeader = ({ address }: { address: string }) => {

@@ -10,7 +10,7 @@ import Statscard from "../components/statscard";
 import Load from "../components/tableloading";
 import statscardStyles from "../components/statscard/Statscard.module.scss";
 import styles from "./Home.module.scss";
-import { currencyFormatter, integerFormatter } from "../utils/stringUtils";
+import { formatNumber, integerFormatter } from "../utils/stringUtils";
 import TransactionTable from "../components/table/TransactionTable";
 import {
   getLatestBlocks,
@@ -79,7 +79,7 @@ const Home = () => {
       url: "https://metricsapi.algorand.foundation/v1/supply/circulating?unit=algo",
     })
       .then((response) => {
-        const _circulatingSupply = currencyFormatter.format(response.data);
+        const _circulatingSupply = formatNumber(response.data);
         return _circulatingSupply;
       })
       .catch((error) => {
