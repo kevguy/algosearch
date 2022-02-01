@@ -11,7 +11,10 @@ export function checkBase64EqualsEmpty(text: string) {
 }
 
 export function isZeroAddress(text: string) {
-  return text === "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ";
+  return (
+    text === "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ" ||
+    !text
+  );
 }
 
 export function ellipseAddress(address = "", width = 6): string {

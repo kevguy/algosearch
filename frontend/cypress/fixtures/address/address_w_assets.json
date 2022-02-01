@@ -1,0 +1,211 @@
+{
+  "address": "KX6S647W6BEN6XHEJVMXK3UYLVNGT2Q6PHQSF5AA2JSSDFSOX7R4MESXRY",
+  "amount": 1041420354346,
+  "amount-without-pending-rewards": 1041420354346,
+  "apps-local-state": [
+    {
+      "deleted": false,
+      "id": 552635992,
+      "key-value": [
+        {
+          "key": "bwAAAAAg8NpQ",
+          "value": { "bytes": "", "type": 2, "uint": 34037822207 }
+        },
+        {
+          "key": "cA==",
+          "value": { "bytes": "", "type": 2, "uint": 26805518280 }
+        },
+        {
+          "key": "bwAAAAANgzFK",
+          "value": { "bytes": "", "type": 2, "uint": 205151012874 }
+        },
+        {
+          "key": "czI=",
+          "value": { "bytes": "", "type": 2, "uint": 1038908518396 }
+        },
+        {
+          "key": "YzI=",
+          "value": { "bytes": "", "type": 2, "uint": 107697771334517 }
+        },
+        {
+          "key": "dA==",
+          "value": { "bytes": "", "type": 2, "uint": 1643643378 }
+        },
+        {
+          "key": "cDI=",
+          "value": { "bytes": "", "type": 2, "uint": 122829707 }
+        },
+        { "key": "cDE=", "value": { "bytes": "", "type": 2, "uint": 8141 } },
+        {
+          "key": "aWx0",
+          "value": { "bytes": "", "type": 2, "uint": 9975119464405 }
+        },
+        {
+          "key": "YTE=",
+          "value": { "bytes": "", "type": 2, "uint": 226701642 }
+        },
+        {
+          "key": "YzE=",
+          "value": { "bytes": "", "type": 2, "uint": 10415793079 }
+        },
+        {
+          "key": "czE=",
+          "value": { "bytes": "", "type": 2, "uint": 127608829604368 }
+        },
+        {
+          "key": "bHQ=",
+          "value": { "bytes": "", "type": 2, "uint": 552655440 }
+        },
+        { "key": "YTI=", "value": { "bytes": "", "type": 2, "uint": 0 } },
+        {
+          "key": "bwAAAAAAAAAA",
+          "value": { "bytes": "", "type": 2, "uint": 2510979950 }
+        }
+      ],
+      "opted-in-at-round": 18726645,
+      "schema": { "num-byte-slice": 0, "num-uint": 16 }
+    }
+  ],
+  "apps-total-schema": { "num-byte-slice": 0, "num-uint": 16 },
+  "assets": [
+    {
+      "amount": 127813980617242,
+      "asset-id": 226701642,
+      "creator": "KX6S647W6BEN6XHEJVMXK3UYLVNGT2Q6PHQSF5AA2JSSDFSOX7R4MESXRY",
+      "deleted": false,
+      "is-frozen": false,
+      "opted-in-at-round": 18726645
+    },
+    {
+      "amount": 18446734132627909417,
+      "asset-id": 552655440,
+      "creator": "KX6S647W6BEN6XHEJVMXK3UYLVNGT2Q6PHQSF5AA2JSSDFSOX7R4MESXRY",
+      "deleted": false,
+      "is-frozen": false,
+      "opted-in-at-round": 18726645
+    },
+    {
+      "amount": 617242,
+      "asset-id": 388592191,
+      "creator": "KX6S647W6BEN6XHEJVMXK3UYLVNGT2Q6PHQSF5AA2JSSDFSOX7R4MESXRY",
+      "deleted": false,
+      "is-frozen": false,
+      "opted-in-at-round": 18726645
+    },
+    {
+      "amount": 27909417,
+      "asset-id": 523683256,
+      "creator": "KX6S647W6BEN6XHEJVMXK3UYLVNGT2Q6PHQSF5AA2JSSDFSOX7R4MESXRY",
+      "deleted": false,
+      "is-frozen": false,
+      "opted-in-at-round": 18726645
+    },
+    {
+      "amount": 617242,
+      "asset-id": 361806984,
+      "creator": "KX6S647W6BEN6XHEJVMXK3UYLVNGT2Q6PHQSF5AA2JSSDFSOX7R4MESXRY",
+      "deleted": false,
+      "is-frozen": false,
+      "opted-in-at-round": 18726645
+    },
+    {
+      "amount": 0,
+      "asset-id": 127746786,
+      "creator": "KX6S647W6BEN6XHEJVMXK3UYLVNGT2Q6PHQSF5AA2JSSDFSOX7R4MESXRY",
+      "deleted": false,
+      "is-frozen": false,
+      "opted-in-at-round": 18726645
+    },
+    {
+      "amount": 2627909417,
+      "asset-id": 559219992,
+      "creator": "KX6S647W6BEN6XHEJVMXK3UYLVNGT2Q6PHQSF5AA2JSSDFSOX7R4MESXRY",
+      "deleted": false,
+      "is-frozen": false,
+      "opted-in-at-round": 18726645
+    },
+    {
+      "amount": 80617242,
+      "asset-id": 31566704,
+      "creator": "KX6S647W6BEN6XHEJVMXK3UYLVNGT2Q6PHQSF5AA2JSSDFSOX7R4MESXRY",
+      "deleted": false,
+      "is-frozen": false,
+      "opted-in-at-round": 18726645
+    },
+    {
+      "amount": 7909417,
+      "asset-id": 386192725,
+      "creator": "KX6S647W6BEN6XHEJVMXK3UYLVNGT2Q6PHQSF5AA2JSSDFSOX7R4MESXRY",
+      "deleted": false,
+      "is-frozen": false,
+      "opted-in-at-round": 18726645
+    },
+    {
+      "amount": 166897242,
+      "asset-id": 465865291,
+      "creator": "KX6S647W6BEN6XHEJVMXK3UYLVNGT2Q6PHQSF5AA2JSSDFSOX7R4MESXRY",
+      "deleted": false,
+      "is-frozen": false,
+      "opted-in-at-round": 18726645
+    },
+    {
+      "amount": 2909417,
+      "asset-id": 511484048,
+      "creator": "KX6S647W6BEN6XHEJVMXK3UYLVNGT2Q6PHQSF5AA2JSSDFSOX7R4MESXRY",
+      "deleted": false,
+      "is-frozen": false,
+      "opted-in-at-round": 18726645
+    },
+    {
+      "amount": 3551278139,
+      "asset-id": 27165954,
+      "creator": "KX6S647W6BEN6XHEJVMXK3UYLVNGT2Q6PHQSF5AA2JSSDFSOX7R4MESXRY",
+      "deleted": false,
+      "is-frozen": false,
+      "opted-in-at-round": 18726645
+    },
+    {
+      "amount": 1326279,
+      "asset-id": 378382099,
+      "creator": "KX6S647W6BEN6XHEJVMXK3UYLVNGT2Q6PHQSF5AA2JSSDFSOX7R4MESXRY",
+      "deleted": false,
+      "is-frozen": false,
+      "opted-in-at-round": 18726645
+    },
+    {
+      "amount": 6891326279,
+      "asset-id": 163650,
+      "creator": "ARCC3TMGVD7KXY7GYTE7U5XXUJXFRD2SXLAWRV57XJ6HWHRR37GNGNMPSY",
+      "deleted": false,
+      "is-frozen": false,
+      "opted-in-at-round": 18726645
+    }
+  ],
+  "created-assets": [
+    {
+      "created-at-round": 18726645,
+      "deleted": false,
+      "index": 552655440,
+      "params": {
+        "creator": "KX6S647W6BEN6XHEJVMXK3UYLVNGT2Q6PHQSF5AA2JSSDFSOX7R4MESXRY",
+        "decimals": 6,
+        "default-frozen": false,
+        "name": "TinymanPool1.1 YLDY-ALGO",
+        "name-b64": "VGlueW1hblBvb2wxLjEgWUxEWS1BTEdP",
+        "total": 18446744073709551615,
+        "unit-name": "TMPOOL11",
+        "unit-name-b64": "VE1QT09MMTE=",
+        "url": "https://tinyman.org",
+        "url-b64": "aHR0cHM6Ly90aW55bWFuLm9yZw=="
+      }
+    }
+  ],
+  "created-at-round": 18726645,
+  "deleted": false,
+  "pending-rewards": 0,
+  "reward-base": 217678,
+  "rewards": 425650206,
+  "round": 18967131,
+  "sig-type": "lsig",
+  "status": "Offline"
+}

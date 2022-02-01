@@ -1,6 +1,7 @@
 import axios from "axios";
 import { algodAddr, algodProtocol, algodToken, siteName } from "./constants";
 import {
+  AccountOwnedAsset,
   IAsaResponse,
   ISupply,
   TransactionResponse,
@@ -14,11 +15,9 @@ import {
   ApplicationStateSchema,
 } from "../types/algosdkTypes";
 
-const algod = new algosdk.Algodv2(
-  algodToken,
-  `${algodProtocol}://${algodAddr}`,
-  "4001"
-);
+const algod =
+  algodToken &&
+  new algosdk.Algodv2(algodToken, `${algodProtocol}://${algodAddr}`, "4001");
 
 export const apiGetSupply = async () => {
   try {
@@ -99,10 +98,45 @@ export const apiGetASA = async (transactions: TransactionResponse[]) => {
   return _asaMap;
 };
 
+export const apiGetASAinAssetList = async (asas: AccountOwnedAsset[]) => {
+  const asaIdList = asas.map((asa) => asa["asset-id"]);
+  const _asaList = await Promise.all(
+    asas.map(
+      async (asa) =>
+        await axios({
+          method: "get",
+          url: `${siteName}/v1/algod/assets/${asa["asset-id"]}`,
+        })
+          .then((response) => {
+            const result: IAsaResponse = response.data;
+            const _asaInfo: IASAInfo = {
+              unitName: result.params["unit-name"],
+              decimals: result.params.decimals,
+            };
+            return _asaInfo;
+          })
+          .catch((error) => {
+            console.error("Error when retrieving Algorand ASA");
+          })
+    )
+  );
+  const _asaMap: IAsaMap = asaIdList.reduce(
+    (prev, asaId, index) => ({
+      ...prev,
+      [asaId]: _asaList[index],
+    }),
+    {}
+  );
+  return _asaMap;
+};
+
 export const getLsigTEAL = async (
   lsigAc: LogicSigAccount,
   tx: TransactionResponse
 ) => {
+  if (!algod || !tx["genesis-id"]) {
+    return null;
+  }
   const payTx = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
     from: tx.sender,
     to: tx.sender,
@@ -134,6 +168,9 @@ const constructAppTxForDryrun = (
   appArgs: Uint8Array[],
   forClearState: boolean = false
 ) => {
+  if (!tx["genesis-id"]) {
+    return null;
+  }
   const appInfo = tx["application-transaction"];
   const approvalProgram = Uint8Array.from(
     Buffer.from(appInfo["approval-program"]!, "base64")
@@ -204,6 +241,7 @@ const constructAppForDryrun = (tx: TransactionResponse) => {
 export const getAppTEAL = async (tx: TransactionResponse) => {
   const appInfo = tx["application-transaction"];
   if (
+    !algod ||
     !appInfo["approval-program"] ||
     !appInfo["clear-state-program"] ||
     !tx["created-application-index"] ||
@@ -219,6 +257,10 @@ export const getAppTEAL = async (tx: TransactionResponse) => {
   const app = constructAppForDryrun(tx);
   const appTx = constructAppTxForDryrun(tx, appArgs);
 
+  if (!appTx) {
+    return null;
+  }
+
   // @ts-ignore
   const dr = new algosdk.modelsv2.DryrunRequest({
     apps: [app],
@@ -231,6 +273,7 @@ export const getAppTEAL = async (tx: TransactionResponse) => {
 export const getClearStateTEAL = async (tx: TransactionResponse) => {
   const appInfo = tx["application-transaction"];
   if (
+    !algod ||
     !appInfo["approval-program"] ||
     !appInfo["clear-state-program"] ||
     !tx["created-application-index"] ||
@@ -245,6 +288,10 @@ export const getClearStateTEAL = async (tx: TransactionResponse) => {
   );
   const app = constructAppForDryrun(tx);
   const appTx = constructAppTxForDryrun(tx, appArgs, true);
+
+  if (!appTx) {
+    return null;
+  }
 
   // @ts-ignore
   const dr = new algosdk.modelsv2.DryrunRequest({

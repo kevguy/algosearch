@@ -66,6 +66,7 @@ export type AccountResponse = {
   rewards: number;
   round: number;
   status: "Online" | "Offline";
+  "sig-type"?: "sig" | "msig" | "lsig";
 };
 
 export type AccountTxsResponse = {

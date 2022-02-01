@@ -1,11 +1,16 @@
 import React, { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/router";
+import Head from "next/head";
+import Link from "next/link";
+import { Column } from "react-table";
+
 import Layout from "../../components/layout";
-import { siteName } from "../../utils/constants";
+import { isLocal, siteName } from "../../utils/constants";
 import Load from "../../components/tableloading";
 import Statscard from "../../components/statscard";
 import AlgoIcon from "../../components/algoicon";
+import blockStyles from "../block/Block.module.scss";
 import blocksTableStyles from "../../components/tableColumns/blocks.module.scss";
 import statcardStyles from "../../components/statscard/Statscard.module.scss";
 import {
@@ -14,18 +19,21 @@ import {
   formatNumber,
 } from "../../utils/stringUtils";
 import Table from "../../components/table";
-import { apiGetASA } from "../../utils/api";
-import { Column } from "react-table";
+import { apiGetASAinAssetList } from "../../utils/api";
 import { IAsaMap } from "../../types/misc";
-import Head from "next/head";
 import { transactionsColumns } from "../../components/tableColumns/transactionsColumns";
-import addressFixture from "../../cypress/fixtures/address/address_1.json";
-import addressTxsFixture from "../../cypress/fixtures/address/address_1_txs.json";
 import {
+  IAsaResponse,
   AccountResponse,
   AccountTxsResponse,
   TransactionResponse,
+  CreatedApp,
+  AccountOwnedAsset,
 } from "../../types/apiResponseTypes";
+import { createdAppsColumns } from "../../components/tableColumns/createdAppsColumns";
+import { createdAssetsColumns } from "../../components/tableColumns/createdAssetsColumns";
+import { base32Encode } from "@ctrl/ts-base32";
+import { assetsColumns } from "../../components/tableColumns/assetsColumns";
 
 const Address = () => {
   const router = useRouter();
@@ -38,6 +46,11 @@ const Address = () => {
   const [tableLoading, setTableLoading] = useState(true);
   const [pageSize, setPageSize] = useState(15);
   const [pageCount, setPageCount] = useState(0);
+  const [assets, setAssets] = useState<AccountOwnedAsset[]>([]);
+  const [createdAssets, setCreatedAssets] = useState<IAsaResponse[]>([]);
+  const [createdApps, setCreatedApps] = useState<CreatedApp[]>([]);
+  const [createdAssetsPageCount, setCreatedAssetsPageCount] = useState(0);
+  const [createdAppsPageCount, setCreatedAppsPageCount] = useState(0);
   const [asaMap, setAsaMap] = useState<IAsaMap>([]);
   const [columns, setColumns] = useState<Column[]>([]);
 
@@ -94,12 +107,78 @@ const Address = () => {
     [getAccountTxs]
   );
 
+  const fetchAssetsData = useCallback(
+    ({ pageIndex }) => {
+      if (data && data["assets"]) {
+        const endIndex =
+          data["assets"].length < (pageIndex + 1) * pageSize
+            ? data["assets"].length
+            : (pageIndex + 1) * pageSize;
+        const newAssetsList = data["assets"].slice(
+          pageIndex * pageSize,
+          endIndex
+        );
+        setAssets(newAssetsList);
+      }
+    },
+    [data, pageSize]
+  );
+
+  const fetchCreatedAssetsData = useCallback(
+    ({ pageIndex }) => {
+      if (data && data["created-assets"]) {
+        const endIndex =
+          data["created-assets"].length < (pageIndex + 1) * pageSize
+            ? data["created-assets"].length
+            : (pageIndex + 1) * pageSize;
+        const newCreatedAssetsList = data["created-assets"].slice(
+          pageIndex * pageSize,
+          endIndex
+        );
+        setCreatedAssets(newCreatedAssetsList);
+      }
+    },
+    [data, pageSize]
+  );
+
+  const fetchCreatedAppsData = useCallback(
+    ({ pageIndex }) => {
+      if (data && data["created-apps"]) {
+        const endIndex =
+          data["created-apps"].length < (pageIndex + 1) * pageSize
+            ? data["created-apps"].length
+            : (pageIndex + 1) * pageSize;
+        const newCreatedAppsList = data["created-apps"].slice(
+          pageIndex * pageSize,
+          endIndex
+        );
+        setCreatedApps(newCreatedAppsList);
+      }
+    },
+    [data, pageSize]
+  );
+
   useEffect(() => {
-    if (!accountTxns) return;
-    apiGetASA(accountTxns).then((result) => {
+    if (!data || !data.assets) return;
+    apiGetASAinAssetList(data.assets).then((result) => {
       setAsaMap(result);
     });
-  }, [accountTxns]);
+  }, [data]);
+
+  useEffect(() => {
+    if (data) {
+      if (data["created-assets"]) {
+        setCreatedAssetsPageCount(
+          Math.ceil(data["created-assets"].length / pageSize)
+        );
+      }
+      if (data["created-apps"]) {
+        setCreatedAppsPageCount(
+          Math.ceil(data["created-apps"].length / pageSize)
+        );
+      }
+    }
+  }, [data]);
 
   useEffect(() => {
     if (!router.isReady || !_address) {
@@ -113,15 +192,7 @@ const Address = () => {
     setLoading(false);
     setTableLoading(false);
     setAddress(_address.toString());
-    // getAddressData(_address.toString());
-    setData(addressFixture as AccountResponse);
-    setPageCount(addressTxsFixture.num_of_pages);
-    setAccountTxNum(addressTxsFixture.num_of_txns);
-    if (addressTxsFixture.items) {
-      setAccountTxns(
-        (addressTxsFixture as unknown as AccountTxsResponse).items
-      );
-    }
+    getAddressData(_address.toString());
   }, [_address, page, router]);
 
   useEffect(() => {
@@ -149,15 +220,12 @@ const Address = () => {
       <div className={`${statcardStyles["card-container"]}`}>
         <Statscard
           stat="Balance"
+          info="Balance including pending rewards"
           value={
             <div>
               <AlgoIcon />{" "}
               {formatNumber(
-                Number(
-                  microAlgosToAlgos(
-                    (data && data["amount-without-pending-rewards"]) || 0
-                  )
-                )
+                Number(microAlgosToAlgos((data && data["amount"]) || 0))
               )}
             </div>
           }
@@ -188,23 +256,15 @@ const Address = () => {
             )
           }
         />
-        <Statscard
-          stat="Transactions"
-          value={
-            <div>
-              {loading ? (
-                <Load />
-              ) : !accountTxNum ? (
-                0
-              ) : (
-                integerFormatter.format(accountTxNum)
-              )}
-            </div>
-          }
-        />
+        {!accountTxNum && (
+          <Statscard
+            stat="Transactions"
+            value={loading ? <Load /> : <div>0</div>}
+          />
+        )}
         <Statscard
           stat="Status"
-          info="Whether account is online participating in consensus on a participation node"
+          info="Whether account is marked online to participate in consensus on a participation node"
           value={
             loading ? (
               <Load />
@@ -226,18 +286,195 @@ const Address = () => {
             )
           }
         />
+        {data && data["sig-type"] && (
+          <Statscard
+            stat="Signature Type"
+            value={
+              <div>
+                {data["sig-type"] === "msig"
+                  ? "MultiSig"
+                  : data["sig-type"] === "lsig"
+                  ? "LogicSig"
+                  : "Single"}
+              </div>
+            }
+          />
+        )}
+        {data &&
+          data.participation &&
+          data.participation["selection-participation-key"] && (
+            <Statscard
+              stat="Selection Participation Key"
+              info="Public key used with the Verified Random Function (VRF) result during committee selection"
+              value={
+                <div>
+                  {base32Encode(
+                    Buffer.from(
+                      data.participation["selection-participation-key"],
+                      "base64"
+                    ),
+                    undefined,
+                    { padding: false }
+                  )}
+                </div>
+              }
+            />
+          )}
+        {data &&
+          data.participation &&
+          data.participation["vote-participation-key"] && (
+            <Statscard
+              stat="Vote Participation Key"
+              info="Participation public key used in key registration transactions"
+              value={
+                <div>
+                  {base32Encode(
+                    Buffer.from(
+                      data.participation["vote-participation-key"],
+                      "base64"
+                    ),
+                    undefined,
+                    { padding: false }
+                  )}
+                </div>
+              }
+            />
+          )}
+        {data &&
+          data.participation &&
+          !!data.participation["vote-key-dilution"] && (
+            <Statscard
+              stat="Vote Key Dilution"
+              info="Number of subkeys in each batch of participation keys"
+              value={
+                <div>
+                  {integerFormatter.format(
+                    Number(data.participation["vote-key-dilution"].toString())
+                  )}
+                </div>
+              }
+            />
+          )}
+        {data &&
+          data.participation &&
+          !!data.participation["vote-first-valid"] && (
+            <Statscard
+              stat="Vote First Valid"
+              info="First round this participation key is valid"
+              value={
+                <Link href={`/block/${data.participation["vote-first-valid"]}`}>
+                  {integerFormatter.format(
+                    Number(data.participation["vote-first-valid"].toString())
+                  )}
+                </Link>
+              }
+            />
+          )}
+        {data &&
+          data.participation &&
+          !!data.participation["vote-last-valid"] && (
+            <Statscard
+              stat="Vote Last Valid"
+              info="Last round this participation key is valid"
+              value={
+                <Link href={`/block/${data.participation["vote-last-valid"]}`}>
+                  {integerFormatter.format(
+                    Number(data.participation["vote-last-valid"].toString())
+                  )}
+                </Link>
+              }
+            />
+          )}
       </div>
+      {isLocal && data && data.assets && (
+        <div className={blockStyles["table-group"]}>
+          <h3 className={blockStyles["table-header"]}>
+            {data["assets"].length > 1 &&
+              integerFormatter.format(
+                Number(data["assets"].length.toString())
+              ) + " "}
+            Assets
+          </h3>
+          <div className={`${blockStyles["table-wrapper"]} table`}>
+            <Table
+              columns={assetsColumns(asaMap, address)}
+              loading={tableLoading}
+              data={data["assets"]}
+              fetchData={fetchAssetsData}
+              pageCount={createdAssetsPageCount}
+              className={`${blocksTableStyles["blocks-table"]}`}
+              defaultPage={1}
+              changeUrlPageParamOnPageChange={false}
+            ></Table>
+          </div>
+        </div>
+      )}
+      {data && data["created-assets"] && (
+        <div className={blockStyles["table-group"]}>
+          <h3 className={blockStyles["table-header"]}>
+            {data["created-assets"].length > 1 &&
+              integerFormatter.format(
+                Number(data["created-assets"].length.toString())
+              ) + " "}
+            Created Assets
+          </h3>
+          <div className={`${blockStyles["table-wrapper"]} table`}>
+            <Table
+              columns={createdAssetsColumns}
+              loading={tableLoading}
+              data={data["created-assets"]}
+              fetchData={fetchCreatedAssetsData}
+              pageCount={createdAssetsPageCount}
+              className={`${blocksTableStyles["blocks-table"]}`}
+              defaultPage={1}
+              changeUrlPageParamOnPageChange={false}
+            ></Table>
+          </div>
+        </div>
+      )}
+      {data && data["created-apps"] && (
+        <div className={blockStyles["table-group"]}>
+          <h3 className={blockStyles["table-header"]}>
+            {data["created-apps"].length > 1 &&
+              integerFormatter.format(
+                Number(data["created-apps"].length.toString())
+              ) + " "}
+            Created Apps
+          </h3>
+          <div className={`${blockStyles["table-wrapper"]} table`}>
+            <Table
+              columns={createdAppsColumns}
+              loading={tableLoading}
+              data={data["created-apps"]}
+              fetchData={fetchCreatedAppsData}
+              pageCount={createdAppsPageCount}
+              className={`${blocksTableStyles["blocks-table"]}`}
+              defaultPage={1}
+              changeUrlPageParamOnPageChange={false}
+            ></Table>
+          </div>
+        </div>
+      )}
       {accountTxns && (
-        <div className="table">
-          <Table
-            columns={columns}
-            loading={tableLoading}
-            data={accountTxns}
-            fetchData={fetchData}
-            pageCount={pageCount}
-            className={`${blocksTableStyles["blocks-table"]}`}
-            defaultPage={Number(page)}
-          ></Table>
+        <div className={blockStyles["table-group"]}>
+          <h3 className={blockStyles["table-header"]}>
+            {accountTxns &&
+              accountTxns.length > 1 &&
+              integerFormatter.format(Number(accountTxns.length.toString())) +
+                " "}
+            Transactions
+          </h3>
+          <div className={`${blockStyles["table-wrapper"]} table`}>
+            <Table
+              columns={columns}
+              loading={tableLoading}
+              data={accountTxns}
+              fetchData={fetchData}
+              pageCount={pageCount}
+              className={`${blocksTableStyles["blocks-table"]}`}
+              defaultPage={Number(page)}
+            ></Table>
+          </div>
         </div>
       )}
     </Layout>
