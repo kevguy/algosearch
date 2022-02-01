@@ -295,8 +295,12 @@ const TransactionDetails = ({
                     <TabsListUnstyled className={styles.tabs}>
                       <TabUnstyled>Base64</TabUnstyled>
                       <TabUnstyled>ASCII</TabUnstyled>
-                      {decodedNotes && <TabUnstyled>UInt64</TabUnstyled>}
-                      {msgpackNotes && <TabUnstyled>MessagePack</TabUnstyled>}
+                      {decodedNotes !== undefined && (
+                        <TabUnstyled>UInt64</TabUnstyled>
+                      )}
+                      {msgpackNotes !== undefined && (
+                        <TabUnstyled>MessagePack</TabUnstyled>
+                      )}
                     </TabsListUnstyled>
                     <TabPanelUnstyled value={0}>
                       <div className={styles.notes}>{transaction.note}</div>
@@ -306,7 +310,7 @@ const TransactionDetails = ({
                         {atob(transaction.note)}
                       </div>
                     </TabPanelUnstyled>
-                    {decodedNotes && (
+                    {decodedNotes !== undefined && (
                       <TabPanelUnstyled value={2}>
                         <div className={styles["notes-row"]}>
                           <div>
@@ -320,7 +324,7 @@ const TransactionDetails = ({
                         </div>
                       </TabPanelUnstyled>
                     )}
-                    {msgpackNotes && (
+                    {msgpackNotes !== undefined && (
                       <TabPanelUnstyled
                         value={!!decodedNotes ? 3 : 2}
                         className={styles.notes}
