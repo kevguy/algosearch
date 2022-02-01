@@ -361,4 +361,25 @@ describe('Transaction Page', () => {
   });
 
   /* Payment Tx with MultiSig */
+  it('displays MultiSig info correctly', () => {
+    cy.intercept(
+      {
+        method: 'GET',
+        url: `${backend_url}/v1/transactions/*`,
+      },
+      {
+        fixture: txMsigFixture,
+      },
+    ).as('getMsigTx');
+    cy.visit('/tx/7GCCBF4LIVFVADLWV3TQHZYH7BS3ROUISJZHUI675WGGP5YVGH4Q');
+    cy.wait('@getMsigTx');
+
+    /* MultiSig Info */
+    cy.get('[class*="Block_block-table"]').eq(1).children('table').children('tbody').children('tr').as('msigTableRows');
+    cy.get('@msigTableRows').eq(5).children().eq(0).should('have.text', 'Multisig');
+    cy.get('@msigTableRows').eq(5).children().eq(1).should('contain', 'Version 1');
+    cy.get('@msigTableRows').eq(5).children().eq(1).should('contain', 'Threshold: 1 signature');
+    cy.get('@msigTableRows').eq(5).children().eq(1).should('contain', 'P3MWU63PMOKDVWRFGZM2XX2CIQC4REUN277QNQWZZDN7Z24N6SW5VC5CBI');
+    cy.get('@msigTableRows').eq(5).children().eq(1).should('contain', 'GSS25RXJLMKU7BJM46BJQPV7JWWRVAZMQG4YKTQMFTDYQEGGAONMDP2GW4');
+  });
 });
