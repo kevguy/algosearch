@@ -331,6 +331,34 @@ describe('Transaction Page', () => {
     cy.get('@appTxInfoTableRows').eq(5).children().eq(1).should('contain', 'Number of byte-slice: 0');
     cy.get('@appTxInfoTableRows').eq(5).children().eq(1).should('contain', 'Number of uint: 0');
   });
+
   /* Payment Tx with LogicSig */
+  it('displays LogicSig info correctly', () => {
+    cy.intercept(
+      {
+        method: 'GET',
+        url: `${backend_url}/v1/transactions/*`,
+      },
+      {
+        fixture: txLsigFixture,
+      },
+    ).as('getLsigTx');
+    cy.visit('/tx/Z24TC75TMSLTN5X3WCKJGMW73YG2CLUU2A2EQG6E6MYNBZNO7KJA');
+    cy.wait('@getLsigTx');
+
+    /* LogicSig Info */
+    cy.get('[class*="Block_block-table"]').eq(0).children('table').children('tbody').children('tr').as('lsigTableRows');
+    cy.get('@lsigTableRows').eq(7).children().eq(0).should('have.text', 'Close Amount');
+    cy.get('@lsigTableRows').eq(7).children().eq(1).should('contain', '0.414609');
+    cy.get('@lsigTableRows').eq(8).children().eq(0).should('have.text', 'Close Remainder To');
+    cy.get('@lsigTableRows').eq(8).children().eq(1).should('have.text', '75IHRONIM4QX2RXSF5JIHH5GXVPQSRLR4CFJC4JUJJJHZPAYJIYDPQUKNE');
+    cy.get('@lsigTableRows').eq(11).children().eq(0).should('have.text', 'LogicSig');
+    cy.get('@lsigTableRows').eq(11).children().eq(1).as('lsigTab');
+    cy.get('@lsigTab').find('.TabUnstyled-root').eq(0).should('have.text', 'TEAL');
+    cy.get('@lsigTab').find('.TabUnstyled-root').eq(1).should('have.text', 'Base64');
+    cy.get('@lsigTab').find('.TabUnstyled-root').eq(1).click();
+    cy.get('@lsigTab').find('.TabPanelUnstyled-root').eq(1).should('have.text', 'BCAIAQAEAwa/xsEKAovu1hEmASD/UHi5qGchfUbyL1KDn6a9XwlFceCKkXE0SlJ8vBhKMDIEJA5EMQGB6AcORCM1CTQJOCAyAxJENAk4FTIDEkQ0CSIINQk0CTIEDED/4jIEIQYSMgQlEhEzABAiEhAzARAhBBIQMwAIgaDCHg8QMwEIIxIQMwAJMgMSEDMBCTIDEhAzABkjEhAzARkiEhAzARghBRIQMwAAKBIQMwEAMQASEDMABzEAEhA1ADIEIQYSNQE0AUAAIDMCECQSMwISIxIQMwIAKBIQMwIZIxIQIQczAhESEDUBNAA0ARBBAAIiQzIEJRIzABghBRIQMwAJMgMSEDMBCSgSEDMCCTIDEhAzAAAxABIQMwEAMQASEDMCACgSEDMAECEEEhAzARAiEhAzAhAiEhAzAAgjEhAzAQgjEhAzAggjEhAzABklEhAzARkjEhAzAhkjEhBBAAIiQzMBCTIDEkAAYDMAGSEGEjIEJRIQMwAQIQQSEDMBECISEDMCECQSEDMAGCEFEhAzAAAxABIQMwEAMQASEDMCADEAExAzAQczAgASEDMCFCgSEDMACTIDEhAzAQkoEhAzAgkyAxIQREIAlTMAGSMSMQkyAxIQMgQkEhAzABAhBBIQMwEQIhIQMwIQJBIQMwMQIhIQMwMIgdAPDxAzAwcxABIQMwMAMwEHEhAzAAAxABIQMwEAMQASEDMCADEAExAzAwAxABMQMwAYIQUSEDMBADEAEhAzAQczAgASEDMCFCgSEDMACTIDEhAzAQkyAxIQMwIJMgMSEDMDCTIDEhBEMwEIIg8zAhIiDxAhBzMCERIQRDMCEiIdNQI1ATMBCCIdNQQ1AzQBNAMNQAAPNAE0AxI0AjQEDxBAAAEAIkM=');
+  });
+
   /* Payment Tx with MultiSig */
 });
