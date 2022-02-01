@@ -18,4 +18,13 @@ module.exports = {
   plugins: [
     '@typescript-eslint',
   ],
+  rules: {
+    "max-line-length": [
+      true,
+      {
+        limit: 180,
+        "ignore-pattern": "^import [^,]+ from |^export | implements",
+      },
+    ],
+  }
 };

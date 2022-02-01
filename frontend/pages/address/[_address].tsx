@@ -419,7 +419,7 @@ const Address = () => {
           </h3>
           <div className={`${blockStyles["table-wrapper"]} table`}>
             <Table
-              columns={createdAssetsColumns}
+              columns={createdAssetsColumns(address)}
               loading={tableLoading}
               data={data["created-assets"]}
               fetchData={fetchCreatedAssetsData}

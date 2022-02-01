@@ -57,20 +57,25 @@ export const assetsColumns = (asaMap: IAsaMap, addr: string) => [
   {
     Header: "Deleted",
     accessor: "deleted",
-    Cell: ({ value }: { value: string }) => value.toString(),
+    Cell: ({ value }: { value: string }) =>
+      value !== undefined ? value.toString() : "N/A",
   },
   {
     Header: "Is Frozen",
     accessor: "is-frozen",
-    Cell: ({ value }: { value: string }) => value.toString(),
+    Cell: ({ value }: { value: string }) =>
+      value !== undefined ? value.toString() : "N/A",
   },
   {
     Header: "Opted in at block",
     accessor: "opted-in-at-round",
-    Cell: ({ value }: { value: string }) => (
-      <Link href={`/block/${value}`}>
-        {integerFormatter.format(Number(value))}
-      </Link>
-    ),
+    Cell: ({ value }: { value: string }) =>
+      value ? (
+        <Link href={`/block/${value}`}>
+          {integerFormatter.format(Number(value))}
+        </Link>
+      ) : (
+        "N/A"
+      ),
   },
 ];

@@ -9,7 +9,7 @@ import {
 import { IAsaResponse } from "../../types/apiResponseTypes";
 import { Row } from "react-table";
 
-export const createdAssetsColumns = [
+export const createdAssetsColumns = (addr: string) => [
   {
     Header: "Asset ID",
     accessor: "index",
@@ -35,7 +35,11 @@ export const createdAssetsColumns = [
     accessor: "params.manager",
     Cell: ({ value }: { value: string }) =>
       !isZeroAddress(value) ? (
-        <Link href={`/address/${value}`}>{ellipseAddress(value)}</Link>
+        value === addr ? (
+          <span>{ellipseAddress(value)}</span>
+        ) : (
+          <Link href={`/address/${value}`}>{ellipseAddress(value)}</Link>
+        )
       ) : (
         "N/A"
       ),
@@ -45,7 +49,11 @@ export const createdAssetsColumns = [
     accessor: "params.reserve",
     Cell: ({ value }: { value: string }) =>
       !isZeroAddress(value) ? (
-        <Link href={`/address/${value}`}>{ellipseAddress(value)}</Link>
+        value === addr ? (
+          <span>{ellipseAddress(value)}</span>
+        ) : (
+          <Link href={`/address/${value}`}>{ellipseAddress(value)}</Link>
+        )
       ) : (
         "N/A"
       ),
@@ -55,7 +63,11 @@ export const createdAssetsColumns = [
     accessor: "params.freeze",
     Cell: ({ value }: { value: string }) =>
       !isZeroAddress(value) ? (
-        <Link href={`/address/${value}`}>{ellipseAddress(value)}</Link>
+        value === addr ? (
+          <span>{ellipseAddress(value)}</span>
+        ) : (
+          <Link href={`/address/${value}`}>{ellipseAddress(value)}</Link>
+        )
       ) : (
         "N/A"
       ),
@@ -65,7 +77,11 @@ export const createdAssetsColumns = [
     accessor: "params.clawback",
     Cell: ({ value }: { value: string }) =>
       !isZeroAddress(value) ? (
-        <Link href={`/address/${value}`}>{ellipseAddress(value)}</Link>
+        value === addr ? (
+          <span>{ellipseAddress(value)}</span>
+        ) : (
+          <Link href={`/address/${value}`}>{ellipseAddress(value)}</Link>
+        )
       ) : (
         "N/A"
       ),
