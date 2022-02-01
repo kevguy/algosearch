@@ -226,6 +226,36 @@ describe('Transaction Page', () => {
   });
 
   /* Asset KeyReg Tx */
+  it('displays Asset KeyReg tx info correctly', () => {
+    cy.intercept(
+      {
+        method: 'GET',
+        url: `${backend_url}/v1/transactions/*`,
+      },
+      {
+        fixture: txKeyregFixture,
+      },
+    ).as('getKeyregTx');
+    cy.visit('/tx/QZBJYPNMCA5AMT6BFFA7QHEFC4JPPRGAX5DIXIUFPKRGX5EQURCA');
+    cy.wait('@getKeyregTx');
+
+    cy.get('[class*="Block_block-table"]').eq(0).find('tbody tr').eq(2).children().eq(0).should('have.text', 'Type');
+    cy.get('[class*="Block_block-table"]').eq(0).find('tbody tr').eq(2).children().eq(1).should('have.text', 'Key Reg');
+
+    cy.get('[class*="Block_block-table"]').eq(1).find('tbody tr').as('keyregTable');
+    cy.get('@keyregTable').eq(0).children().eq(0).should('have.text', 'Mark account as participating');
+    cy.get('@keyregTable').eq(0).children().eq(1).should('have.text', 'true');
+    cy.get('@keyregTable').eq(1).children().eq(0).should('have.text', 'Selection Participation Key');
+    cy.get('@keyregTable').eq(1).children().eq(1).should('have.text', 'YYWHHH53DCQZXYDMACPMC2DDF3DTYEBUUIMHGMAX27KZQHRQ2DKQ');
+    cy.get('@keyregTable').eq(2).children().eq(0).should('have.text', 'Vote Participation Key');
+    cy.get('@keyregTable').eq(2).children().eq(1).should('have.text', 'JD6AC6S6I4PHHXM65CDPSM2DHXIWZBKF3OPSTUTIZFKXA5JDLZGQ');
+    cy.get('@keyregTable').eq(3).children().eq(0).should('have.text', 'Vote Key Dilution');
+    cy.get('@keyregTable').eq(3).children().eq(1).should('have.text', '10,000');
+    cy.get('@keyregTable').eq(4).children().eq(0).should('have.text', 'Vote First Valid');
+    cy.get('@keyregTable').eq(4).children().eq(1).should('have.text', '15,777,579');
+    cy.get('@keyregTable').eq(5).children().eq(0).should('have.text', 'Vote Last Valid');
+    cy.get('@keyregTable').eq(5).children().eq(1).should('contain', '30,000,000');
+  });
 
   /* App Call Tx with Approval Program and Clear State Program */
   it('displays App Call Tx with Approval Program and Clear State Program info correctly', () => {
