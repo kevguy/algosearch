@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { TransactionResponse } from "../../types/apiResponseTypes";
 import blockStyles from "../../pages/block/Block.module.scss";
+import { removeSpace } from "../../utils/stringUtils";
 
 export const AssetFreezeTransactionInfo = ({
   tx,
@@ -17,7 +18,11 @@ export const AssetFreezeTransactionInfo = ({
           <tbody>
             <tr>
               <td>Asset ID</td>
-              <td>{afrzTx["asset-id"]}</td>
+              <td>
+                <Link href={`/asset/${afrzTx["asset-id"]}`}>
+                  {removeSpace(afrzTx["asset-id"].toString())}
+                </Link>
+              </td>
             </tr>
             <tr>
               <td>Address</td>

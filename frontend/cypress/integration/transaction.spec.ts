@@ -153,6 +153,47 @@ describe('Transaction Page', () => {
   });
 
   /* Asset Freeze Tx */
+  it('displays Asset Freeze Tx info correctly', () => {
+    cy.intercept(
+      {
+        method: 'GET',
+        url: `${backend_url}/v1/transactions/*`,
+      },
+      {
+        fixture: txAfrzFixture,
+      },
+    ).as('getAfrzTx');
+    cy.visit('/tx/BNNBILQQXACV2WT67EJINEW2RFA6ZZ4GP32TOKTPBJR2KXAS6EHA');
+    cy.wait('@getAfrzTx');
+
+    cy.get('[class*="Block_block-table"]').eq(0).find('tbody tr').as('afrzMainTable');
+    cy.get('@afrzMainTable').eq(0).children().eq(0).should('have.text', 'Group ID');
+    cy.get('@afrzMainTable').eq(0).children().eq(1).should('have.text', 'kvtthMqWp5BvLEJUToPtmnBs2begnkEyJ0iLT7G6um0=');
+    cy.get('@afrzMainTable').eq(1).children().eq(0).should('have.text', 'ID');
+    cy.get('@afrzMainTable').eq(1).children().eq(1).should('have.text', 'BNNBILQQXACV2WT67EJINEW2RFA6ZZ4GP32TOKTPBJR2KXAS6EHA');
+    cy.get('@afrzMainTable').eq(2).children().eq(0).should('have.text', 'Block');
+    cy.get('@afrzMainTable').eq(2).children().eq(1).should('have.text', '15,855,297');
+    cy.get('@afrzMainTable').eq(3).children().eq(0).should('have.text', 'Type');
+    cy.get('@afrzMainTable').eq(3).children().eq(1).should('have.text', 'ASA Freeze');
+    cy.get('@afrzMainTable').eq(4).children().eq(0).should('have.text', 'Sender');
+    cy.get('@afrzMainTable').eq(4).children().eq(1).should('have.text', 'FRWFUUDU5NLQQ2CC26VEILW3L3BCI7U6VNQJMTGIV43C7QEJ7ACCE3V4GM');
+    cy.get('@afrzMainTable').eq(5).children().eq(0).should('have.text', 'Receiver');
+    cy.get('@afrzMainTable').eq(5).children().eq(1).should('have.text', 'N/A');
+    cy.get('@afrzMainTable').eq(6).children().eq(0).should('have.text', 'Amount');
+    cy.get('@afrzMainTable').eq(6).children().eq(1).should('contain', 'N/A');
+    cy.get('@afrzMainTable').eq(7).children().eq(0).should('have.text', 'Fee');
+    cy.get('@afrzMainTable').eq(7).children().eq(1).should('contain', '0.001');
+
+    /* Asset Freeze Info */
+    cy.get('[class*="Block_block-table"]').eq(1).children('table').children('tbody').children('tr').as('afrzTableRows');
+    cy.get('@afrzTableRows').eq(0).children().eq(0).should('have.text', 'Asset ID');
+    cy.get('@afrzTableRows').eq(0).children().eq(1).should('have.text', '238498122');
+    cy.get('@afrzTableRows').eq(1).children().eq(0).should('have.text', 'Address');
+    cy.get('@afrzTableRows').eq(1).children().eq(1).should('have.text', '4EHY6C3XAXIUHIUTK2FQIKBCQLWFWMF7LNL2U3GXMIBHLHCXHJZPPKERTQ');
+    cy.get('@afrzTableRows').eq(2).children().eq(0).should('have.text', 'New Freeze Status');
+    cy.get('@afrzTableRows').eq(2).children().eq(1).should('have.text', 'false');
+  });
+
   /* Asset Transfer Tx */
   /* Asset KeyReg Tx */
   /* App Call Tx with Approval Program and Clear State Program */
