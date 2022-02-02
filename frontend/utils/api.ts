@@ -33,6 +33,7 @@ export const apiGetSupply = async () => {
     return _results;
   } catch (error) {
     console.error("Error when retrieving ledger supply from Algod: " + error);
+    return null;
   }
 };
 
@@ -45,6 +46,7 @@ export const apiGetLatestBlocks = async (currentRound: number) => {
     return latestBlocks.data;
   } catch (error) {
     console.log("Exception when retrieving last 10 blocks: " + error);
+    return null;
   }
 };
 
@@ -57,6 +59,7 @@ export const apiGetLatestTxn = async () => {
     return latestTxn.data;
   } catch (error) {
     console.log("Exception when retrieving latest transaction: " + error);
+    return null;
   }
 };
 

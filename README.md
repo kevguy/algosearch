@@ -53,6 +53,9 @@ docker run \
   -e ALGOSEARCH_ALGOD_TOKEN=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa \
   -e ALGOSEARCH_ZIPKIN_REPORTER_URI=http://234.567.89.0:9411/api/v2/spans \
   -e NEXT_PUBLIC_API_URL=http://0.0.0.0:5000 \
+  -e NEXT_PUBLIC_ALGOD_PROTOCOL=http \
+  -e NEXT_PUBLIC_ALGOD_ADDR=0.0.0.0:4001 \
+  -e NEXT_PUBLIC_ALGOD_TOKEN=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa \
   -e METRICS_COLLECT_FROM=http://0.0.0.0:4000/debug/vars \
   algosearch:1.1
 ```
@@ -60,6 +63,8 @@ docker run \
 Please modify `NEXT_PUBLIC_API_URL` only when you are trying to connect to another backend.
 
 Please modify `METRICS_COLLECT_FROM` only when you are trying to collect metrics from another RESTful API.
+
+`NEXT_PUBLIC_ALGOD_PROTOCOL`, `NEXT_PUBLIC_ALGOD_ADDR`, and `NEXT_PUBLIC_ALGOD_TOKEN` are needed for disassembly of LogicSig, approval program, and clear state program on the transaction page. The feature is only available when `NEXT_PUBLIC_ALGOD_ADDR` contains `0.0.0.0` or `127.0.0.1` or `localhost`.
 
 - Frontend: http://localhost:3000
 - RESTful API: http://localhost:5000

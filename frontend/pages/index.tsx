@@ -26,7 +26,9 @@ import { TransactionResponse } from "../types/apiResponseTypes";
 import { siteName } from "../utils/constants";
 
 const Home = () => {
-  const [transactions, setTransactions] = useState<TransactionResponse[]>();
+  const [transactions, setTransactions] = useState<
+    TransactionResponse[] | undefined
+  >([]);
   const [loading, setLoading] = useState(true);
   const currentRound = useSelector(selectWsCurrentRound);
   const avgBlockTime = useSelector(selectAvgBlockTxnSpeed);
@@ -48,6 +50,7 @@ const Home = () => {
         })
         .catch((error) => {
           console.error("Exception when retrieving transactions: " + error);
+          setTransactions(undefined);
         });
     }
   }, [latestTransaction]);
@@ -177,9 +180,15 @@ const Home = () => {
             </Button>
           </div>
           {transactions ? (
-            <TransactionTable transactions={transactions} />
-          ) : (
+            transactions.length > 0 ? (
+              <TransactionTable transactions={transactions} />
+            ) : (
+              <Load />
+            )
+          ) : loading ? (
             <Load />
+          ) : (
+            <p className="center-text">No transactions</p>
           )}
         </div>
       </div>

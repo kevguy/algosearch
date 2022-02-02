@@ -42,10 +42,11 @@ const Transactions = () => {
         .then((response) => {
           if (pageCount) {
             // if it's the first call solely for getting pageCount, keep showing loading
-            setTableLoading(false);
+            setTableLoading(true);
           }
           if (response.data.items) {
             setTransactions(response.data.items);
+            setTableLoading(false);
           } else {
             // no transactions with this page number, reset to first page
             setDisplayPageNum(1);
@@ -54,6 +55,7 @@ const Transactions = () => {
           setPageCount(response.data.num_of_pages);
         })
         .catch((error) => {
+          setTableLoading(false);
           console.error("Exception when retrieving transactions: " + error);
         });
     },
@@ -137,7 +139,11 @@ const Transactions = () => {
         parentLinkName="Home"
         currentLinkName="Transactions"
       />
-      {pageCount && displayPageNum ? (
+      {tableLoading ? (
+        <div className={tableStyles["table-loader-wrapper"]}>
+          <Load />
+        </div>
+      ) : pageCount && displayPageNum ? (
         <div className="table">
           <Table
             columns={columns}
@@ -149,9 +155,7 @@ const Transactions = () => {
           ></Table>
         </div>
       ) : (
-        <div className={tableStyles["table-loader-wrapper"]}>
-          <Load />
-        </div>
+        <p className="center-text">No transactions</p>
       )}
     </Layout>
   );
