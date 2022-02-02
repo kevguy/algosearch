@@ -1,5 +1,5 @@
 import React from "react";
-import CopyAddress from "./copyaddress";
+import CopyIcon from "../copyable/CopyIcon";
 import styles from "./AddressHeader.module.scss";
 
 const AddressHeader = ({ address }: { address: string }) => {
@@ -9,7 +9,10 @@ const AddressHeader = ({ address }: { address: string }) => {
         <h3>Address Information</h3>
         <div>
           <span>{address}</span>
-          <CopyAddress address={address} className={styles["address-button"]} />
+          <CopyIcon
+            copyableText={address}
+            className={styles["address-button"]}
+          />
         </div>
       </div>
     </div>

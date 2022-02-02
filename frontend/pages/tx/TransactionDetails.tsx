@@ -1,36 +1,47 @@
 import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import algosdk from "algosdk";
+import msgpack from "@ygoe/msgpack";
+import TabUnstyled from "@mui/base/TabUnstyled";
+import TabsUnstyled from "@mui/base/TabsUnstyled";
+import TabsListUnstyled from "@mui/base/TabsListUnstyled";
+import TabPanelUnstyled from "@mui/base/TabPanelUnstyled";
+import hljs from "highlight.js";
+
+import { TransactionResponse } from "../../types/apiResponseTypes";
+import { IAsaMap } from "../../types/misc";
+import { apiGetASA, getLsigTEAL } from "../../utils/api";
 import AlgoIcon from "../../components/algoicon";
 import {
   checkBase64EqualsEmpty,
-  ellipseAddress,
   getTxTypeName,
   integerFormatter,
+  isZeroAddress,
   microAlgosToAlgos,
+  prettyPrintTEAL,
   removeSpace,
   TxType,
 } from "../../utils/stringUtils";
 import styles from "./TransactionDetails.module.scss";
 import blockStyles from "../block/Block.module.scss";
-import algosdk from "algosdk";
-import msgpack from "@ygoe/msgpack";
-import { TransactionResponse } from "../../types/apiResponseTypes";
-import { IAsaMap } from "../../types/misc";
-import { apiGetASA } from "../../utils/api";
-import {
-  TabPanelUnstyled,
-  TabsListUnstyled,
-  TabsUnstyled,
-  TabUnstyled,
-} from "@mui/material";
 import TransactionAdditionalInfo from "../../components/transaction/TransactionAdditionalInfo";
 import ApplicationTransactionInfo from "../../components/transaction/ApplicationTransactionInfo";
 import {
   getAmount,
   getCloseAmount,
-  getInnerTxCloseTo,
-  getInnerTxReceiver,
 } from "../../components/transaction/TransactionContentComponents";
+import {
+  algodAddr,
+  algodProtocol,
+  algodToken,
+  isLocal,
+} from "../../utils/constants";
+import { DryrunResponse } from "algosdk/dist/types/src/client/v2/algod/models/types";
+import { AssetConfigTransactionInfo } from "../../components/transaction/AssetConfigTransactionInfo";
+import { AssetFreezeTransactionInfo } from "../../components/transaction/AssetFreezeTransactionInfo";
+import { KeyRegTransactionInfo } from "../../components/transaction/KeyRegTransactionInfo";
+import { InnerTxns } from "../../components/transaction/InnerTxns";
+import Copyable from "../../components/copyable/Copyable";
 
 const TransactionDetails = ({
   transaction,
@@ -42,7 +53,9 @@ const TransactionDetails = ({
   const [receiver, setReceiver] = useState<string>();
   const [asaMap, setAsaMap] = useState<IAsaMap>([]);
   const [decodedNotes, setDecodedNotes] = useState<bigint>();
+  const [disassembledLogicSig, setDisassembledLogicSig] = useState<string>();
   const decodeWithMsgpack = useCallback(() => {
+    if (!transaction || !transaction.note) return;
     try {
       let message = msgpack.deserialize(
         Buffer.from(transaction.note, "base64")
@@ -58,13 +71,46 @@ const TransactionDetails = ({
 
   useEffect(() => {
     if (transaction) {
-      setTxType(transaction["tx-type"]);
+      if (
+        isLocal &&
+        algodToken &&
+        algodProtocol &&
+        algodAddr &&
+        transaction.signature.logicsig &&
+        transaction.signature.logicsig.logic &&
+        transaction.signature.logicsig.args
+      ) {
+        const logicSig = new algosdk.LogicSigAccount(
+          Buffer.from(transaction.signature.logicsig.logic, "base64"),
+          transaction.signature.logicsig.args.map((item) =>
+            Buffer.from(item, "base64")
+          )
+        );
+        getLsigTEAL(logicSig, transaction)
+          .then((result: DryrunResponse) => {
+            if (
+              result &&
+              result.txns &&
+              result.txns[0] &&
+              result.txns[0].disassembly
+            ) {
+              const disassembledResult = prettyPrintTEAL(
+                result.txns[0].disassembly
+              );
+              setDisassembledLogicSig(disassembledResult);
+            }
+          })
+          .catch((error) => {
+            console.error("LogicSig disassembly error: ", error);
+          });
+      }
+      setTxType(transaction["tx-type"] as TxType);
       setReceiver(
         transaction && transaction["tx-type"] === TxType.AssetTransfer
-          ? transaction["asset-transfer-transaction"].receiver
+          ? transaction["asset-transfer-transaction"]!.receiver
           : transaction["payment-transaction"]
           ? transaction["payment-transaction"].receiver
-          : "N/A"
+          : ""
       );
       apiGetASA([transaction]).then((result) => {
         setAsaMap(result);
@@ -99,12 +145,6 @@ const TransactionDetails = ({
     <div className={blockStyles["table-wrapper"]}>
       <div className={blockStyles["block-table"]}>
         <table cellSpacing="0">
-          <thead>
-            <tr>
-              <th>Identifier</th>
-              <th>Value</th>
-            </tr>
-          </thead>
           <tbody>
             {transaction.group && !checkBase64EqualsEmpty(transaction.group) && (
               <tr>
@@ -114,7 +154,9 @@ const TransactionDetails = ({
             )}
             <tr>
               <td>ID</td>
-              <td>{transaction.id}</td>
+              <td>
+                <Copyable copyableText={transaction.id} />
+              </td>
             </tr>
             <tr>
               <td>Block</td>
@@ -158,6 +200,19 @@ const TransactionDetails = ({
                 </td>
               </tr>
             )}
+            {transaction["rekey-to"] &&
+              !isZeroAddress(transaction["rekey-to"]) && (
+                <tr>
+                  <td>Rekey To</td>
+                  <td>
+                    <div>
+                      <Link href={`/address/${transaction["rekey-to"]}`}>
+                        {transaction["rekey-to"]}
+                      </Link>
+                    </div>
+                  </td>
+                </tr>
+              )}
             {txType !== TxType.App && (
               <tr>
                 <td>Amount</td>
@@ -166,6 +221,60 @@ const TransactionDetails = ({
                 </td>
               </tr>
             )}
+            {txType === TxType.Pay &&
+              transaction["payment-transaction"] &&
+              Object.keys(transaction["payment-transaction"]).includes(
+                "close-amount"
+              ) && (
+                <tr>
+                  <td>Close Amount</td>
+                  <td>
+                    <div>{getCloseAmount(txType, transaction, asaMap)}</div>
+                  </td>
+                </tr>
+              )}
+            {txType === TxType.Pay &&
+              transaction["payment-transaction"] &&
+              transaction["payment-transaction"]["close-remainder-to"] &&
+              !isZeroAddress(
+                transaction["payment-transaction"]["close-remainder-to"]
+              ) && (
+                <tr>
+                  <td>Close Remainder To</td>
+                  <td>
+                    <div>
+                      <Link
+                        href={`/address/${transaction["payment-transaction"]["close-remainder-to"]}`}
+                      >
+                        {
+                          transaction["payment-transaction"][
+                            "close-remainder-to"
+                          ]
+                        }
+                      </Link>
+                    </div>
+                  </td>
+                </tr>
+              )}
+            {txType === TxType.AssetTransfer &&
+              transaction["asset-transfer-transaction"] &&
+              transaction["asset-transfer-transaction"]["close-to"] &&
+              !isZeroAddress(
+                transaction["asset-transfer-transaction"]["close-to"]
+              ) && (
+                <tr>
+                  <td>Close To</td>
+                  <td>
+                    <div>
+                      <Link
+                        href={`/address/${transaction["asset-transfer-transaction"]["close-to"]}`}
+                      >
+                        {transaction["asset-transfer-transaction"]["close-to"]}
+                      </Link>
+                    </div>
+                  </td>
+                </tr>
+              )}
             <tr>
               <td>Fee</td>
               <td>
@@ -182,113 +291,104 @@ const TransactionDetails = ({
               <tr>
                 <td className={styles["valign-top-identifier"]}>Note</td>
                 <td>
-                  <div>
-                    <TabsUnstyled defaultValue={0}>
-                      <TabsListUnstyled className={styles.tabs}>
-                        <TabUnstyled>Base64</TabUnstyled>
-                        <TabUnstyled>ASCII</TabUnstyled>
-                        {decodedNotes && <TabUnstyled>UInt64</TabUnstyled>}
-                        {msgpackNotes && <TabUnstyled>MessagePack</TabUnstyled>}
-                      </TabsListUnstyled>
-                      <TabPanelUnstyled value={0}>
-                        <div className={styles.notes}>{transaction.note}</div>
-                      </TabPanelUnstyled>
-                      <TabPanelUnstyled value={1}>
-                        <div className={styles.notes}>
-                          {atob(transaction.note)}
+                  <TabsUnstyled defaultValue={0}>
+                    <TabsListUnstyled className={styles.tabs}>
+                      <TabUnstyled>Base64</TabUnstyled>
+                      <TabUnstyled>ASCII</TabUnstyled>
+                      {decodedNotes !== undefined && (
+                        <TabUnstyled>UInt64</TabUnstyled>
+                      )}
+                      {msgpackNotes !== undefined && (
+                        <TabUnstyled>MessagePack</TabUnstyled>
+                      )}
+                    </TabsListUnstyled>
+                    <TabPanelUnstyled value={0}>
+                      <div className={styles.notes}>{transaction.note}</div>
+                    </TabPanelUnstyled>
+                    <TabPanelUnstyled value={1}>
+                      <div className={styles.notes}>
+                        {atob(transaction.note)}
+                      </div>
+                    </TabPanelUnstyled>
+                    {decodedNotes !== undefined && (
+                      <TabPanelUnstyled value={2}>
+                        <div className={styles["notes-row"]}>
+                          <div>
+                            <h5>Hexadecimal</h5>
+                            <span>{decodedNotes.toString(16)}</span>
+                          </div>
+                          <div>
+                            <h5>Decimal</h5>
+                            <span>{decodedNotes.toString()}</span>
+                          </div>
                         </div>
                       </TabPanelUnstyled>
-                      {decodedNotes && (
-                        <TabPanelUnstyled value={2}>
-                          <div className={styles["notes-row"]}>
-                            <div>
-                              <h5>Hexadecimal</h5>
-                              <span>{decodedNotes!.toString(16)}</span>
-                            </div>
-                            <div>
-                              <h5>Decimal</h5>
-                              <span>{decodedNotes!.toString()}</span>
-                            </div>
-                          </div>
-                        </TabPanelUnstyled>
-                      )}
-                      {msgpackNotes && (
-                        <TabPanelUnstyled
-                          value={!!decodedNotes ? 3 : 2}
-                          className={styles.notes}
-                        >
-                          <pre>{msgpackNotes}</pre>
-                        </TabPanelUnstyled>
-                      )}
-                    </TabsUnstyled>
-                  </div>
+                    )}
+                    {msgpackNotes !== undefined && (
+                      <TabPanelUnstyled
+                        value={!!decodedNotes ? 3 : 2}
+                        className={styles.notes}
+                      >
+                        <pre>{msgpackNotes}</pre>
+                      </TabPanelUnstyled>
+                    )}
+                  </TabsUnstyled>
                 </td>
               </tr>
             )}
+            {transaction.signature.logicsig &&
+              transaction.signature.logicsig.logic && (
+                <tr>
+                  <td className={styles["valign-top-identifier"]}>LogicSig</td>
+                  <td>
+                    {disassembledLogicSig ? (
+                      <TabsUnstyled defaultValue={0}>
+                        <TabsListUnstyled className={styles.tabs}>
+                          <TabUnstyled>TEAL</TabUnstyled>
+                          <TabUnstyled>Base64</TabUnstyled>
+                        </TabsListUnstyled>
+                        <TabPanelUnstyled value={0}>
+                          <Copyable copyableText={disassembledLogicSig}>
+                            <pre className={`${styles["teal-box"]} hljs`}>
+                              <code
+                                className="language-lua"
+                                dangerouslySetInnerHTML={{
+                                  __html: hljs.highlight(disassembledLogicSig, {
+                                    language: "lua",
+                                  }).value,
+                                }}
+                              ></code>
+                            </pre>
+                          </Copyable>
+                        </TabPanelUnstyled>
+                        <TabPanelUnstyled value={1}>
+                          <Copyable
+                            copyableText={transaction.signature.logicsig.logic}
+                          />
+                        </TabPanelUnstyled>
+                      </TabsUnstyled>
+                    ) : (
+                      <Copyable
+                        copyableText={transaction.signature.logicsig.logic}
+                      />
+                    )}
+                  </td>
+                </tr>
+              )}
           </tbody>
         </table>
       </div>
       {transaction["inner-txns"] && (
-        <div>
-          <h4>Inner Transactions</h4>
-          <div
-            className={`${blockStyles["block-table"]} ${styles["inner-txs-table"]}`}
-          >
-            <table cellSpacing="0">
-              <thead>
-                <tr>
-                  <th>Type</th>
-                  <th>Sender</th>
-                  <th>Receiver</th>
-                  <th>Amount</th>
-                  <th>Close To</th>
-                  <th>Close Amount</th>
-                  <th>Fee</th>
-                </tr>
-              </thead>
-              <tbody>
-                {transaction["inner-txns"].map((innerTx, index) => (
-                  <tr key={index}>
-                    <td className={styles["normal-text"]}>
-                      <h4 className="mobile-only">Type</h4>
-                      {getTxTypeName(innerTx["tx-type"])}
-                    </td>
-                    <td>
-                      <h4 className="mobile-only">Sender</h4>
-                      <Link href={`/address/${innerTx.sender}`}>
-                        {ellipseAddress(innerTx.sender)}
-                      </Link>
-                    </td>
-                    <td>
-                      <h4 className="mobile-only">Receiver</h4>
-                      {getInnerTxReceiver(innerTx)}
-                    </td>
-                    <td>
-                      <h4 className="mobile-only">Amount</h4>
-                      {getAmount(innerTx["tx-type"], innerTx, asaMap)}
-                    </td>
-                    <td>
-                      <h4 className="mobile-only">Close To</h4>
-                      {getInnerTxCloseTo(innerTx)}
-                    </td>
-                    <td>
-                      <h4 className="mobile-only">Close Amount</h4>
-                      {getCloseAmount(innerTx["tx-type"], innerTx, asaMap)}
-                    </td>
-                    <td>
-                      <h4 className="mobile-only">Fee</h4>
-                      <AlgoIcon /> {microAlgosToAlgos(innerTx.fee)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <InnerTxns tx={transaction} asaMap={asaMap} />
       )}
-      {txType === TxType.App && (
-        <ApplicationTransactionInfo transaction={transaction} />
+      {txType === TxType.App && <ApplicationTransactionInfo tx={transaction} />}
+      {txType === TxType.AssetConfig && (
+        <AssetConfigTransactionInfo tx={transaction} />
       )}
+      {txType === TxType.AssetFreeze && (
+        <AssetFreezeTransactionInfo tx={transaction} />
+      )}
+      {txType === TxType.KeyReg && <KeyRegTransactionInfo tx={transaction} />}
       <TransactionAdditionalInfo transaction={transaction} />
     </div>
   );

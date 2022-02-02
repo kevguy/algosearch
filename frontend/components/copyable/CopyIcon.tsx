@@ -3,30 +3,27 @@ import React, { useState } from "react";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import CheckIcon from "@mui/icons-material/Check";
 
-const CopyAddress = ({
-  address,
+const CopyIcon = ({
+  copyableText,
   className,
 }: {
-  address: string;
+  copyableText: string;
   className: string;
 }) => {
   const [copied, setCopied] = useState(false);
 
-  const copyAddress = () => {
-    navigator.clipboard.writeText(address);
-    setCopied(true);
-    setTimeout(() => {
-      setCopied(false);
-    }, 1000);
+  const copy = () => {
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(copyableText);
+      setCopied(true);
+      setTimeout(() => {
+        setCopied(false);
+      }, 1000);
+    }
   };
 
   return (
-    <Button
-      className={className}
-      onClick={copyAddress}
-      size="small"
-      aria-label="copy"
-    >
+    <Button className={className} onClick={copy} size="small" aria-label="copy">
       {copied ? (
         <CheckIcon fontSize="small" />
       ) : (
@@ -36,4 +33,4 @@ const CopyAddress = ({
   );
 };
 
-export default CopyAddress;
+export default CopyIcon;

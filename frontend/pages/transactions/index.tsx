@@ -135,7 +135,7 @@ const Transactions = () => {
         name="Transactions"
         parentLink="/"
         parentLinkName="Home"
-        currentLinkName="All Transactions"
+        currentLinkName="Transactions"
       />
       {pageCount && displayPageNum ? (
         <div className="table">

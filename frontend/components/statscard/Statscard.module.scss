@@ -1,6 +1,7 @@
 .card-container {
   display: flex;
   gap: var(--space-m);
+  flex-wrap: wrap;
 
   @media screen and (max-width: 768px) {
     flex-wrap: wrap;
@@ -10,7 +11,7 @@
 
 .statscard {
   display: inline-block;
-  width: 25%;
+  width: calc(20% - var(--space-m));
   min-height: var(--space-l);
   background-color: #fff;
   padding: var(--space-m);
@@ -40,6 +41,8 @@
 
 .title + div {
   white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 .statscard > span > div > img {

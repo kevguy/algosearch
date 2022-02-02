@@ -2,6 +2,10 @@ import React, { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/router";
 import Link from "next/link";
+import Head from "next/head";
+import { Column } from "react-table";
+import { base32Encode } from "@ctrl/ts-base32";
+
 import Layout from "../../components/layout";
 import Breadcrumbs from "../../components/breadcrumbs";
 import AlgoIcon from "../../components/algoicon";
@@ -13,8 +17,6 @@ import { apiGetASA } from "../../utils/api";
 import { TransactionResponse } from "../../types/apiResponseTypes";
 import { IAsaMap } from "../../types/misc";
 import Table from "../../components/table";
-import Head from "next/head";
-import { Column, Row } from "react-table";
 import { transactionsColumns } from "../../components/tableColumns/transactionsColumns";
 
 interface IBlockData {
@@ -142,12 +144,6 @@ const Block = () => {
       />
       <div className={styles["block-table"]}>
         <table cellSpacing="0">
-          <thead>
-            <tr>
-              <th>Identifier</th>
-              <th>Value</th>
-            </tr>
-          </thead>
           <tbody>
             <tr>
               <td>Block</td>
@@ -195,17 +191,33 @@ const Block = () => {
               </td>
             </tr>
             <tr>
-              <td>Block hash</td>
-              <td>{loading ? <Load /> : data && data["block-hash"]}</td>
+              <td>Block Hash</td>
+              <td>
+                {loading ? (
+                  <Load />
+                ) : (
+                  data &&
+                  base32Encode(
+                    Buffer.from(data["block-hash"], "base64"),
+                    undefined,
+                    { padding: false }
+                  )
+                )}
+              </td>
             </tr>
             <tr>
-              <td>Previous block hash</td>
+              <td>Previous Block Hash</td>
               <td>
                 {loading ? (
                   <Load />
                 ) : (
                   <Link href={`/block/${blockNum - 1}`}>
-                    {data && data["previous-block-hash"]}
+                    {data &&
+                      base32Encode(
+                        Buffer.from(data["previous-block-hash"], "base64"),
+                        undefined,
+                        { padding: false }
+                      )}
                   </Link>
                 )}
               </td>
@@ -214,10 +226,12 @@ const Block = () => {
               <td>Seed</td>
               <td>{loading ? <Load /> : data && data.seed}</td>
             </tr>
-            <tr>
-              <td>Transactions</td>
-              <td>{transactions ? transactions.length : 0}</td>
-            </tr>
+            {data && !transactions && (
+              <tr>
+                <td>Transactions</td>
+                <td>0</td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

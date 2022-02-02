@@ -1,0 +1,27 @@
+{
+  "close-rewards": 0,
+  "closing-amount": 0,
+  "confirmed-round": 15777817,
+  "fee": 1000,
+  "first-valid": 15777620,
+  "genesis-hash": "wGHE2Pwdvd7S12BL5FaOP20EGYesN73ktiC1qzkkit8=",
+  "id": "QZBJYPNMCA5AMT6BFFA7QHEFC4JPPRGAX5DIXIUFPKRGX5EQURCA",
+  "intra-round-offset": 22,
+  "keyreg-transaction": {
+    "non-participation": false,
+    "selection-participation-key": "xixzn7sYoZvgbACewWhjLsc8EDSiGHMwF9fVmB4w0NU=",
+    "vote-first-valid": 15777579,
+    "vote-key-dilution": 10000,
+    "vote-last-valid": 30000000,
+    "vote-participation-key": "SPwBel5HHnPdnuiG+TNDPdFshUXbnynSaMlVcHUjXk0="
+  },
+  "last-valid": 15778620,
+  "receiver-rewards": 0,
+  "round-time": 1629668268,
+  "sender": "WDMCJDC6KF5MGET5GJZN4IJTFL246EKGKWQAADWVAYACXY24PLVNYPYW6I",
+  "sender-rewards": 0,
+  "signature": {
+    "sig": "g7wtGRAH1k0cV2Ov+/44+TAx3uEegP+7R3mkx3MaHf5soLmAEYKJ0RVoa8lzerAc6jU2Z0QyajGKdJPdeMpiCQ=="
+  },
+  "tx-type": "keyreg"
+}

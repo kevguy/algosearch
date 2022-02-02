@@ -1,0 +1,43 @@
+{
+  "address": "ARCC3TMGVD7KXY7GYTE7U5XXUJXFRD2SXLAWRV57XJ6HWHRR37GNGNMPSY",
+  "amount": 118265216,
+  "amount-without-pending-rewards": 115558691,
+  "apps-total-schema": { "num-byte-slice": 0, "num-uint": 0 },
+  "assets": [
+    {
+      "amount": 12503738,
+      "asset-id": 163650,
+      "creator": "ARCC3TMGVD7KXY7GYTE7U5XXUJXFRD2SXLAWRV57XJ6HWHRR37GNGNMPSY",
+      "is-frozen": false
+    }
+  ],
+  "created-assets": [
+    {
+      "index": 163650,
+      "params": {
+        "clawback": "ARCC3TMGVD7KXY7GYTE7U5XXUJXFRD2SXLAWRV57XJ6HWHRR37GNGNMPSY",
+        "creator": "ARCC3TMGVD7KXY7GYTE7U5XXUJXFRD2SXLAWRV57XJ6HWHRR37GNGNMPSY",
+        "decimals": 6,
+        "freeze": "ARCC3TMGVD7KXY7GYTE7U5XXUJXFRD2SXLAWRV57XJ6HWHRR37GNGNMPSY",
+        "manager": "ARCC3TMGVD7KXY7GYTE7U5XXUJXFRD2SXLAWRV57XJ6HWHRR37GNGNMPSY",
+        "name": "Asia Reserve Currency Coin",
+        "reserve": "ARCC3TMGVD7KXY7GYTE7U5XXUJXFRD2SXLAWRV57XJ6HWHRR37GNGNMPSY",
+        "total": 88616203378510000,
+        "unit-name": "ARCC",
+        "url": "https://arcc.io"
+      }
+    }
+  ],
+  "participation": {
+    "selection-participation-key": "xixzn7sYoZvgbACewWhjLsc8EDSiGHMwF9fVmB4w0NU=",
+    "vote-first-valid": 15777579,
+    "vote-key-dilution": 10000,
+    "vote-last-valid": 30000000,
+    "vote-participation-key": "SPwBel5HHnPdnuiG+TNDPdFshUXbnynSaMlVcHUjXk0="
+  },
+  "pending-rewards": 2706525,
+  "reward-base": 216453,
+  "rewards": 12103550,
+  "round": 18380860,
+  "status": "Offline"
+}

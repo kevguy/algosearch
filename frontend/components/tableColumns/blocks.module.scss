@@ -1,4 +1,7 @@
 .tx-type-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xxs);
   line-height: 1;
   font-size: var(--font-size-xs);
 
@@ -7,11 +10,6 @@
     padding: var(--space-xxxs) var(--space-xxs);
     background: var(--blue-lightest);
     border: 1px solid var(--blue-lighter-2);
-    margin: 0 var(--space-xxxs);
-
-    @media screen and (max-width: 768px) {
-      margin: var(--space-xxxs);
-      white-space: pre;
-    }
+    white-space: nowrap;
   }
 }

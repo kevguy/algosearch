@@ -60,12 +60,6 @@ const Asset = () => {
       />
       <div className={styles["block-table"]}>
         <table cellSpacing="0">
-          <thead>
-            <tr>
-              <th>Identifier</th>
-              <th>Value</th>
-            </tr>
-          </thead>
           <tbody>
             <tr>
               <td>Asset ID</td>

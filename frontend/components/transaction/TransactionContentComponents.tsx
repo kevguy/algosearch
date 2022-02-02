@@ -12,29 +12,35 @@ import {
 
 export const getInnerTxReceiver = (innerTx: TransactionResponse) => {
   const innerTxReceiver =
-    innerTx["tx-type"] === TxType.AssetTransfer
+    innerTx["tx-type"] === TxType.AssetTransfer &&
+    innerTx["asset-transfer-transaction"]
       ? innerTx["asset-transfer-transaction"].receiver
       : innerTx["payment-transaction"]
       ? innerTx["payment-transaction"].receiver
-      : "N/A";
-  return (
+      : "";
+  return innerTxReceiver ? (
     <Link href={`/address/${innerTxReceiver}`}>
       {ellipseAddress(innerTxReceiver)}
     </Link>
+  ) : (
+    "N/A"
   );
 };
 
 export const getInnerTxCloseTo = (innerTx: TransactionResponse) => {
   const innerTxCloseTo =
-    innerTx["tx-type"] === TxType.AssetTransfer
+    innerTx["tx-type"] === TxType.AssetTransfer &&
+    innerTx["asset-transfer-transaction"]
       ? innerTx["asset-transfer-transaction"]["close-to"]
       : innerTx["payment-transaction"]
       ? innerTx["payment-transaction"]["close-remainder-to"]
-      : "N/A";
-  return (
+      : "";
+  return innerTxCloseTo ? (
     <Link href={`/address/${innerTxCloseTo}`}>
       {ellipseAddress(innerTxCloseTo)}
     </Link>
+  ) : (
+    "N/A"
   );
 };
 
@@ -86,26 +92,29 @@ export const getCloseAmount = (
   if (txType === TxType.AssetTransfer) {
     const axferTx = tx["asset-transfer-transaction"];
     return (
-      <div>
-        {axferTx &&
-          asaMap[axferTx["asset-id"]] &&
-          formatNumber(
-            Number(
-              formatAsaAmountWithDecimal(
-                BigInt(axferTx["close-amount"]),
-                asaMap[axferTx["asset-id"]].decimals
-              ) ?? 0
-            )
-          )}{" "}
-        {axferTx && asaMap[axferTx["asset-id"]] && (
-          <Link href={`/asset/${axferTx["asset-id"]}`}>
-            {asaMap[axferTx["asset-id"]].unitName}
-          </Link>
-        )}
-      </div>
+      axferTx &&
+      axferTx["close-amount"] && (
+        <div>
+          {axferTx &&
+            asaMap[axferTx["asset-id"]] &&
+            formatNumber(
+              Number(
+                formatAsaAmountWithDecimal(
+                  BigInt(axferTx["close-amount"]),
+                  asaMap[axferTx["asset-id"]].decimals
+                ) ?? 0
+              )
+            )}{" "}
+          {axferTx && asaMap[axferTx["asset-id"]] && (
+            <Link href={`/asset/${axferTx["asset-id"]}`}>
+              {asaMap[axferTx["asset-id"]].unitName}
+            </Link>
+          )}
+        </div>
+      )
     );
   }
-  if (tx["payment-transaction"]) {
+  if (tx["payment-transaction"] && tx["payment-transaction"]["close-amount"]) {
     return (
       <div>
         <AlgoIcon />{" "}

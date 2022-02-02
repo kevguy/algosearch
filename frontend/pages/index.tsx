@@ -10,7 +10,7 @@ import Statscard from "../components/statscard";
 import Load from "../components/tableloading";
 import statscardStyles from "../components/statscard/Statscard.module.scss";
 import styles from "./Home.module.scss";
-import { currencyFormatter, integerFormatter } from "../utils/stringUtils";
+import { formatNumber, integerFormatter } from "../utils/stringUtils";
 import TransactionTable from "../components/table/TransactionTable";
 import {
   getLatestBlocks,
@@ -79,7 +79,7 @@ const Home = () => {
       url: "https://metricsapi.algorand.foundation/v1/supply/circulating?unit=algo",
     })
       .then((response) => {
-        const _circulatingSupply = currencyFormatter.format(response.data);
+        const _circulatingSupply = formatNumber(response.data);
         return _circulatingSupply;
       })
       .catch((error) => {
@@ -128,7 +128,7 @@ const Home = () => {
           }
         />
         <Statscard
-          stat="Circulating supply"
+          stat="Circulating Supply"
           info={
             <a
               href="https://metricsapi.algorand.foundation/v1/supply/circulating?unit=algo"
@@ -156,7 +156,7 @@ const Home = () => {
         <Statscard
           stat="Algo Price"
           info="Powered by CoinGecko"
-          value={loading ? <Load /> : <>${price}</>}
+          value={loading ? <Load /> : <div>${price}</div>}
         />
       </div>
       <div className={styles["home-split"]}>

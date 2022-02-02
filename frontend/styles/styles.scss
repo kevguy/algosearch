@@ -1,3 +1,6 @@
+@import "highlight.scss";
+@import "font.scss";
+
 :root {
   --bg-blue-light: #f6fbff;
   --blue-darkest: #0a1753;
@@ -247,4 +250,9 @@ code {
   @media screen and (max-width: 600px) {
     max-width: 95vw;
   }
+}
+
+.vertical-layout {
+  display: flex;
+  flex-direction: column;
 }

@@ -65,7 +65,7 @@ export const transactionsColumns = (
         const tx = row.original;
         const isAsaTransfer = tx["tx-type"] === TxType.AssetTransfer;
         const _value = isAsaTransfer
-          ? tx["asset-transfer-transaction"].receiver
+          ? tx["asset-transfer-transaction"]!.receiver
           : tx["payment-transaction"]
           ? tx["payment-transaction"].receiver
           : null;

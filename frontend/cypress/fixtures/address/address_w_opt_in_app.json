@@ -1,0 +1,187 @@
+{
+  "address": "KX6S647W6BEN6XHEJVMXK3UYLVNGT2Q6PHQSF5AA2JSSDFSOX7R4MESXRY",
+  "amount": 1038027899543,
+  "amount-without-pending-rewards": 1038027899543,
+  "apps-local-state": [
+    {
+      "deleted": false,
+      "id": 552635992,
+      "key-value": [
+        {
+          "key": "aWx0",
+          "value": {
+            "bytes": "",
+            "type": 2,
+            "uint": 9929096535165
+          }
+        },
+        {
+          "key": "YTI=",
+          "value": {
+            "bytes": "",
+            "type": 2,
+            "uint": 0
+          }
+        },
+        {
+          "key": "YTE=",
+          "value": {
+            "bytes": "",
+            "type": 2,
+            "uint": 226701642
+          }
+        },
+        {
+          "key": "YzI=",
+          "value": {
+            "bytes": "",
+            "type": 2,
+            "uint": 104400244330110
+          }
+        },
+        {
+          "key": "bwAAAAAAAAAA",
+          "value": {
+            "bytes": "",
+            "type": 2,
+            "uint": 2311390960
+          }
+        },
+        {
+          "key": "dA==",
+          "value": {
+            "bytes": "",
+            "type": 2,
+            "uint": 1643616028
+          }
+        },
+        {
+          "key": "czE=",
+          "value": {
+            "bytes": "",
+            "type": 2,
+            "uint": 126741998026563
+          }
+        },
+        {
+          "key": "bwAAAAANgzFK",
+          "value": {
+            "bytes": "",
+            "type": 2,
+            "uint": 204814099663
+          }
+        },
+        {
+          "key": "YzE=",
+          "value": {
+            "bytes": "",
+            "type": 2,
+            "uint": 10188911881
+          }
+        },
+        {
+          "key": "czI=",
+          "value": {
+            "bytes": "",
+            "type": 2,
+            "uint": 1035715652583
+          }
+        },
+        {
+          "key": "cDE=",
+          "value": {
+            "bytes": "",
+            "type": 2,
+            "uint": 8171
+          }
+        },
+        {
+          "key": "cA==",
+          "value": {
+            "bytes": "",
+            "type": 2,
+            "uint": 26170869510
+          }
+        },
+        {
+          "key": "cDI=",
+          "value": {
+            "bytes": "",
+            "type": 2,
+            "uint": 122371422
+          }
+        },
+        {
+          "key": "bwAAAAAg8NpQ",
+          "value": {
+            "bytes": "",
+            "type": 2,
+            "uint": 33405880486
+          }
+        },
+        {
+          "key": "bHQ=",
+          "value": {
+            "bytes": "",
+            "type": 2,
+            "uint": 552655440
+          }
+        }
+      ],
+      "opted-in-at-round": 18726645,
+      "schema": {
+        "num-byte-slice": 0,
+        "num-uint": 16
+      }
+    }
+  ],
+  "apps-total-schema": {
+    "num-byte-slice": 0,
+    "num-uint": 16
+  },
+  "assets": [
+    {
+      "amount": 126946812126226,
+      "asset-id": 226701642,
+      "creator": "",
+      "deleted": false,
+      "is-frozen": false,
+      "opted-in-at-round": 18726645
+    },
+    {
+      "amount": 18446734178018898000,
+      "asset-id": 552655440,
+      "creator": "",
+      "deleted": false,
+      "is-frozen": false,
+      "opted-in-at-round": 18726645
+    }
+  ],
+  "created-assets": [
+    {
+      "created-at-round": 18726645,
+      "deleted": false,
+      "index": 552655440,
+      "params": {
+        "creator": "KX6S647W6BEN6XHEJVMXK3UYLVNGT2Q6PHQSF5AA2JSSDFSOX7R4MESXRY",
+        "decimals": 6,
+        "default-frozen": false,
+        "name": "TinymanPool1.1 YLDY-ALGO",
+        "name-b64": "VGlueW1hblBvb2wxLjEgWUxEWS1BTEdP",
+        "total": 18446744073709552000,
+        "unit-name": "TMPOOL11",
+        "unit-name-b64": "VE1QT09MMTE=",
+        "url": "https://tinyman.org",
+        "url-b64": "aHR0cHM6Ly90aW55bWFuLm9yZw=="
+      }
+    }
+  ],
+  "created-at-round": 18726645,
+  "deleted": false,
+  "pending-rewards": 0,
+  "reward-base": 217668,
+  "rewards": 415163185,
+  "round": 18960911,
+  "sig-type": "lsig",
+  "status": "Offline"
+}

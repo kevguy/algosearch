@@ -38,9 +38,9 @@ const TransactionTable = ({
       {transactions &&
         transactions.map((tx: TransactionResponse, index: number) => {
           const _receiver =
-            (tx["payment-transaction"] && tx["payment-transaction"].receiver) ||
-            tx.sender;
+            tx["payment-transaction"] && tx["payment-transaction"].receiver;
           let _asaInfo: IASAInfo =
+            tx["asset-transfer-transaction"] &&
             asaMap[tx["asset-transfer-transaction"]["asset-id"]];
 
           return (
@@ -48,7 +48,7 @@ const TransactionTable = ({
               <div className={styles["transaction-subrow"]}>
                 <div className={styles["tx-type-label-wrapper"]}>
                   <span className={styles["tx-type-label"]}>
-                    {getTxTypeName(tx["tx-type"])}
+                    {getTxTypeName(tx["tx-type"] as TxType)}
                   </span>
                 </div>
                 <span className={styles["transaction-id"]}>
@@ -71,14 +71,20 @@ const TransactionTable = ({
                   </span>
                   <span>
                     To:{" "}
-                    <Link href={`/address/${_receiver}`}>
-                      {ellipseAddress(_receiver)}
-                    </Link>
+                    {_receiver ? (
+                      <Link href={`/address/${_receiver}`}>
+                        {ellipseAddress(_receiver)}
+                      </Link>
+                    ) : (
+                      "N/A"
+                    )}
                   </span>
                 </div>
                 <div className={styles["transaction-info"]}>
                   <span>
-                    {tx["tx-type"] === TxType.AssetTransfer && _asaInfo ? (
+                    {tx["tx-type"] === TxType.AssetTransfer &&
+                    _asaInfo &&
+                    tx["asset-transfer-transaction"] ? (
                       `${formatNumber(
                         Number(
                           formatAsaAmountWithDecimal(

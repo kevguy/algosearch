@@ -4,13 +4,14 @@
   border: 1px solid var(--grey-lighter);
   border-radius: 8px;
   margin-bottom: var(--space-xxxl);
+  word-break: break-all;
   overflow: hidden;
 
   div {
     word-break: break-all;
   }
 
-  table {
+  > table {
     min-width: 100%;
     table-layout: fixed;
   }
@@ -49,19 +50,7 @@
   margin: 0 0 var(--space-s);
 }
 
-.block-table table > thead {
-  tr {
-    background-color: #f8fafd;
-    font-size: var(--font-size-xs);
-    text-transform: uppercase;
-    color: var(--blue-dark);
-  }
-  @media screen and (max-width: 768px) {
-    display: none;
-  }
-}
-
-.block-table table > tbody > tr {
+.block-table > table > tbody > tr {
   @media screen and (max-width: 768px) {
     line-height: 1.3;
     padding: var(--space-s) 0;
@@ -69,15 +58,18 @@
   }
 }
 
-.block-table table > tbody > tr > td {
+.block-table > table > tbody > tr > td {
   padding: var(--space-s);
   border-bottom: 1px solid rgb(231, 234, 243);
   &:first-child {
-    min-width: 220px;
-    width: 220px;
+    min-width: 240px;
+    width: 240px;
+    color: var(--blue-dark);
     font-weight: 500;
+    background-color: #f8fafd;
     @media screen and (max-width: 768px) {
       width: 100%;
+      background-color: transparent;
     }
   }
 
@@ -93,7 +85,7 @@
   }
 }
 
-.block-table table > tbody > tr:last-child > td {
+.block-table > table > tbody > tr:last-child > td {
   border-bottom: none;
 }
 
@@ -103,4 +95,8 @@
 
 .table-header ~ .table-wrapper {
   margin-top: var(--space-s);
+}
+
+.table-group {
+  margin-top: var(--space-xxxl);
 }

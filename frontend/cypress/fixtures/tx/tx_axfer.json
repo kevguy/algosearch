@@ -1,0 +1,74 @@
+{
+  "application-transaction": {
+    "application-id": 0,
+    "global-state-schema": { "num-byte-slice": 0, "num-uint": 0 },
+    "local-state-schema": { "num-byte-slice": 0, "num-uint": 0 }
+  },
+  "asset-config-transaction": {
+    "params": { "creator": "", "decimals": 0, "total": 0 }
+  },
+  "asset-freeze-transaction": {
+    "address": "",
+    "asset-id": 0,
+    "new-freeze-status": false
+  },
+  "asset-transfer-transaction": {
+    "amount": 888888888000000,
+    "asset-id": 163650,
+    "close-to": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ",
+    "receiver": "DBOVYJH5JCRIJ2UZIMY4QRSWXHHBTOOGUYQS7654WSJXAXQ2TUMWFVB2G4",
+    "sender": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ"
+  },
+  "auth-addr": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ",
+  "confirmed-round": 4259852,
+  "fee": 1000,
+  "first-valid": 4259526,
+  "genesis-hash": "wGHE2Pwdvd7S12BL5FaOP20EGYesN73ktiC1qzkkit8=",
+  "genesis-id": "mainnet-v1.0",
+  "group": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+  "id": "5FKLBBCQPBGAT4QWD6D4LANJ7GIXD2AVPK2W4PJBW77Q4U3LM5KQ",
+  "keyreg-transaction": {},
+  "last-valid": 4260526,
+  "lease": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+  "payment-transaction": { "amount": 0, "receiver": "" },
+  "rekey-to": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ",
+  "round-time": 1578944469,
+  "sender": "ARCC3TMGVD7KXY7GYTE7U5XXUJXFRD2SXLAWRV57XJ6HWHRR37GNGNMPSY",
+  "sender-rewards": 195837,
+  "signature": {
+    "logicsig": { "logic": null, "multisig-signature": {} },
+    "multisig": {
+      "subsignature": [
+        {
+          "public-key": "QFkQCMaKY5Xu7aqqLbQxj3CTSB0s3aPErGrtuoxzBcs=",
+          "signature": "WDA4IDLzdZ6JfxfhzLx4uQ05cNrP7P4xmr8G9fjkWOX8y8L/e2AN2DJp2fs9HDQZnyEDNmjONaxfHyYYqMKSBA=="
+        },
+        {
+          "public-key": "QFkSe+64xxYMj6Bhh7rHSwdpU4FzcELCJde9RKTFCSs=",
+          "signature": "NmWo2UDn0FxgRbtp8wzHk70/WVOuquqhoRk5nZk3O31RJ4ErY8QedXdpnKeuGBSA+YgkYeSzwoGtPFaEhC7aDw=="
+        },
+        {
+          "public-key": "QFkReJUmVShqX0geki9K/cotQvISvJ5e1FLfjsAcFfM=",
+          "signature": "IwEUI2ZtFAV92dYNR8qR8gYbapXbTj05X4FsLcC17lDmCipQD75g7SSGsIPLrTrqd/SMM6CQSJlPNkYSioqkDA=="
+        },
+        {
+          "public-key": "QFkTjbukmmhUerhB1BCnpLWYafAPKbWxwF5C9ynyOrQ=",
+          "signature": "20wN81aXwo05mVlGnVYmeOKd91Ou/JrKWyJUBHlxAboDA+DvJXvL2nmkO+GN5BtmCMmf65lo43sNJQvJdnKZAw=="
+        },
+        { "public-key": "QFkYsAzH2FeS3QUwP2wWNi5ODdyz5TrX/jZbN5MYSS4=" },
+        { "public-key": "QFkWXRnuxJn7H+Yvj2Zilwp928HynyL6AwPS9boAxBo=" },
+        { "public-key": "QFkajunPV1rSnPfsvfNszwhpFfHy2oenAdovGzyxstk=" },
+        { "public-key": "QFkafg0VM59LsIs+qysb56I0qgBpvPRzE0hvin903X8=" },
+        {
+          "public-key": "QFkSRXkmcoluO8H3B4BpWXOXFskM19p5U2tinUW4LTA=",
+          "signature": "mbc0BYsEvhxPaFTwLOr6koy4zHzgtNfkmmT+W6BMfxS5BLBb+AExnEaEnDsT9NGmpbGHillTfNIcxDDM5WNtCA=="
+        },
+        { "public-key": "QFkYJBVkrxmk+R8imQnoxjq+Zr9yuazAm5TXT7Fg/eg=" },
+        { "public-key": "QFkXM3Ak2ckEzr6JFxNaAsKTdBXP5wqT/E1XatGBNA0=" }
+      ],
+      "threshold": 5,
+      "version": 1
+    }
+  },
+  "tx-type": "axfer"
+}
