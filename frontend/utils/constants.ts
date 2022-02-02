@@ -17,9 +17,21 @@ const wsProtocol = siteName.split("://")[0] === "https" ? "wss://" : "ws://";
 export const socketEndpoint = process.env.NEXT_PUBLIC_API_URL.toString()
   .replace(/.+\/{2}/, wsProtocol)
   .concat("/ws");
-export const algodProtocol = process.env.NEXT_PUBLIC_ALGOD_PROTOCOL;
-export const algodAddr = process.env.NEXT_PUBLIC_ALGOD_ADDR;
-export const algodToken = process.env.NEXT_PUBLIC_ALGOD_TOKEN;
+export const algodProtocol =
+  !process.env.NEXT_PUBLIC_ALGOD_PROTOCOL ||
+  process.env.NEXT_PUBLIC_ALGOD_PROTOCOL.indexOf("http") === -1
+    ? undefined
+    : process.env.NEXT_PUBLIC_ALGOD_PROTOCOL;
+export const algodAddr =
+  process.env.NEXT_PUBLIC_ALGOD_ADDR &&
+  process.env.NEXT_PUBLIC_ALGOD_ADDR !== "APP_NEXT_PUBLIC_ALGOD_ADDR"
+    ? process.env.NEXT_PUBLIC_ALGOD_ADDR
+    : undefined;
+export const algodToken =
+  process.env.NEXT_PUBLIC_ALGOD_TOKEN &&
+  process.env.NEXT_PUBLIC_ALGOD_TOKEN !== "APP_NEXT_PUBLIC_ALGOD_TOKEN"
+    ? process.env.NEXT_PUBLIC_ALGOD_TOKEN
+    : undefined;
 export const isLocal =
   algodAddr &&
   (algodAddr.indexOf("0.0.0.0") > -1 ||
