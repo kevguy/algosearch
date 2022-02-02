@@ -240,7 +240,7 @@ yarn start
         <p>Golang, Linkin Park, South Park, and Red Bull</p>
       </td>
       <td align="center" width="33.3%" valign="top">
-        <img width="150" height="150" src="https://media.giphy.com/media/OXY1YM1QSKt23KAg1x/giphy.gif">
+        <img width="150" height="150" src="https://github.com/fionnachan.png?s=150">
         <br>
         <a href="https://github.com/fionnachan">Fionna Chan</a>
         <p>Frontend & UI/UX Design</p>
