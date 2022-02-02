@@ -12,8 +12,8 @@ declare global {
 }
 
 // @ts-ignore
-const wsProtocol = process.env.NODE_ENV === "production" ? "wss://" : "ws://";
 export const siteName = process.env.NEXT_PUBLIC_API_URL;
+const wsProtocol = siteName.split("://")[0] === "https" ? "wss://" : "ws://";
 export const socketEndpoint = process.env.NEXT_PUBLIC_API_URL.toString()
   .replace(/.+\/{2}/, wsProtocol)
   .concat("/ws");

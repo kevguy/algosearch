@@ -15,9 +15,9 @@ import {
   ApplicationStateSchema,
 } from "../types/algosdkTypes";
 
-const algod =
-  algodToken &&
-  new algosdk.Algodv2(algodToken, `${algodProtocol}://${algodAddr}`, "4001");
+const algod = algodToken
+  ? new algosdk.Algodv2(algodToken, `${algodProtocol}://${algodAddr}`, "4001")
+  : undefined;
 
 export const apiGetSupply = async () => {
   try {
