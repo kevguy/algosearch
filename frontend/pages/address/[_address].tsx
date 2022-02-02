@@ -188,6 +188,9 @@ const Address = () => {
         query: Object.assign({}, router.query, { page: "1" }),
       });
     }
+    if (!!address && !!_address && address !== _address.toString()) {
+      router.reload();
+    }
     setLoading(false);
     setTableLoading(false);
     setAddress(_address.toString());

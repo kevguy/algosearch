@@ -107,6 +107,9 @@ const Block = () => {
         query: Object.assign({}, router.query, { page: "1" }),
       });
     }
+    if (!!blockNum && !!_block && blockNum !== Number(_block)) {
+      router.reload();
+    }
     getBlock(Number(_block));
     setBlockNum(Number(_block));
   }, [_block, getBlock, page, router]);
