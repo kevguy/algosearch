@@ -53,6 +53,9 @@ docker run \
   -e ALGOSEARCH_ALGOD_TOKEN=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa \
   -e ALGOSEARCH_ZIPKIN_REPORTER_URI=http://234.567.89.0:9411/api/v2/spans \
   -e NEXT_PUBLIC_API_URL=http://0.0.0.0:5000 \
+  -e NEXT_PUBLIC_ALGOD_PROTOCOL=http \
+  -e NEXT_PUBLIC_ALGOD_ADDR=0.0.0.0:4001 \
+  -e NEXT_PUBLIC_ALGOD_TOKEN=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa \
   -e METRICS_COLLECT_FROM=http://0.0.0.0:4000/debug/vars \
   algosearch:1.1
 ```
@@ -60,6 +63,8 @@ docker run \
 Please modify `NEXT_PUBLIC_API_URL` only when you are trying to connect to another backend.
 
 Please modify `METRICS_COLLECT_FROM` only when you are trying to collect metrics from another RESTful API.
+
+`NEXT_PUBLIC_ALGOD_PROTOCOL`, `NEXT_PUBLIC_ALGOD_ADDR`, and `NEXT_PUBLIC_ALGOD_TOKEN` are needed for disassembly of LogicSig, approval program, and clear state program on the transaction page. The feature is only available when `NEXT_PUBLIC_ALGOD_ADDR` contains `0.0.0.0` or `127.0.0.1` or `localhost`.
 
 - Frontend: http://localhost:3000
 - RESTful API: http://localhost:5000
@@ -235,7 +240,7 @@ yarn start
         <p>Golang, Linkin Park, South Park, and Red Bull</p>
       </td>
       <td align="center" width="33.3%" valign="top">
-        <img width="150" height="150" src="https://github.com/fionnachan.png?s=150">
+        <img width="150" height="150" src="https://media.giphy.com/media/OXY1YM1QSKt23KAg1x/giphy.gif">
         <br>
         <a href="https://github.com/fionnachan">Fionna Chan</a>
         <p>Frontend & UI/UX Design</p>
