@@ -58,15 +58,18 @@
   padding: var(--space-xxxxs) var(--space-xxs);
   background: var(--blue-lightest);
   border: 1px solid var(--blue-lighter-2);
+  word-break: keep-all;
+  white-space: pre;
   @media screen and (max-width: 768px) {
   }
 }
 
 .txs-wrapper {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  column-gap: var(--space-s);
   flex: 1 1 auto;
+  flex-wrap: wrap;
   margin-left: var(--space-l);
 
   @media screen and (max-width: 768px) {

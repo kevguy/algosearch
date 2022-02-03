@@ -24,11 +24,11 @@ const BlockTable = ({ blocks }: { blocks: IBlockResponse[] }) => {
                 </span>
                 <span className={styles.proposer}>
                   Proposer:{" "}
-                  {
+                  {block.proposer && (
                     <Link href={`/address/${block.proposer}`}>
                       {block.proposer}
                     </Link>
-                  }
+                  )}
                 </span>
                 <span className={styles.time}>
                   <TimeAgo
