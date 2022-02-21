@@ -114,7 +114,7 @@ func (p *BlockSynchronizer) update() {
 	lastSyncedBlockNum, err := p.blockCore.GetLastSyncedRoundNumber(context.Background())
 	if err != nil {
 		p.log.Errorw("blocksynchronizer", "status", "get last synced round number", "ERROR", err)
-		lastSyncedBlockNum = -1
+		//lastSyncedBlockNum = -1
 	}
 	// 111983 is amazing, it has a a ton of transactions
 	//lastSyncedBlockNum = 111980
