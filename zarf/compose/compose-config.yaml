@@ -22,7 +22,7 @@ services:
 
   algosearch-frontend:
     environment:
-      NEXT_PUBLIC_API_URL: "algosearch-backend:5000"
+      NEXT_PUBLIC_API_URL: "http://localhost:5000"
       NEXT_PUBLIC_ALGOD_PROTOCOL: "http"
       NEXT_PUBLIC_ALGOD_ADDR: "234.567.89.0:4001"
       NEXT_PUBLIC_ALGOD_TOKEN: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
