@@ -31,7 +31,7 @@ FROM alpine:3.15
 
 # https://stackoverflow.com/questions/59094236/error-unknown-time-zone-america-los-angeles-in-time-loadlocation
 # https://stackoverflow.com/questions/59044243/timezones-failing-to-load-in-go-1-13
-RUN apk add --no-cache tzdata
+RUN apk add --no-cache tzdata curl
 
 ARG BUILD_DATE
 ARG BUILD_REF

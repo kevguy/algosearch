@@ -153,23 +153,29 @@ VERSION := 1.1
 
 all: algosearch-backend algosearch-metrics algosearch-frontend
 
-deploy-to-docker-hub: algosearch algosearch-latest algosearch-backend algosearch-backend-latest algosearch-frontend algosearch-frontend-latest algosearch-metrics algosearch-metrics-latest
-	docker tag algosearch:latest kevguy/algosearch:latest
-	docker tag algosearch:$(VERSION) kevguy/algosearch:$(VERSION)
+# deploy-to-docker-hub: algosearch algosearch-latest algosearch-backend algosearch-backend-latest algosearch-frontend algosearch-frontend-latest algosearch-metrics algosearch-metrics-latest
+# 	docker tag algosearch:latest kevguy/algosearch:latest
+# 	docker tag algosearch:$(VERSION) kevguy/algosearch:$(VERSION)
+# 	docker tag algosearch-backend:latest kevguy/algosearch-backend:latest
+# 	docker tag algosearch-backend:$(VERSION) kevguy/algosearch-backend:$(VERSION)
+# 	docker tag algosearch-metrics:latest kevguy/algosearch-metrics:latest
+# 	docker tag algosearch-metrics:$(VERSION) kevguy/algosearch-metrics:$(VERSION)
+# 	docker tag algosearch-frontend:latest kevguy/algosearch-frontend:latest
+# 	docker tag algosearch-frontend:$(VERSION) kevguy/algosearch-frontend:$(VERSION)
+# 	docker push kevguy/algosearch:latest
+# 	docker push kevguy/algosearch:$(VERSION)
+# 	docker push kevguy/algosearch-backend:latest
+# 	docker push kevguy/algosearch-backend:$(VERSION)
+# 	docker push kevguy/algosearch-metrics:latest
+# 	docker push kevguy/algosearch-metrics:$(VERSION)
+# 	docker push kevguy/algosearch-frontend:latest
+# 	docker push kevguy/algosearch-frontend:$(VERSION)
+
+deploy-to-docker-hub:
 	docker tag algosearch-backend:latest kevguy/algosearch-backend:latest
 	docker tag algosearch-backend:$(VERSION) kevguy/algosearch-backend:$(VERSION)
-	docker tag algosearch-metrics:latest kevguy/algosearch-metrics:latest
-	docker tag algosearch-metrics:$(VERSION) kevguy/algosearch-metrics:$(VERSION)
-	docker tag algosearch-frontend:latest kevguy/algosearch-frontend:latest
-	docker tag algosearch-frontend:$(VERSION) kevguy/algosearch-frontend:$(VERSION)
-	docker push kevguy/algosearch:latest
-	docker push kevguy/algosearch:$(VERSION)
 	docker push kevguy/algosearch-backend:latest
 	docker push kevguy/algosearch-backend:$(VERSION)
-	docker push kevguy/algosearch-metrics:latest
-	docker push kevguy/algosearch-metrics:$(VERSION)
-	docker push kevguy/algosearch-frontend:latest
-	docker push kevguy/algosearch-frontend:$(VERSION)
 
 algosearch:
 	docker build \

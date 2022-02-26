@@ -6,15 +6,16 @@ services:
       ALGOSEARCH_WEB_ENABLE_SYNC: "true"
       ALGOSEARCH_WEB_SYNC_INTERNAL: "2s"
       ALGOSEARCH_ZIPKIN_REPORTER_URI: "http://zipkin:9411/api/v2/spans"
-      ALGOSEARCH_COUCH_DB_INIT: "false"
-      ALGOSEARCH_COUCH_DB_MIGRATE: "false"
+      ALGOSEARCH_COUCH_DB_INIT: "true"
+      ALGOSEARCH_COUCH_DB_MIGRATE: "true"
       # Edit these accordingly
       ALGOSEARCH_COUCH_DB_PROTOCOL: "http"
-      ALGOSEARCH_COUCH_DB_HOST: "234.567.89.0:5984"
+      ALGOSEARCH_COUCH_DB_HOST: "algosearch-db:5984"
       ALGOSEARCH_COUCH_DB_USER: "algorand"
       ALGOSEARCH_COUCH_DB_PASSWORD: "algorand"
+      # ALGOSEARCH_COUCH_DB_NAME: "algosearch"
       ALGOSEARCH_ALGOD_PROTOCOL: "http"
-      ALGOSEARCH_ALGOD_ADDR: "234.567.89.0:4001"
+      ALGOSEARCH_ALGOD_ADDR: "algod:4001"
       ALGOSEARCH_ALGOD_TOKEN: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
       # Optional
       #ALGOSEARCH_INDEXER_ADDR: "http://indexer:8980"
@@ -24,7 +25,7 @@ services:
     environment:
       NEXT_PUBLIC_API_URL: "http://localhost:5000"
       NEXT_PUBLIC_ALGOD_PROTOCOL: "http"
-      NEXT_PUBLIC_ALGOD_ADDR: "234.567.89.0:4001"
+      NEXT_PUBLIC_ALGOD_ADDR: "localhost:4001"
       NEXT_PUBLIC_ALGOD_TOKEN: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 
   algosearch-metrics:

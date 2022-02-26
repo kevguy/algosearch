@@ -2,6 +2,7 @@
 
 if [ "$ALGOSEARCH_COUCH_DB_INIT" = "true" ];
 then
+  sleep 10s
   echo "Initializing Couch DB Database..."
   # https://github.com/apache/couchdb-docker/issues/55
   curl -X PUT "${ALGOSEARCH_COUCH_DB_PROTOCOL}://${ALGOSEARCH_COUCH_DB_USER}:${ALGOSEARCH_COUCH_DB_PASSWORD}@${ALGOSEARCH_COUCH_DB_HOST}/_users" && \
