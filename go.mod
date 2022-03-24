@@ -3,7 +3,7 @@ module github.com/kevguy/algosearch
 go 1.17
 
 require (
-	github.com/algorand/go-algorand-sdk v1.9.2
+	github.com/algorand/go-algorand-sdk v1.14.0
 	github.com/ardanlabs/conf/v2 v2.2.0
 	github.com/ardanlabs/darwin v1.3.0
 	github.com/dimfeld/httptreemux/v5 v5.4.0
@@ -32,7 +32,7 @@ require (
 )
 
 require (
-	github.com/algorand/go-codec/codec v1.1.7 // indirect
+	github.com/algorand/go-codec/codec v1.1.8 // indirect
 	github.com/felixge/httpsnoop v1.0.2 // indirect
 	github.com/go-logr/logr v1.2.1 // indirect
 	github.com/go-logr/stdr v1.2.0 // indirect

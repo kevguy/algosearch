@@ -29,12 +29,18 @@ type SearchAccountsParams struct {
 	// will be used.
 	CurrencyLessThan uint64 `url:"currency-less-than,omitempty"`
 
+	// Exclude exclude additional items such as asset holdings, application local data
+	// stored for this account, asset parameters created by this account, and
+	// application parameters created by this account.
+	Exclude []string `url:"exclude,omitempty,comma"`
+
 	// IncludeAll include all items including closed accounts, deleted applications,
 	// destroyed assets, opted-out asset holdings, and closed-out application
 	// localstates.
 	IncludeAll bool `url:"include-all,omitempty"`
 
-	// Limit maximum number of results to return.
+	// Limit maximum number of results to return. There could be additional pages even
+	// if the limit is not reached.
 	Limit uint64 `url:"limit,omitempty"`
 
 	// NextToken the next page of results. Use the next token provided by the previous
@@ -87,6 +93,14 @@ func (s *SearchAccounts) CurrencyLessThan(CurrencyLessThan uint64) *SearchAccoun
 	return s
 }
 
+// Exclude exclude additional items such as asset holdings, application local data
+// stored for this account, asset parameters created by this account, and
+// application parameters created by this account.
+func (s *SearchAccounts) Exclude(Exclude []string) *SearchAccounts {
+	s.p.Exclude = Exclude
+	return s
+}
+
 // IncludeAll include all items including closed accounts, deleted applications,
 // destroyed assets, opted-out asset holdings, and closed-out application
 // localstates.
@@ -95,7 +109,8 @@ func (s *SearchAccounts) IncludeAll(IncludeAll bool) *SearchAccounts {
 	return s
 }
 
-// Limit maximum number of results to return.
+// Limit maximum number of results to return. There could be additional pages even
+// if the limit is not reached.
 func (s *SearchAccounts) Limit(Limit uint64) *SearchAccounts {
 	s.p.Limit = Limit
 	return s

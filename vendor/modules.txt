@@ -1,5 +1,5 @@
-# github.com/algorand/go-algorand-sdk v1.9.2
-## explicit; go 1.13
+# github.com/algorand/go-algorand-sdk v1.14.0
+## explicit; go 1.16
 github.com/algorand/go-algorand-sdk/client/v2/algod
 github.com/algorand/go-algorand-sdk/client/v2/common
 github.com/algorand/go-algorand-sdk/client/v2/common/models
@@ -8,8 +8,8 @@ github.com/algorand/go-algorand-sdk/crypto
 github.com/algorand/go-algorand-sdk/encoding/msgpack
 github.com/algorand/go-algorand-sdk/logic
 github.com/algorand/go-algorand-sdk/types
-# github.com/algorand/go-codec/codec v1.1.7
-## explicit
+# github.com/algorand/go-codec/codec v1.1.8
+## explicit; go 1.16
 github.com/algorand/go-codec/codec
 # github.com/ardanlabs/conf/v2 v2.2.0
 ## explicit; go 1.13
