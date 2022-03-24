@@ -76,15 +76,15 @@ func run(log *zap.SugaredLogger) error {
 	cfg := struct {
 		conf.Version
 		Web struct {
-			DeployProtocol	string		  `conf:"default:http,help:the protocol the deployment of this service will be using"`
-			DeployHost		string		  `conf:"default:0.0.0.0:5000,help:the endpoint this service is deployed to"`
+			DeployProtocol  string        `conf:"default:http,help:the protocol the deployment of this service will be using"`
+			DeployHost      string        `conf:"default:0.0.0.0:5000,help:the endpoint this service is deployed to"`
 			APIHost         string        `conf:"default:0.0.0.0:5000"`
 			DebugHost       string        `conf:"default:0.0.0.0:4000"`
 			ReadTimeout     time.Duration `conf:"default:5s"`
 			WriteTimeout    time.Duration `conf:"default:10s"`
 			IdleTimeout     time.Duration `conf:"default:120s"`
 			ShutdownTimeout time.Duration `conf:"default:20s"`
-			EnableSync		bool		  `conf:"default:true,help:specifies if the API should auto-sync new blocks"`
+			EnableSync      bool          `conf:"default:true,help:specifies if the API should auto-sync new blocks"`
 			SyncInternal    time.Duration `conf:"default:3s"`
 		}
 		Auth struct {
@@ -92,21 +92,21 @@ func run(log *zap.SugaredLogger) error {
 			ActiveKID  string `conf:"default:54bb2165-71e1-41a6-af3e-7da4a0e1e2c1"`
 		}
 		CouchDB struct {
-			Protocol   string `conf:"default:http"`
-			User       string `conf:"default:algorand"`
-			Password   string `conf:"default:algorand,mask"`
-			Host       string `conf:"default:localhost:5984"`
-			Name	   string `conf:"default:algo_global"`
+			Protocol string `conf:"default:http"`
+			User     string `conf:"default:algorand"`
+			Password string `conf:"default:algorand,mask"`
+			Host     string `conf:"default:localhost:5984"`
+			Name     string `conf:"default:algo_global"`
 		}
 		Algorand struct {
-			AlgodProtocol	string `conf:"default:http,env:ALGOD_PROTOCOL"`
-			AlgodAddr		string `conf:"default:localhost:4001,env:ALGOD_ADDR"`
-			AlgodToken		string `conf:"default:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,env:ALGOD_TOKEN"`
-			KmdAddr			string `conf:""`
-			KmdToken		string `conf:""`
+			AlgodProtocol   string `conf:"default:http,env:ALGOD_PROTOCOL"`
+			AlgodAddr       string `conf:"default:localhost:4001,env:ALGOD_ADDR"`
+			AlgodToken      string `conf:"default:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,env:ALGOD_TOKEN"`
+			KmdAddr         string `conf:""`
+			KmdToken        string `conf:""`
 			IndexerProtocol string `conf:"env:INDEXER_PROTOCOL"`
-			IndexerAddr 	string `conf:"env:INDEXER_ADDR"`
-			IndexerToken	string `conf:"default:empty,env:INDEXER_TOKEN"`
+			IndexerAddr     string `conf:"env:INDEXER_ADDR"`
+			IndexerToken    string `conf:"default:empty,env:INDEXER_TOKEN"`
 		}
 		Zipkin struct {
 			ReporterURI string  `conf:"default:http://localhost:9411/api/v2/spans"`
@@ -115,8 +115,8 @@ func run(log *zap.SugaredLogger) error {
 		}
 	}{
 		Version: conf.Version{
-			Build:  build,
-			Desc: "copyright information here",
+			Build: build,
+			Desc:  "copyright information here",
 		},
 	}
 
@@ -168,7 +168,6 @@ func run(log *zap.SugaredLogger) error {
 		return fmt.Errorf("constructing auth: %w", err)
 	}
 
-
 	// =========================================================================
 	// Start Tracing Support
 
@@ -187,19 +186,19 @@ func run(log *zap.SugaredLogger) error {
 	// =========================================================================
 	// Start Algorand Algod Client
 
-	log.Infow("startup", "status", "initializing algorand algod client support", "host", cfg.Algorand.AlgodProtocol + "://" + cfg.Algorand.AlgodAddr)
+	log.Infow("startup", "status", "initializing algorand algod client support", "host", cfg.Algorand.AlgodProtocol+"://"+cfg.Algorand.AlgodAddr)
 
 	algodClient, err := algod.Open(algod.Config{
-		AlgodAddr: cfg.Algorand.AlgodProtocol + "://" + cfg.Algorand.AlgodAddr,
+		AlgodAddr:  cfg.Algorand.AlgodProtocol + "://" + cfg.Algorand.AlgodAddr,
 		AlgodToken: cfg.Algorand.AlgodToken,
-		KmdAddr: cfg.Algorand.KmdAddr,
-		KmdToken: cfg.Algorand.KmdToken,
+		KmdAddr:    cfg.Algorand.KmdAddr,
+		KmdToken:   cfg.Algorand.KmdToken,
 	})
 	if err != nil {
 		return fmt.Errorf("connecting to algorand node: %w", err)
 	}
 	defer func() {
-		log.Infow("shutdown", "status", "stopping algorand algod client support", "host", cfg.Algorand.AlgodProtocol + "://" + cfg.Algorand.AlgodAddr)
+		log.Infow("shutdown", "status", "stopping algorand algod client support", "host", cfg.Algorand.AlgodProtocol+"://"+cfg.Algorand.AlgodAddr)
 		//algodClient.Close()
 	}()
 
@@ -208,17 +207,17 @@ func run(log *zap.SugaredLogger) error {
 
 	var indexerClient *_indexer.Client = nil
 	if cfg.Algorand.IndexerAddr != "" {
-		log.Infow("startup", "status", "initializing algorand indexer client support", "host", cfg.Algorand.IndexerProtocol + "://" + cfg.Algorand.IndexerAddr)
+		log.Infow("startup", "status", "initializing algorand indexer client support", "host", cfg.Algorand.IndexerProtocol+"://"+cfg.Algorand.IndexerAddr)
 
 		indexerClient, err = indexer.Open(indexer.Config{
-			IndexerAddr: cfg.Algorand.IndexerProtocol + "://" + cfg.Algorand.IndexerAddr,
+			IndexerAddr:  cfg.Algorand.IndexerProtocol + "://" + cfg.Algorand.IndexerAddr,
 			IndexerToken: cfg.Algorand.IndexerToken,
 		})
 		if err != nil {
 			return fmt.Errorf("connecting to algorand indexer: %w", err)
 		}
 		defer func() {
-			log.Infow("shutdown", "status", "stopping algorand indexer client support", "host", cfg.Algorand.IndexerProtocol + "://" + cfg.Algorand.IndexerAddr)
+			log.Infow("shutdown", "status", "stopping algorand indexer client support", "host", cfg.Algorand.IndexerProtocol+"://"+cfg.Algorand.IndexerAddr)
 			//algodClient.Close()
 		}()
 	}
@@ -305,7 +304,6 @@ func run(log *zap.SugaredLogger) error {
 		log.Infow("startup", "status", "api router started", "host", api.Addr)
 		serverErrors <- api.ListenAndServe()
 	}()
-
 
 	if cfg.Web.EnableSync {
 		// Start the publisher to collect/publish metrics.

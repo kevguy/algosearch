@@ -1,0 +1,6 @@
+# Create transaction
+./sandbox goal clerk send -f ADDRESS -t ADDRESS -a 0
+
+# Create asset
+./sandbox goal asset create --assetmetadatab64 b3Jp --creator ADDRESS --total 100 --decimals 3
+./sandbox goal asset create --assetmetadatab64 b3Jp --creator UQZJ4VOBN46X3FYXDP4ST3PJ5YQ2R33C3TEMBYXQR6FJ4LD3UTMOXUL2MU --total 100 --decimals 3

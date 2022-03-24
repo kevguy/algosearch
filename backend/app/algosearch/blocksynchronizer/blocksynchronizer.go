@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/algorand/go-algorand-sdk/client/v2/algod"
 	"github.com/algorand/go-algorand-sdk/client/v2/common/models"
+	"github.com/algorand/go-algorand-sdk/encoding/msgpack"
 	"github.com/kevguy/algosearch/backend/business/core/account"
 	algod2 "github.com/kevguy/algosearch/backend/business/core/algod"
 	"github.com/kevguy/algosearch/backend/business/core/application"
@@ -35,20 +36,20 @@ type BlockSynchronizer struct {
 	accountCore     *account.Core
 	assetCore       *asset.Core
 	appCore         *application.Core
-	algodCore 		*algod2.Core
-	hub				*websocket.Hub
-	dbName			string
+	algodCore       *algod2.Core
+	hub             *websocket.Hub
+	dbName          string
 }
 
 // New creates a BlockSynchronizer for retrieving block data and saving it to CouchDB.
 func New(log *zap.SugaredLogger, interval time.Duration, algodClient *algod.Client, cfg couchdb.Config, hub *websocket.Hub, dbName string) (*BlockSynchronizer, error) {
 	p := BlockSynchronizer{
-		log:       log,
-		timer:     time.NewTimer(interval),
-		shutdown:  make(chan struct{}),
+		log:         log,
+		timer:       time.NewTimer(interval),
+		shutdown:    make(chan struct{}),
 		algodClient: algodClient,
-		hub: 		hub,
-		dbName: dbName,
+		hub:         hub,
+		dbName:      dbName,
 	}
 
 	db, err := couchdb.Open(cfg)
@@ -128,7 +129,7 @@ func (p *BlockSynchronizer) update() {
 	p.log.Infow("Updating latest round here", "last synced round", lastSyncedBlockNum)
 
 	if (currentRoundNum - lastSyncedBlockNum) > 1 {
-		p.log.Infof("Trying to get round number: %d\n", lastSyncedBlockNum + 1)
+		p.log.Infof("Trying to get round number: %d\n", lastSyncedBlockNum+1)
 
 		var newBlockPayload = WsMessage{
 			Block:           models.Block{},
@@ -141,21 +142,21 @@ func (p *BlockSynchronizer) update() {
 		getRoundSuccessful := false
 		var rawBlock []byte
 		for !getRoundSuccessful {
-			rawBlock, err = p.algodCore.GetRoundInRawBytes(context.Background(), lastSyncedBlockNum + 1)
+			rawBlock, err = p.algodCore.GetRoundInRawBytes(context.Background(), lastSyncedBlockNum+1)
 			if err != nil {
 				p.log.Errorw("blocksynchronizer", "status", "get round in raw bytes", "ERROR", err)
 				// Assuming it's not just block data not available, jump to the next round
 				lastSyncedBlockNum += 1
 			} else {
 				getRoundSuccessful = true
-				p.log.Infof("Block data for round #%d retrieved.", lastSyncedBlockNum + 1)
+				p.log.Infof("Block data for round #%d retrieved.", lastSyncedBlockNum+1)
 				//app.PrintBlockInfoFromRawBytes(rawBlock)
 			}
 		}
 
 		//fmt.Printf("raw block: %v\n", rawBlock)
 		//fmt.Printf("last synced num: %d\n", lastSyncedBlockNum + 1)
-		p.log.Infof("Adding Round #%d\n", lastSyncedBlockNum + 1)
+		p.log.Infof("Adding Round #%d\n", lastSyncedBlockNum+1)
 
 		newBlock, err := algod2.ConvertBlockRawBytes(context.Background(), rawBlock)
 		if err != nil {
@@ -178,6 +179,13 @@ func (p *BlockSynchronizer) update() {
 		fmt.Println("Pretty pretty print json!!:", prettyJSON.String())
 		//indexer.PrintBlockInfoFromJsonBlock(newBlock.Block)
 
+		var response models.BlockResponse
+		err = msgpack.Decode(rawBlock, &response)
+		if err != nil {
+			p.log.Errorw("blocksynchronizer", "status", "can't parse block from msgpack format", "ERROR", err)
+		}
+		var blockInfo = response.Block
+
 		//docID, rev, err := field.BlockStore.AddBlock(ctx, newBlock)
 		blockDocID, blockDocRev, err := p.blockCore.AddBlock(context.Background(), newBlock)
 		if err != nil {
@@ -197,7 +205,7 @@ func (p *BlockSynchronizer) update() {
 			}
 			newBlockPayload.TransactionList = txnIDList
 
-			_, err = p.transactionCore.AddTransactions(context.Background(), newBlock.Transactions)
+			_, err = p.transactionCore.AddTransactions(context.Background(), newBlock.Transactions, blockInfo)
 			if err != nil {
 				p.log.Errorw("blocksynchronizer", "status", "can't add new transaction(s)", "ERROR", err)
 			}
@@ -207,10 +215,10 @@ func (p *BlockSynchronizer) update() {
 
 				accountIDs := algod2.ExtractAccountAddrsFromTxn(txn)
 				applicationIDs := algod2.ExtractApplicationIdsFromTxn(txn)
-				assetIDs := algod2.ExtractAssetIdsFromTxn(txn)
+				assetIDs := algod2.ExtractAssetIdsFromTxn(txn, blockInfo)
 
 				for _, acctID := range accountIDs {
-					accountInfo, err := p.algodCore.GetAccount(context.Background(),"", acctID)
+					accountInfo, err := p.algodCore.GetAccount(context.Background(), "", acctID)
 					if err != nil {
 						p.log.Errorw("blocksynchronizer", "status", "can't get account", "ERROR", err)
 					}
@@ -219,7 +227,7 @@ func (p *BlockSynchronizer) update() {
 				}
 
 				for _, appID := range applicationIDs {
-					appInfo, err := p.algodCore.GetApplication(context.Background(),"", appID)
+					appInfo, err := p.algodCore.GetApplication(context.Background(), "", appID)
 					if err != nil {
 						p.log.Errorw("blocksynchronizer", "status", "can't get app", "ERROR", err)
 					}
@@ -228,7 +236,7 @@ func (p *BlockSynchronizer) update() {
 				}
 
 				for _, assetID := range assetIDs {
-					assetInfo, err := p.algodCore.GetAsset(context.Background(),"", assetID)
+					assetInfo, err := p.algodCore.GetAsset(context.Background(), "", assetID)
 					if err != nil {
 						p.log.Errorw("blocksynchronizer", "status", "can't get asset", "ERROR", err)
 					}
@@ -299,17 +307,16 @@ func (p *BlockSynchronizer) update() {
 	}
 }
 
-
 func GetAndInsertBlockData(
-	log					*zap.SugaredLogger,
-	algodClient			*algod.Client,
+	log *zap.SugaredLogger,
+	algodClient *algod.Client,
 	blockCore *block.Core,
 	transactionCore *transaction.Core,
 	accountCore *account.Core,
 	assetCore *asset.Core,
 	appCore *application.Core,
 	algodCore *algod2.Core,
-	blockNum			uint64) error {
+	blockNum uint64) error {
 	log.Infof("Trying to get round number: %d\n", blockNum)
 
 	getRoundSuccessful := false
@@ -353,6 +360,13 @@ func GetAndInsertBlockData(
 	fmt.Println("Pretty pretty print json!!:", prettyJSON.String())
 	//indexer.PrintBlockInfoFromJsonBlock(newBlock.Block)
 
+	var response models.BlockResponse
+	err = msgpack.Decode(rawBlock, &response)
+	if err != nil {
+		log.Errorw("blocksynchronizer", "status", "can't parse block from msgpack format", "ERROR", err)
+	}
+	var blockInfo = response.Block
+
 	//docID, rev, err := field.BlockStore.AddBlock(ctx, newBlock)
 	blockDocID, blockDocRev, err := blockCore.AddBlock(context.Background(), newBlock)
 	if err != nil {
@@ -366,7 +380,7 @@ func GetAndInsertBlockData(
 	var appList []models.Application
 
 	if len(newBlock.Transactions) > 0 {
-		_, err = transactionCore.AddTransactions(context.Background(), newBlock.Transactions)
+		_, err = transactionCore.AddTransactions(context.Background(), newBlock.Transactions, blockInfo)
 		if err != nil {
 			log.Errorw("blocksynchronizer", "status", "can't add new transaction(s)", "ERROR", err)
 			return err
@@ -377,10 +391,10 @@ func GetAndInsertBlockData(
 
 			accountIDs := algod2.ExtractAccountAddrsFromTxn(txn)
 			applicationIDs := algod2.ExtractApplicationIdsFromTxn(txn)
-			assetIDs := algod2.ExtractAssetIdsFromTxn(txn)
+			assetIDs := algod2.ExtractAssetIdsFromTxn(txn, blockInfo)
 
 			for _, acctID := range accountIDs {
-				accountInfo, err := algodCore.GetAccount(context.Background(),"", acctID)
+				accountInfo, err := algodCore.GetAccount(context.Background(), "", acctID)
 				if err != nil {
 					log.Errorw("blocksynchronizer", "status", "can't get account", "ERROR", err)
 					//return err
@@ -390,7 +404,7 @@ func GetAndInsertBlockData(
 			}
 
 			for _, appID := range applicationIDs {
-				appInfo, err := algodCore.GetApplication(context.Background(),"", appID)
+				appInfo, err := algodCore.GetApplication(context.Background(), "", appID)
 				if err != nil {
 					log.Errorw("blocksynchronizer", "status", "can't get app", "ERROR", err)
 					//return err
@@ -400,7 +414,7 @@ func GetAndInsertBlockData(
 			}
 
 			for _, assetID := range assetIDs {
-				assetInfo, err := algodCore.GetAsset(context.Background(),"", assetID)
+				assetInfo, err := algodCore.GetAsset(context.Background(), "", assetID)
 				if err != nil {
 					log.Errorw("blocksynchronizer", "status", "can't get asset", "ERROR", err)
 					//return err

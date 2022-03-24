@@ -2,6 +2,7 @@ package algod
 
 import (
 	"github.com/algorand/go-algorand-sdk/client/v2/common/models"
+	"github.com/algorand/go-algorand-sdk/types"
 )
 
 func removeDuplicateUint64Values(intSlice []uint64) []uint64 {
@@ -36,7 +37,7 @@ func removeDuplicateStrValues(strSlice []string) []string {
 	return list
 }
 
-func ExtractAssetIdsFromTxn(txn models.Transaction) []uint64 {
+func ExtractAssetIdsFromTxn(txn models.Transaction, block types.Block) []uint64 {
 	var list []uint64
 
 	if txn.CreatedAssetIndex != 0 {
@@ -52,6 +53,16 @@ func ExtractAssetIdsFromTxn(txn models.Transaction) []uint64 {
 	// process AssetConfigTransaction: TransactionAssetConfig
 	if txn.AssetConfigTransaction.AssetId != 0 {
 		list = append(list, txn.AssetConfigTransaction.AssetId)
+	}
+
+	// The newly created asset index is stored here, it's not stored
+	// inside the transaction
+	if len(block.Payset) > 0 {
+		for _, paysetTxn := range block.Payset {
+			if paysetTxn.ConfigAsset > 0 {
+				list = append(list, paysetTxn.ConfigAsset)
+			}
+		}
 	}
 
 	// process AssetFreezeTransaction: TransactionAssetFreeze
@@ -129,7 +140,6 @@ func ExtractAccountAddrsFromTxn(txn models.Transaction) []string {
 	return removeDuplicateStrValues(list)
 }
 
-
 func ExtractApplicationIdsFromTxn(txn models.Transaction) []uint64 {
 	var list []uint64
 
@@ -138,12 +148,12 @@ func ExtractApplicationIdsFromTxn(txn models.Transaction) []uint64 {
 	}
 
 	// process ApplicationTransaction: TransactionApplication
-	if txn.ApplicationTransaction.ApplicationId != 0  {
+	if txn.ApplicationTransaction.ApplicationId != 0 {
 		list = append(list, txn.ApplicationTransaction.ApplicationId)
 	}
 
 	// TODO: Is this necessary?? Ask Algorand people
-	if txn.ApplicationTransaction.ExtraProgramPages != 0  {
+	if txn.ApplicationTransaction.ExtraProgramPages != 0 {
 		list = append(list, txn.ApplicationTransaction.ExtraProgramPages)
 	}
 

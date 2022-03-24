@@ -227,7 +227,7 @@ func extractAssetConfigTx(txn types.SignedTxnWithAD) models.TransactionAssetConf
 
 	return models.TransactionAssetConfig{
 		AssetId: uint64(txn.Txn.ConfigAsset),
-		Params: assetParams,
+		Params:  assetParams,
 	}
 }
 
@@ -411,8 +411,8 @@ func stateDeltaToStateDelta(d types.StateDelta) []models.EvalDeltaKeyValue {
 			Value: models.EvalDelta{
 				Action: uint64(v.Action),
 				//Bytes:  strPtr(base64.StdEncoding.EncodeToString(v.Bytes)),
-				Bytes:  v.Bytes,
-				Uint:   v.Uint,
+				Bytes: v.Bytes,
+				Uint:  v.Uint,
 			},
 		})
 	}
@@ -449,7 +449,7 @@ func ProcessTransactionInBlock(txn types.SignedTxnInBlock, blockInfo types.Block
 		keyreg = &keyRegTx
 	case types.AssetConfigTx:
 		assetConfigTx := extractAssetConfigTx(txn.SignedTxnWithAD)
-		assetConfig = & assetConfigTx
+		assetConfig = &assetConfigTx
 	case types.AssetTransferTx:
 		assetTransferTx := extractAssetTransferTx(txn.SignedTxnWithAD)
 		assetTransfer = &assetTransferTx
@@ -485,8 +485,8 @@ func ProcessTransactionInBlock(txn types.SignedTxnInBlock, blockInfo types.Block
 
 	var localStateDelta []models.AccountStateDelta
 	type tuple struct {
-		key		uint64
-		address	types.Address
+		key     uint64
+		address types.Address
 	}
 	if len(txn.ApplyData.EvalDelta.LocalDeltas) > 0 {
 		keys := make([]tuple, 0)
@@ -532,33 +532,33 @@ func ProcessTransactionInBlock(txn types.SignedTxnInBlock, blockInfo types.Block
 		//PaymentTransaction:       *payment,
 		//KeyregTransaction:        *keyreg,
 
-		ClosingAmount:            uint64(txn.ClosingAmount),
-		ConfirmedRound:           uint64(blockInfo.Round),
+		ClosingAmount:  uint64(txn.ClosingAmount),
+		ConfirmedRound: uint64(blockInfo.Round),
 		// TODO: ask Algorand people on how to support this
 		// I can't find it anywhere.
-		IntraRoundOffset:         0.,
+		IntraRoundOffset: 0.,
 		// TODO: ask Algorand to verify if it's really this one
-		RoundTime:                uint64(blockInfo.TimeStamp),
-		Fee:                      uint64(txn.Txn.Fee),
-		FirstValid:               uint64(txn.Txn.FirstValid),
+		RoundTime:  uint64(blockInfo.TimeStamp),
+		Fee:        uint64(txn.Txn.Fee),
+		FirstValid: uint64(txn.Txn.FirstValid),
 		// TODO: this is because ... Kevin! Write down what you got from Jason Paulos
 		//GenesisHash:              txn.Txn.GenesisHash[:],
-		GenesisHash:			  blockInfo.GenesisHash[:],
+		GenesisHash: blockInfo.GenesisHash[:],
 		// TODO: this is because ... Kevin! Write down what you got from Jason Paulos
 		//GenesisId:                txn.Txn.GenesisID,
-		GenesisId: 				  blockInfo.GenesisID,
-		Group:					  txn.Txn.Group[:],
-		LastValid:                uint64(txn.Txn.LastValid),
+		GenesisId: blockInfo.GenesisID,
+		Group:     txn.Txn.Group[:],
+		LastValid: uint64(txn.Txn.LastValid),
 		// TODO:
-		Lease:                    txn.Txn.Lease[:],
-		Note:                     txn.Txn.Note[:],
-		Sender:                   txn.Txn.Sender.String(),
-		ReceiverRewards:          uint64(txn.ReceiverRewards),
-		CloseRewards:             uint64(txn.CloseRewards),
-		SenderRewards:            uint64(txn.SenderRewards),
-		Type:                     string(txn.Txn.Type),
-		Signature:                sig,
-		Id:   					  crypto.TransactionIDString(txn.Txn),
+		Lease:           txn.Txn.Lease[:],
+		Note:            txn.Txn.Note[:],
+		Sender:          txn.Txn.Sender.String(),
+		ReceiverRewards: uint64(txn.ReceiverRewards),
+		CloseRewards:    uint64(txn.CloseRewards),
+		SenderRewards:   uint64(txn.SenderRewards),
+		Type:            string(txn.Txn.Type),
+		Signature:       sig,
+		Id:              crypto.TransactionIDString(txn.Txn),
 		// TODO
 		RekeyTo:          txn.Txn.RekeyTo.String(),
 		GlobalStateDelta: stateDeltaToStateDelta(txn.EvalDelta.GlobalDelta),

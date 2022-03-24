@@ -5,6 +5,7 @@ package transaction
 import (
 	"context"
 	"github.com/algorand/go-algorand-sdk/client/v2/common/models"
+	"github.com/algorand/go-algorand-sdk/types"
 	"github.com/go-kivik/kivik/v4"
 	"github.com/kevguy/algosearch/backend/business/core/transaction/db"
 	"go.uber.org/zap"
@@ -22,12 +23,12 @@ func NewCore(log *zap.SugaredLogger, couchClient *kivik.Client, dbName string) C
 	}
 }
 
-func (c Core) AddTransaction(ctx context.Context, transaction models.Transaction) (string, string, error) {
-	return c.store.AddTransaction(ctx, transaction)
+func (c Core) AddTransaction(ctx context.Context, transaction models.Transaction, blockInfo types.Block) (string, string, error) {
+	return c.store.AddTransaction(ctx, transaction, blockInfo)
 }
 
-func (c Core) AddTransactions(ctx context.Context, transactions []models.Transaction) (bool, error) {
-	return c.store.AddTransactions(ctx, transactions)
+func (c Core) AddTransactions(ctx context.Context, transactions []models.Transaction, blockInfo types.Block) (bool, error) {
+	return c.store.AddTransactions(ctx, transactions, blockInfo)
 }
 
 func (c Core) GetTransaction(ctx context.Context, transactionID string) (models.Transaction, error) {
