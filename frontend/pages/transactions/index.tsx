@@ -73,7 +73,7 @@ const Transactions = () => {
     setColumns(transactionsColumns(asaMap));
   }, [asaMap]);
 
-  useEffect(() => {
+  useCallback(() => {
     if (!transactions) return;
     apiGetASA(transactions).then((result) => {
       setAsaMap(result);
@@ -143,7 +143,7 @@ const Transactions = () => {
         <div className={tableStyles["table-loader-wrapper"]}>
           <Load />
         </div>
-      ) : pageCount && displayPageNum ? (
+      ) : pageCount && router.isReady && displayPageNum ? (
         <div className="table">
           <Table
             columns={columns}
