@@ -1,18 +1,18 @@
-const supplyFixture = "../fixtures/supply.json";
-const currentTxFixture = "../fixtures/tx/tx_pay_single.json";
-const addressFixture = "../fixtures/address/address_1.json";
-const addressTxsFixture = "../fixtures/address/address_1_txs.json";
-const assetFixture = "../fixtures/asset/asset_1.json";
-const blockFixture = "../fixtures/block/block_18788980.json";
-const blocksFixture = "../fixtures/blocks/blocks_pay_txs.json";
-const blocksMixedFixture = "../fixtures/blocks/blocks_mixed_txs.json";
-import * as blockInSyncFixture from "../fixtures/block/block_18788980.json";
-import * as blockOutOfSyncFixture from "../fixtures/block/block_4259852.json";
-const txsMixedFixture = "../fixtures/txs/txs_mixed.json";
-const txsFixture = "../fixtures/txs/txs_pay.json";
-const txPaySingleFixture = "../fixtures/tx/tx_pay_single.json";
+const supplyFixture = '../fixtures/supply.json';
+const currentTxFixture = '../fixtures/tx/tx_pay_single.json';
+const addressFixture = '../fixtures/address/address_1.json';
+const addressTxsFixture = '../fixtures/address/address_1_txs.json';
+const assetFixture = '../fixtures/asset/asset_1.json';
+const blockFixture = '../fixtures/block/block_18788980.json';
+const blocksFixture = '../fixtures/blocks/blocks_pay_txs.json';
+const blocksMixedFixture = '../fixtures/blocks/blocks_mixed_txs.json';
+import * as blockInSyncFixture from '../fixtures/block/block_18788980.json';
+import * as blockOutOfSyncFixture from '../fixtures/block/block_4259852.json';
+const txsMixedFixture = '../fixtures/txs/txs_mixed.json';
+const txsFixture = '../fixtures/txs/txs_pay.json';
+const txPaySingleFixture = '../fixtures/tx/tx_pay_single.json';
 
-export const backend_url = "http://localhost:5000";
+export const backend_url = 'http://localhost:5000';
 
 export const commonIntercepts = () => {
   cy.intercept(
@@ -21,9 +21,9 @@ export const commonIntercepts = () => {
       url: `${backend_url}/v1/current-txn`,
     },
     {
-      fixture: currentTxFixture
+      fixture: currentTxFixture,
     }
-  )
+  );
 
   cy.intercept(
     {
@@ -31,18 +31,18 @@ export const commonIntercepts = () => {
       url: `${backend_url}/v1/algod/ledger/supply`,
     },
     {
-      fixture: supplyFixture
+      fixture: supplyFixture,
     }
-  )
+  );
 
-  interceptNext()
+  interceptNext();
 
-  interceptAddr()
-  interceptAddrTxs()
-  interceptAsset()
-  interceptBlock()
-  interceptTx()
-}
+  interceptAddr();
+  interceptAddrTxs();
+  interceptAsset();
+  interceptBlock();
+  interceptTx();
+};
 
 export const interceptNext = () => {
   cy.intercept(
@@ -53,32 +53,32 @@ export const interceptNext = () => {
     {
       response: 200,
       headers: {
-        "host": "localhost:3000",
-        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:96.0) Gecko/20100101 Firefox/96.0",
-        "accept": "*/*",
-        "accept-language": "en-US,en;q=0.5",
-        "accept-encoding": "gzip, deflate",
-        "connection": "keep-alive"
+        host: 'localhost:3000',
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:96.0) Gecko/20100101 Firefox/96.0',
+        accept: '*/*',
+        'accept-language': 'en-US,en;q=0.5',
+        'accept-encoding': 'gzip, deflate',
+        connection: 'keep-alive',
       },
       body: {
-        "pages": [
-          "/",
-          "/404",
-          "/_app",
-          "/_document",
-          "/address/[_address]",
-          "/api/__coverage__",
-          "/asset/[_asset]",
-          "/block/[_block]",
-          "/blocks",
-          "/transactions",
-          "/tx/TransactionDetails",
-          "/tx/[_txid]"
-        ]
-      }
+        pages: [
+          '/',
+          '/404',
+          '/_app',
+          '/_document',
+          '/address/[_address]',
+          '/api/__coverage__',
+          '/asset/[_asset]',
+          '/block/[_block]',
+          '/blocks',
+          '/transactions',
+          '/tx/TransactionDetails',
+          '/tx/[_txid]',
+        ],
+      },
     }
-  )
-}
+  );
+};
 
 export const interceptAddr = () => {
   cy.intercept(
@@ -87,10 +87,10 @@ export const interceptAddr = () => {
       url: `${backend_url}/v1/accounts/*?page=*&limit=10&order=desc`,
     },
     {
-      fixture: addressFixture
+      fixture: addressFixture,
     }
-  ).as('getAddr')
-}
+  ).as('getAddr');
+};
 
 export const interceptAddrTxs = () => {
   cy.intercept(
@@ -99,10 +99,10 @@ export const interceptAddrTxs = () => {
       url: `${backend_url}/v1/transactions/acct/*?page=*&limit=15`,
     },
     {
-      fixture: addressTxsFixture
+      fixture: addressTxsFixture,
     }
-  ).as('getAddrTxs')
-}
+  ).as('getAddrTxs');
+};
 
 export const interceptAsset = () => {
   cy.intercept(
@@ -111,10 +111,10 @@ export const interceptAsset = () => {
       url: `${backend_url}/v1/algod/assets/*`,
     },
     {
-      fixture: assetFixture
+      fixture: assetFixture,
     }
-  ).as('getAsset')
-}
+  ).as('getAsset');
+};
 
 export const interceptBlocks = () => {
   cy.intercept(
@@ -123,10 +123,10 @@ export const interceptBlocks = () => {
       url: `${backend_url}/v1/rounds?latest_blk=*&page=1&limit=10&order=desc`,
     },
     {
-      fixture: blocksFixture
+      fixture: blocksFixture,
     }
-  ).as('getLatestBlocks')
-}
+  ).as('getLatestBlocks');
+};
 
 export const interceptBlocksOnBlocksPage = () => {
   cy.intercept(
@@ -135,10 +135,10 @@ export const interceptBlocksOnBlocksPage = () => {
       url: `${backend_url}/v1/rounds?latest_blk=*&limit=15&page=*&order=desc`,
     },
     {
-      fixture: blocksMixedFixture
+      fixture: blocksMixedFixture,
     }
-  ).as('getBlocks')
-}
+  ).as('getBlocks');
+};
 
 export const interceptBlock = () => {
   cy.intercept(
@@ -147,22 +147,22 @@ export const interceptBlock = () => {
       url: `${backend_url}/v1/algod/rounds/*`,
     },
     {
-      fixture: blockFixture
+      fixture: blockFixture,
     }
-  ).as('getBlock')
-}
+  ).as('getBlock');
+};
 
 export const interceptTx = () => {
   cy.intercept(
     {
       method: 'GET',
-      url: `${backend_url}/v1/transactions/*`
+      url: `${backend_url}/v1/transactions/*`,
     },
     {
-      fixture: txPaySingleFixture
+      fixture: txPaySingleFixture,
     }
-  ).as('getTx')
-}
+  ).as('getTx');
+};
 
 export const interceptTxs = () => {
   cy.intercept(
@@ -171,10 +171,10 @@ export const interceptTxs = () => {
       url: `${backend_url}/v1/transactions?latest_txn=*&page=1&limit=10&order=desc`,
     },
     {
-      fixture: txsFixture
+      fixture: txsFixture,
     }
-  ).as('getLatestTxs')
-}
+  ).as('getLatestTxs');
+};
 
 export const interceptTxsOnTxsPage = () => {
   cy.intercept(
@@ -183,13 +183,831 @@ export const interceptTxsOnTxsPage = () => {
       url: `${backend_url}/v1/transactions?latest_txn=*&page=*&limit=15&order=desc`,
     },
     {
-      fixture: txsMixedFixture
+      fixture: txsMixedFixture,
     }
-  ).as('getTxs')
-}
+  ).as('getTxs');
+};
+
+export const interceptDryrunEndpoint = () => {
+  cy.intercept(
+    {
+      method: 'POST',
+      url: `/v2/teal/dryrun`,
+    },
+    {
+      statusCode: 200,
+      body: {
+        error: '',
+        'protocol-version': 'https://github.com/algorandfoundation/specs/tree/d5ac876d7ede07367dbaa26e149aa42589aac1f7',
+        txns: [
+          {
+            disassembly: [
+              '#pragma version 4',
+              'intcblock 1 0 4 3 6 22045503 2 37074699',
+              'bytecblock 0xff5078b9a867217d46f22f52839fa6bd5f094571e08a9171344a527cbc184a30',
+              'global GroupSize',
+              'intc_2 // 4',
+              '\u003c=',
+              'assert',
+              'txn Fee',
+              'pushint 1000',
+              '\u003c=',
+              'assert',
+              'intc_1 // 0',
+              'store 9',
+              'label1:',
+              'load 9',
+              'gtxns RekeyTo',
+              'global ZeroAddress',
+              '==',
+              'assert',
+              'load 9',
+              'gtxns AssetCloseTo',
+              'global ZeroAddress',
+              '==',
+              'assert',
+              'load 9',
+              'intc_0 // 1',
+              '+',
+              'store 9',
+              'load 9',
+              'global GroupSize',
+              '\u003c',
+              'bnz label1',
+              'global GroupSize',
+              'intc 6 // 2',
+              '==',
+              'global GroupSize',
+              'intc_3 // 3',
+              '==',
+              '||',
+              'gtxn 0 TypeEnum',
+              'intc_0 // 1',
+              '==',
+              '\u0026\u0026',
+              'gtxn 1 TypeEnum',
+              'intc 4 // 6',
+              '==',
+              '\u0026\u0026',
+              'gtxn 0 Amount',
+              'pushint 500000',
+              '\u003e=',
+              '\u0026\u0026',
+              'gtxn 1 Amount',
+              'intc_1 // 0',
+              '==',
+              '\u0026\u0026',
+              'gtxn 0 CloseRemainderTo',
+              'global ZeroAddress',
+              '==',
+              '\u0026\u0026',
+              'gtxn 1 CloseRemainderTo',
+              'global ZeroAddress',
+              '==',
+              '\u0026\u0026',
+              'gtxn 0 OnCompletion',
+              'intc_1 // 0',
+              '==',
+              '\u0026\u0026',
+              'gtxn 1 OnCompletion',
+              'intc_0 // 1',
+              '==',
+              '\u0026\u0026',
+              'gtxn 1 ApplicationID',
+              'intc 5 // 22045503',
+              '==',
+              '\u0026\u0026',
+              'gtxn 0 Sender',
+              'bytec_0 // addr 75IHRONIM4QX2RXSF5JIHH5GXVPQSRLR4CFJC4JUJJJHZPAYJIYDPQUKNE',
+              '==',
+              '\u0026\u0026',
+              'gtxn 1 Sender',
+              'txn Sender',
+              '==',
+              '\u0026\u0026',
+              'gtxn 0 Receiver',
+              'txn Sender',
+              '==',
+              '\u0026\u0026',
+              'store 0',
+              'global GroupSize',
+              'intc 6 // 2',
+              '==',
+              'store 1',
+              'load 1',
+              'bnz label2',
+              'gtxn 2 TypeEnum',
+              'intc_2 // 4',
+              '==',
+              'gtxn 2 AssetAmount',
+              'intc_1 // 0',
+              '==',
+              '\u0026\u0026',
+              'gtxn 2 Sender',
+              'bytec_0 // addr 75IHRONIM4QX2RXSF5JIHH5GXVPQSRLR4CFJC4JUJJJHZPAYJIYDPQUKNE',
+              '==',
+              '\u0026\u0026',
+              'gtxn 2 OnCompletion',
+              'intc_1 // 0',
+              '==',
+              '\u0026\u0026',
+              'intc 7 // 37074699',
+              'gtxn 2 XferAsset',
+              '==',
+              '\u0026\u0026',
+              'store 1',
+              'label2:',
+              'load 0',
+              'load 1',
+              '\u0026\u0026',
+              'bz label3',
+              'intc_0 // 1',
+              'return',
+              'label3:',
+              'global GroupSize',
+              'intc_3 // 3',
+              '==',
+              'gtxn 0 ApplicationID',
+              'intc 5 // 22045503',
+              '==',
+              '\u0026\u0026',
+              'gtxn 0 CloseRemainderTo',
+              'global ZeroAddress',
+              '==',
+              '\u0026\u0026',
+              'gtxn 1 CloseRemainderTo',
+              'bytec_0 // addr 75IHRONIM4QX2RXSF5JIHH5GXVPQSRLR4CFJC4JUJJJHZPAYJIYDPQUKNE',
+              '==',
+              '\u0026\u0026',
+              'gtxn 2 CloseRemainderTo',
+              'global ZeroAddress',
+              '==',
+              '\u0026\u0026',
+              'gtxn 0 Sender',
+              'txn Sender',
+              '==',
+              '\u0026\u0026',
+              'gtxn 1 Sender',
+              'txn Sender',
+              '==',
+              '\u0026\u0026',
+              'gtxn 2 Sender',
+              'bytec_0 // addr 75IHRONIM4QX2RXSF5JIHH5GXVPQSRLR4CFJC4JUJJJHZPAYJIYDPQUKNE',
+              '==',
+              '\u0026\u0026',
+              'gtxn 0 TypeEnum',
+              'intc 4 // 6',
+              '==',
+              '\u0026\u0026',
+              'gtxn 1 TypeEnum',
+              'intc_0 // 1',
+              '==',
+              '\u0026\u0026',
+              'gtxn 2 TypeEnum',
+              'intc_0 // 1',
+              '==',
+              '\u0026\u0026',
+              'gtxn 0 Amount',
+              'intc_1 // 0',
+              '==',
+              '\u0026\u0026',
+              'gtxn 1 Amount',
+              'intc_1 // 0',
+              '==',
+              '\u0026\u0026',
+              'gtxn 2 Amount',
+              'intc_1 // 0',
+              '==',
+              '\u0026\u0026',
+              'gtxn 0 OnCompletion',
+              'intc_3 // 3',
+              '==',
+              '\u0026\u0026',
+              'gtxn 1 OnCompletion',
+              'intc_1 // 0',
+              '==',
+              '\u0026\u0026',
+              'gtxn 2 OnCompletion',
+              'intc_1 // 0',
+              '==',
+              '\u0026\u0026',
+              'bz label4',
+              'intc_0 // 1',
+              'return',
+              'label4:',
+              'gtxn 1 CloseRemainderTo',
+              'global ZeroAddress',
+              '==',
+              'bnz label5',
+              'gtxn 0 OnCompletion',
+              'intc 6 // 2',
+              '==',
+              'global GroupSize',
+              'intc_3 // 3',
+              '==',
+              '\u0026\u0026',
+              'gtxn 0 TypeEnum',
+              'intc 4 // 6',
+              '==',
+              '\u0026\u0026',
+              'gtxn 1 TypeEnum',
+              'intc_0 // 1',
+              '==',
+              '\u0026\u0026',
+              'gtxn 2 TypeEnum',
+              'intc_2 // 4',
+              '==',
+              '\u0026\u0026',
+              'gtxn 0 ApplicationID',
+              'intc 5 // 22045503',
+              '==',
+              '\u0026\u0026',
+              'gtxn 0 Sender',
+              'txn Sender',
+              '==',
+              '\u0026\u0026',
+              'gtxn 1 Sender',
+              'txn Sender',
+              '==',
+              '\u0026\u0026',
+              'gtxn 2 Sender',
+              'txn Sender',
+              '!=',
+              '\u0026\u0026',
+              'gtxn 1 Receiver',
+              'gtxn 2 Sender',
+              '==',
+              '\u0026\u0026',
+              'gtxn 2 AssetReceiver',
+              'bytec_0 // addr 75IHRONIM4QX2RXSF5JIHH5GXVPQSRLR4CFJC4JUJJJHZPAYJIYDPQUKNE',
+              '==',
+              '\u0026\u0026',
+              'gtxn 0 CloseRemainderTo',
+              'global ZeroAddress',
+              '==',
+              '\u0026\u0026',
+              'gtxn 1 CloseRemainderTo',
+              'bytec_0 // addr 75IHRONIM4QX2RXSF5JIHH5GXVPQSRLR4CFJC4JUJJJHZPAYJIYDPQUKNE',
+              '==',
+              '\u0026\u0026',
+              'gtxn 2 CloseRemainderTo',
+              'global ZeroAddress',
+              '==',
+              '\u0026\u0026',
+              'assert',
+              'b label6',
+              'label5:',
+              'gtxn 0 OnCompletion',
+              'intc_1 // 0',
+              '==',
+              'txn CloseRemainderTo',
+              'global ZeroAddress',
+              '==',
+              '\u0026\u0026',
+              'global GroupSize',
+              'intc_2 // 4',
+              '==',
+              '\u0026\u0026',
+              'gtxn 0 TypeEnum',
+              'intc 4 // 6',
+              '==',
+              '\u0026\u0026',
+              'gtxn 1 TypeEnum',
+              'intc_0 // 1',
+              '==',
+              '\u0026\u0026',
+              'gtxn 2 TypeEnum',
+              'intc_2 // 4',
+              '==',
+              '\u0026\u0026',
+              'gtxn 3 TypeEnum',
+              'intc_0 // 1',
+              '==',
+              '\u0026\u0026',
+              'gtxn 3 Amount',
+              'pushint 2000',
+              '\u003e=',
+              '\u0026\u0026',
+              'gtxn 3 Receiver',
+              'txn Sender',
+              '==',
+              '\u0026\u0026',
+              'gtxn 3 Sender',
+              'gtxn 1 Receiver',
+              '==',
+              '\u0026\u0026',
+              'gtxn 0 Sender',
+              'txn Sender',
+              '==',
+              '\u0026\u0026',
+              'gtxn 1 Sender',
+              'txn Sender',
+              '==',
+              '\u0026\u0026',
+              'gtxn 2 Sender',
+              'txn Sender',
+              '!=',
+              '\u0026\u0026',
+              'gtxn 3 Sender',
+              'txn Sender',
+              '!=',
+              '\u0026\u0026',
+              'gtxn 0 ApplicationID',
+              'intc 5 // 22045503',
+              '==',
+              '\u0026\u0026',
+              'gtxn 1 Sender',
+              'txn Sender',
+              '==',
+              '\u0026\u0026',
+              'gtxn 1 Receiver',
+              'gtxn 2 Sender',
+              '==',
+              '\u0026\u0026',
+              'gtxn 2 AssetReceiver',
+              'bytec_0 // addr 75IHRONIM4QX2RXSF5JIHH5GXVPQSRLR4CFJC4JUJJJHZPAYJIYDPQUKNE',
+              '==',
+              '\u0026\u0026',
+              'gtxn 0 CloseRemainderTo',
+              'global ZeroAddress',
+              '==',
+              '\u0026\u0026',
+              'gtxn 1 CloseRemainderTo',
+              'global ZeroAddress',
+              '==',
+              '\u0026\u0026',
+              'gtxn 2 CloseRemainderTo',
+              'global ZeroAddress',
+              '==',
+              '\u0026\u0026',
+              'gtxn 3 CloseRemainderTo',
+              'global ZeroAddress',
+              '==',
+              '\u0026\u0026',
+              'assert',
+              'label6:',
+              'gtxn 1 Amount',
+              'intc_0 // 1',
+              '\u003e=',
+              'gtxn 2 AssetAmount',
+              'intc_0 // 1',
+              '\u003e=',
+              '\u0026\u0026',
+              'intc 7 // 37074699',
+              'gtxn 2 XferAsset',
+              '==',
+              '\u0026\u0026',
+              'assert',
+              'gtxn 2 AssetAmount',
+              'intc_0 // 1',
+              'mulw',
+              'store 2',
+              'store 1',
+              'gtxn 1 Amount',
+              'intc_0 // 1',
+              'mulw',
+              'store 4',
+              'store 3',
+              'load 1',
+              'load 3',
+              '\u003e',
+              'bnz label7',
+              'load 1',
+              'load 3',
+              '==',
+              'load 2',
+              'load 4',
+              '\u003e=',
+              '\u0026\u0026',
+              'bnz label7',
+              'err',
+              'label7:',
+              'intc_0 // 1',
+              'return',
+              '',
+            ],
+            'logic-sig-disassembly': [
+              '#pragma version 4',
+              'intcblock 1 0 4 3 6 22045503 2 37074699',
+              'bytecblock 0xff5078b9a867217d46f22f52839fa6bd5f094571e08a9171344a527cbc184a30',
+              'global GroupSize',
+              'intc_2 // 4',
+              '\u003c=',
+              'assert',
+              'txn Fee',
+              'pushint 1000',
+              '\u003c=',
+              'assert',
+              'intc_1 // 0',
+              'store 9',
+              'label1:',
+              'load 9',
+              'gtxns RekeyTo',
+              'global ZeroAddress',
+              '==',
+              'assert',
+              'load 9',
+              'gtxns AssetCloseTo',
+              'global ZeroAddress',
+              '==',
+              'assert',
+              'load 9',
+              'intc_0 // 1',
+              '+',
+              'store 9',
+              'load 9',
+              'global GroupSize',
+              '\u003c',
+              'bnz label1',
+              'global GroupSize',
+              'intc 6 // 2',
+              '==',
+              'global GroupSize',
+              'intc_3 // 3',
+              '==',
+              '||',
+              'gtxn 0 TypeEnum',
+              'intc_0 // 1',
+              '==',
+              '\u0026\u0026',
+              'gtxn 1 TypeEnum',
+              'intc 4 // 6',
+              '==',
+              '\u0026\u0026',
+              'gtxn 0 Amount',
+              'pushint 500000',
+              '\u003e=',
+              '\u0026\u0026',
+              'gtxn 1 Amount',
+              'intc_1 // 0',
+              '==',
+              '\u0026\u0026',
+              'gtxn 0 CloseRemainderTo',
+              'global ZeroAddress',
+              '==',
+              '\u0026\u0026',
+              'gtxn 1 CloseRemainderTo',
+              'global ZeroAddress',
+              '==',
+              '\u0026\u0026',
+              'gtxn 0 OnCompletion',
+              'intc_1 // 0',
+              '==',
+              '\u0026\u0026',
+              'gtxn 1 OnCompletion',
+              'intc_0 // 1',
+              '==',
+              '\u0026\u0026',
+              'gtxn 1 ApplicationID',
+              'intc 5 // 22045503',
+              '==',
+              '\u0026\u0026',
+              'gtxn 0 Sender',
+              'bytec_0 // addr 75IHRONIM4QX2RXSF5JIHH5GXVPQSRLR4CFJC4JUJJJHZPAYJIYDPQUKNE',
+              '==',
+              '\u0026\u0026',
+              'gtxn 1 Sender',
+              'txn Sender',
+              '==',
+              '\u0026\u0026',
+              'gtxn 0 Receiver',
+              'txn Sender',
+              '==',
+              '\u0026\u0026',
+              'store 0',
+              'global GroupSize',
+              'intc 6 // 2',
+              '==',
+              'store 1',
+              'load 1',
+              'bnz label2',
+              'gtxn 2 TypeEnum',
+              'intc_2 // 4',
+              '==',
+              'gtxn 2 AssetAmount',
+              'intc_1 // 0',
+              '==',
+              '\u0026\u0026',
+              'gtxn 2 Sender',
+              'bytec_0 // addr 75IHRONIM4QX2RXSF5JIHH5GXVPQSRLR4CFJC4JUJJJHZPAYJIYDPQUKNE',
+              '==',
+              '\u0026\u0026',
+              'gtxn 2 OnCompletion',
+              'intc_1 // 0',
+              '==',
+              '\u0026\u0026',
+              'intc 7 // 37074699',
+              'gtxn 2 XferAsset',
+              '==',
+              '\u0026\u0026',
+              'store 1',
+              'label2:',
+              'load 0',
+              'load 1',
+              '\u0026\u0026',
+              'bz label3',
+              'intc_0 // 1',
+              'return',
+              'label3:',
+              'global GroupSize',
+              'intc_3 // 3',
+              '==',
+              'gtxn 0 ApplicationID',
+              'intc 5 // 22045503',
+              '==',
+              '\u0026\u0026',
+              'gtxn 0 CloseRemainderTo',
+              'global ZeroAddress',
+              '==',
+              '\u0026\u0026',
+              'gtxn 1 CloseRemainderTo',
+              'bytec_0 // addr 75IHRONIM4QX2RXSF5JIHH5GXVPQSRLR4CFJC4JUJJJHZPAYJIYDPQUKNE',
+              '==',
+              '\u0026\u0026',
+              'gtxn 2 CloseRemainderTo',
+              'global ZeroAddress',
+              '==',
+              '\u0026\u0026',
+              'gtxn 0 Sender',
+              'txn Sender',
+              '==',
+              '\u0026\u0026',
+              'gtxn 1 Sender',
+              'txn Sender',
+              '==',
+              '\u0026\u0026',
+              'gtxn 2 Sender',
+              'bytec_0 // addr 75IHRONIM4QX2RXSF5JIHH5GXVPQSRLR4CFJC4JUJJJHZPAYJIYDPQUKNE',
+              '==',
+              '\u0026\u0026',
+              'gtxn 0 TypeEnum',
+              'intc 4 // 6',
+              '==',
+              '\u0026\u0026',
+              'gtxn 1 TypeEnum',
+              'intc_0 // 1',
+              '==',
+              '\u0026\u0026',
+              'gtxn 2 TypeEnum',
+              'intc_0 // 1',
+              '==',
+              '\u0026\u0026',
+              'gtxn 0 Amount',
+              'intc_1 // 0',
+              '==',
+              '\u0026\u0026',
+              'gtxn 1 Amount',
+              'intc_1 // 0',
+              '==',
+              '\u0026\u0026',
+              'gtxn 2 Amount',
+              'intc_1 // 0',
+              '==',
+              '\u0026\u0026',
+              'gtxn 0 OnCompletion',
+              'intc_3 // 3',
+              '==',
+              '\u0026\u0026',
+              'gtxn 1 OnCompletion',
+              'intc_1 // 0',
+              '==',
+              '\u0026\u0026',
+              'gtxn 2 OnCompletion',
+              'intc_1 // 0',
+              '==',
+              '\u0026\u0026',
+              'bz label4',
+              'intc_0 // 1',
+              'return',
+              'label4:',
+              'gtxn 1 CloseRemainderTo',
+              'global ZeroAddress',
+              '==',
+              'bnz label5',
+              'gtxn 0 OnCompletion',
+              'intc 6 // 2',
+              '==',
+              'global GroupSize',
+              'intc_3 // 3',
+              '==',
+              '\u0026\u0026',
+              'gtxn 0 TypeEnum',
+              'intc 4 // 6',
+              '==',
+              '\u0026\u0026',
+              'gtxn 1 TypeEnum',
+              'intc_0 // 1',
+              '==',
+              '\u0026\u0026',
+              'gtxn 2 TypeEnum',
+              'intc_2 // 4',
+              '==',
+              '\u0026\u0026',
+              'gtxn 0 ApplicationID',
+              'intc 5 // 22045503',
+              '==',
+              '\u0026\u0026',
+              'gtxn 0 Sender',
+              'txn Sender',
+              '==',
+              '\u0026\u0026',
+              'gtxn 1 Sender',
+              'txn Sender',
+              '==',
+              '\u0026\u0026',
+              'gtxn 2 Sender',
+              'txn Sender',
+              '!=',
+              '\u0026\u0026',
+              'gtxn 1 Receiver',
+              'gtxn 2 Sender',
+              '==',
+              '\u0026\u0026',
+              'gtxn 2 AssetReceiver',
+              'bytec_0 // addr 75IHRONIM4QX2RXSF5JIHH5GXVPQSRLR4CFJC4JUJJJHZPAYJIYDPQUKNE',
+              '==',
+              '\u0026\u0026',
+              'gtxn 0 CloseRemainderTo',
+              'global ZeroAddress',
+              '==',
+              '\u0026\u0026',
+              'gtxn 1 CloseRemainderTo',
+              'bytec_0 // addr 75IHRONIM4QX2RXSF5JIHH5GXVPQSRLR4CFJC4JUJJJHZPAYJIYDPQUKNE',
+              '==',
+              '\u0026\u0026',
+              'gtxn 2 CloseRemainderTo',
+              'global ZeroAddress',
+              '==',
+              '\u0026\u0026',
+              'assert',
+              'b label6',
+              'label5:',
+              'gtxn 0 OnCompletion',
+              'intc_1 // 0',
+              '==',
+              'txn CloseRemainderTo',
+              'global ZeroAddress',
+              '==',
+              '\u0026\u0026',
+              'global GroupSize',
+              'intc_2 // 4',
+              '==',
+              '\u0026\u0026',
+              'gtxn 0 TypeEnum',
+              'intc 4 // 6',
+              '==',
+              '\u0026\u0026',
+              'gtxn 1 TypeEnum',
+              'intc_0 // 1',
+              '==',
+              '\u0026\u0026',
+              'gtxn 2 TypeEnum',
+              'intc_2 // 4',
+              '==',
+              '\u0026\u0026',
+              'gtxn 3 TypeEnum',
+              'intc_0 // 1',
+              '==',
+              '\u0026\u0026',
+              'gtxn 3 Amount',
+              'pushint 2000',
+              '\u003e=',
+              '\u0026\u0026',
+              'gtxn 3 Receiver',
+              'txn Sender',
+              '==',
+              '\u0026\u0026',
+              'gtxn 3 Sender',
+              'gtxn 1 Receiver',
+              '==',
+              '\u0026\u0026',
+              'gtxn 0 Sender',
+              'txn Sender',
+              '==',
+              '\u0026\u0026',
+              'gtxn 1 Sender',
+              'txn Sender',
+              '==',
+              '\u0026\u0026',
+              'gtxn 2 Sender',
+              'txn Sender',
+              '!=',
+              '\u0026\u0026',
+              'gtxn 3 Sender',
+              'txn Sender',
+              '!=',
+              '\u0026\u0026',
+              'gtxn 0 ApplicationID',
+              'intc 5 // 22045503',
+              '==',
+              '\u0026\u0026',
+              'gtxn 1 Sender',
+              'txn Sender',
+              '==',
+              '\u0026\u0026',
+              'gtxn 1 Receiver',
+              'gtxn 2 Sender',
+              '==',
+              '\u0026\u0026',
+              'gtxn 2 AssetReceiver',
+              'bytec_0 // addr 75IHRONIM4QX2RXSF5JIHH5GXVPQSRLR4CFJC4JUJJJHZPAYJIYDPQUKNE',
+              '==',
+              '\u0026\u0026',
+              'gtxn 0 CloseRemainderTo',
+              'global ZeroAddress',
+              '==',
+              '\u0026\u0026',
+              'gtxn 1 CloseRemainderTo',
+              'global ZeroAddress',
+              '==',
+              '\u0026\u0026',
+              'gtxn 2 CloseRemainderTo',
+              'global ZeroAddress',
+              '==',
+              '\u0026\u0026',
+              'gtxn 3 CloseRemainderTo',
+              'global ZeroAddress',
+              '==',
+              '\u0026\u0026',
+              'assert',
+              'label6:',
+              'gtxn 1 Amount',
+              'intc_0 // 1',
+              '\u003e=',
+              'gtxn 2 AssetAmount',
+              'intc_0 // 1',
+              '\u003e=',
+              '\u0026\u0026',
+              'intc 7 // 37074699',
+              'gtxn 2 XferAsset',
+              '==',
+              '\u0026\u0026',
+              'assert',
+              'gtxn 2 AssetAmount',
+              'intc_0 // 1',
+              'mulw',
+              'store 2',
+              'store 1',
+              'gtxn 1 Amount',
+              'intc_0 // 1',
+              'mulw',
+              'store 4',
+              'store 3',
+              'load 1',
+              'load 3',
+              '\u003e',
+              'bnz label7',
+              'load 1',
+              'load 3',
+              '==',
+              'load 2',
+              'load 4',
+              '\u003e=',
+              '\u0026\u0026',
+              'bnz label7',
+              'err',
+              'label7:',
+              'intc_0 // 1',
+              'return',
+              '',
+            ],
+            'logic-sig-messages': ['REJECT', 'assert failed pc=63'],
+            'logic-sig-trace': [
+              { line: 1, pc: 1, stack: [] },
+              { line: 2, pc: 17, stack: [] },
+              { line: 3, pc: 52, stack: [] },
+              { line: 4, pc: 54, stack: [{ bytes: '', type: 2, uint: 1 }] },
+              {
+                line: 5,
+                pc: 55,
+                stack: [
+                  { bytes: '', type: 2, uint: 1 },
+                  { bytes: '', type: 2, uint: 4 },
+                ],
+              },
+              { line: 6, pc: 56, stack: [{ bytes: '', type: 2, uint: 1 }] },
+              { line: 7, pc: 57, stack: [] },
+              { line: 8, pc: 59, stack: [{ bytes: '', type: 2, uint: 247000 }] },
+              {
+                line: 9,
+                pc: 62,
+                stack: [
+                  { bytes: '', type: 2, uint: 247000 },
+                  { bytes: '', type: 2, uint: 1000 },
+                ],
+              },
+              { line: 10, pc: 63, stack: [{ bytes: '', type: 2, uint: 0 }] },
+              { error: 'assert failed pc=63', line: 10, pc: 63, stack: [{ bytes: '', type: 2, uint: 0 }] },
+            ],
+          },
+        ],
+      },
+    }
+  ).as('getDryrunResponse');
+};
 
 export const stubWebSocketToInSync = () => {
-  Cypress.on("window:before:load", win => {
+  Cypress.on('window:before:load', win => {
     (win as any).useWebSocketLibHook = () => ({
       sendMessage: () => {},
       sendJsonMessage: () => {},
@@ -205,11 +1023,11 @@ export const stubWebSocketToInSync = () => {
       readyState: 1,
       getWebSocket: () => {},
     });
-  })
-}
+  });
+};
 
 export const stubWebSocketToOutOfSync = () => {
-  Cypress.on("window:before:load", win => {
+  Cypress.on('window:before:load', win => {
     (win as any).useWebSocketLibHook = () => ({
       sendMessage: () => {},
       sendJsonMessage: () => {},
@@ -225,5 +1043,5 @@ export const stubWebSocketToOutOfSync = () => {
       readyState: 1,
       getWebSocket: () => {},
     });
-  })
-}
+  });
+};
