@@ -16,6 +16,7 @@ type Handlers struct {
 	AlgodCore algod.Core
 }
 
+// ./sandbox goal asset create --assetmetadatab64 b3Jp --creator LSDNNEAHUH6WB5YUGU6UYP3WPCZBNYE2NSJWGCXDQMFB33Q6GNLOAR5X6E --total 100 --decimals 3
 func (h Handlers) GetAssetByIDFromAPI(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 
 	v, err := web.GetValues(ctx)
