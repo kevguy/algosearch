@@ -41,7 +41,7 @@ func (c Core) GetEarliestSyncedRoundNumber(ctx context.Context) (uint64, error) 
 	return c.store.GetEarliestSyncedRoundNumber(ctx)
 }
 
-func (c Core) GetLastSyncedRoundNumber(ctx context.Context) (uint64, error) {
+func (c Core) GetLastSyncedRoundNumber(ctx context.Context) (uint64, bool, error) {
 	return c.store.GetLastSyncedRoundNumber(ctx)
 }
 

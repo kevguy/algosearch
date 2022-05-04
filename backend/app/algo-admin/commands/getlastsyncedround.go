@@ -24,7 +24,7 @@ func GetLastSyncedRoundCmd(traceID string, log *zap.SugaredLogger, couchCfg couc
 
 	blockCore := block.NewCore(log, db, dbName)
 
-	num, err := blockCore.GetLastSyncedRoundNumber(ctx)
+	num, _, err := blockCore.GetLastSyncedRoundNumber(ctx)
 	if err != nil {
 		return errors.Wrap(err, "can't get last synced block num")
 	}

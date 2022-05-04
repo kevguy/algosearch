@@ -1,4 +1,4 @@
-package msgpack
+package json
 
 import (
 	"io"
@@ -6,34 +6,33 @@ import (
 	"github.com/algorand/go-codec/codec"
 )
 
-// CodecHandle is used to instantiate msgpack encoders and decoders
+// CodecHandle is used to instantiate JSON encoders and decoders
 // with our settings (canonical, paranoid about decoding errors)
-var CodecHandle *codec.MsgpackHandle
+var CodecHandle *codec.JsonHandle
 
 // LenientCodecHandle is used to instantiate msgpack encoders for the REST API.
-var LenientCodecHandle *codec.MsgpackHandle
+var LenientCodecHandle *codec.JsonHandle
 
-// init configures our msgpack encoder and decoder
+// init configures our json encoder and decoder
 func init() {
-	CodecHandle = new(codec.MsgpackHandle)
+	CodecHandle = new(codec.JsonHandle)
 	CodecHandle.ErrorIfNoField = true
 	CodecHandle.ErrorIfNoArrayExpand = true
 	CodecHandle.Canonical = true
 	CodecHandle.RecursiveEmptyCheck = true
-	CodecHandle.WriteExt = true
-	CodecHandle.PositiveIntUnsigned = true
+	CodecHandle.Indent = 2
+	CodecHandle.HTMLCharsAsIs = true
 
-	LenientCodecHandle = new(codec.MsgpackHandle)
-	// allow unknown fields to ensure forward compatibility.
+	LenientCodecHandle = new(codec.JsonHandle)
 	LenientCodecHandle.ErrorIfNoField = false
 	LenientCodecHandle.ErrorIfNoArrayExpand = true
 	LenientCodecHandle.Canonical = true
 	LenientCodecHandle.RecursiveEmptyCheck = true
-	LenientCodecHandle.WriteExt = true
-	LenientCodecHandle.PositiveIntUnsigned = true
+	LenientCodecHandle.Indent = 2
+	LenientCodecHandle.HTMLCharsAsIs = true
 }
 
-// Encode returns a msgpack-encoded byte buffer for a given object
+// Encode returns a json-encoded byte buffer for a given object
 func Encode(obj interface{}) []byte {
 	var b []byte
 	enc := codec.NewEncoderBytes(&b, CodecHandle)
@@ -41,7 +40,7 @@ func Encode(obj interface{}) []byte {
 	return b
 }
 
-// Decode attempts to decode a msgpack-encoded byte buffer into an
+// Decode attempts to decode a json-encoded byte buffer into an
 // object instance pointed to by objptr
 func Decode(b []byte, objptr interface{}) error {
 	dec := codec.NewDecoderBytes(b, CodecHandle)
@@ -52,12 +51,23 @@ func Decode(b []byte, objptr interface{}) error {
 	return nil
 }
 
-// NewDecoder returns a msgpack decoder
+// LenientDecode attempts to decode a json-encoded byte buffer into an
+// object instance pointed to by objptr
+func LenientDecode(b []byte, objptr interface{}) error {
+	dec := codec.NewDecoderBytes(b, LenientCodecHandle)
+	err := dec.Decode(objptr)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// NewDecoder returns a json decoder
 func NewDecoder(r io.Reader) *codec.Decoder {
 	return codec.NewDecoder(r, CodecHandle)
 }
 
-// NewLenientDecoder returns a msgpack decoder
+// NewLenientDecoder returns a json decoder
 func NewLenientDecoder(r io.Reader) *codec.Decoder {
 	return codec.NewDecoder(r, LenientCodecHandle)
 }

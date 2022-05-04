@@ -3,6 +3,7 @@ package algod
 import (
 	"context"
 	"encoding/base64"
+	"fmt"
 	"github.com/algorand/go-algorand-sdk/client/v2/common/models"
 	"github.com/algorand/go-algorand-sdk/encoding/msgpack"
 	"github.com/kevguy/algosearch/backend/business/core/block/db"
@@ -93,11 +94,28 @@ func ConvertBlockRawBytes(ctx context.Context, rawBlock []byte) (db.NewBlock, er
 	//span.SetAttributes(attribute.String("query", q))
 	defer span.End()
 
+	//var fuck map[string]interface{}
+	//err := msgpack.Decode(rawBlock, &fuck)
+	//if err != nil {
+	//	return db.NewBlock{}, errors.Wrap(err, "parsing response to interface")
+	//}
+	//fmt.Println("RAW DATA")
+	//fmt.Println("RAW DATA")
+	//fmt.Println("RAW DATA")
+	//fmt.Println("RAW DATA")
+	//fmt.Println("RAW DATA")
+	//fmt.Println("RAW DATA")
+	//fmt.Println("RAW DATA")
+	//fmt.Println("RAW DATA")
+	//fmt.Printf("%+v\n\n", fuck)
+
 	var response models.BlockResponse
 	err := msgpack.Decode(rawBlock, &response)
 	if err != nil {
 		return db.NewBlock{}, errors.Wrap(err, "parsing response")
 	}
+
+	fmt.Printf("%+v\n", response)
 
 	//var blockInfo = block.NewBlock{response.Block, "", ""}
 	var blockInfo = response.Block
@@ -126,7 +144,7 @@ func ConvertBlockRawBytes(ctx context.Context, rawBlock []byte) (db.NewBlock, er
 	}
 
 	var newBlock = db.NewBlock{
-		Block:     models.Block{
+		Block: models.Block{
 			GenesisHash:       blockInfo.GenesisHash[:],
 			GenesisId:         blockInfo.GenesisID,
 			PreviousBlockHash: blockInfo.Branch[:],
@@ -174,16 +192,20 @@ func ConvertBlockRawBytes(ctx context.Context, rawBlock []byte) (db.NewBlock, er
 	newBlock.TransactionsRoot = blockInfo.TxnRoot[:]
 
 	var certInfo = *response.Cert
-	var prop = certInfo["prop"].(map[interface{}]interface{})
-
-	// Find the Proposer, that is the correct implementation
-	var oprop = prop["oprop"].([]byte)
-	oprop_ := byteArrAsAddress(oprop)
-	newBlock.Proposer = oprop_.String()
-
-	// Find the Block Hash
-	var dig = prop["dig"].([]byte)
-	newBlock.BlockHash = base64.StdEncoding.EncodeToString(dig)
+	fmt.Println("CERTINFO")
+	fmt.Printf("%+v\n", certInfo)
+	if len(certInfo) != 0 {
+		var prop = certInfo["prop"].(map[interface{}]interface{})
+		// Find the Proposer, that is the correct implementation
+		var oprop = prop["oprop"].([]byte)
+		fmt.Println("OPROP")
+		fmt.Printf("%+v\n", oprop)
+		oprop_ := byteArrAsAddress(oprop)
+		newBlock.Proposer = oprop_.String()
+		// Find the Block Hash
+		var dig = prop["dig"].([]byte)
+		newBlock.BlockHash = base64.StdEncoding.EncodeToString(dig)
+	}
 
 	return newBlock, nil
 }

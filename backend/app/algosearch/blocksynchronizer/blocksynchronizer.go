@@ -112,7 +112,7 @@ func (p *BlockSynchronizer) broadcastUpdate(newInfo WsMessage) error {
 // update pulls the block data and saves it to CouchDB.
 func (p *BlockSynchronizer) update() {
 
-	lastSyncedBlockNum, err := p.blockCore.GetLastSyncedRoundNumber(context.Background())
+	lastSyncedBlockNum, found, err := p.blockCore.GetLastSyncedRoundNumber(context.Background())
 	if err != nil {
 		p.log.Errorw("blocksynchronizer", "status", "get last synced round number", "ERROR", err)
 		//lastSyncedBlockNum = -1
@@ -128,8 +128,15 @@ func (p *BlockSynchronizer) update() {
 
 	p.log.Infow("Updating latest round here", "last synced round", lastSyncedBlockNum)
 
-	if (currentRoundNum - lastSyncedBlockNum) > 1 {
+	if (currentRoundNum - lastSyncedBlockNum) > 0 {
 		p.log.Infof("Trying to get round number: %d\n", lastSyncedBlockNum+1)
+
+		var blockOfInterest uint64 = 0
+		if !found {
+			blockOfInterest = 0
+		} else {
+			blockOfInterest = lastSyncedBlockNum + 1
+		}
 
 		var newBlockPayload = WsMessage{
 			Block:           models.Block{},
@@ -142,7 +149,7 @@ func (p *BlockSynchronizer) update() {
 		getRoundSuccessful := false
 		var rawBlock []byte
 		for !getRoundSuccessful {
-			rawBlock, err = p.algodCore.GetRoundInRawBytes(context.Background(), lastSyncedBlockNum+1)
+			rawBlock, err = p.algodCore.GetRoundInRawBytes(context.Background(), blockOfInterest)
 			if err != nil {
 				p.log.Errorw("blocksynchronizer", "status", "get round in raw bytes", "ERROR", err)
 				// Assuming it's not just block data not available, jump to the next round
@@ -187,6 +194,15 @@ func (p *BlockSynchronizer) update() {
 		var blockInfo = response.Block
 
 		//docID, rev, err := field.BlockStore.AddBlock(ctx, newBlock)
+		fmt.Println("NEW BLOCK")
+		fmt.Println("NEW BLOCK")
+		fmt.Println("NEW BLOCK")
+		fmt.Println("NEW BLOCK")
+		fmt.Println("NEW BLOCK")
+		fmt.Println("NEW BLOCK")
+		fmt.Println("NEW BLOCK")
+		fmt.Println("NEW BLOCK")
+		fmt.Printf("%+v\n\n", newBlock)
 		blockDocID, blockDocRev, err := p.blockCore.AddBlock(context.Background(), newBlock)
 		if err != nil {
 			p.log.Errorw("blocksynchronizer", "status", "can't add new block", "ERROR", err)

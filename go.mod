@@ -3,7 +3,7 @@ module github.com/kevguy/algosearch
 go 1.17
 
 require (
-	github.com/algorand/go-algorand-sdk v1.14.0
+	github.com/algorand/go-algorand-sdk v1.15.0
 	github.com/ardanlabs/conf/v2 v2.2.0
 	github.com/ardanlabs/darwin v1.3.0
 	github.com/dimfeld/httptreemux/v5 v5.4.0
